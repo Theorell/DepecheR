@@ -45,8 +45,8 @@
 #' @export minMaxScale
 minMaxScale <- function(x, control=FALSE, multiplicationFactor=1){
 
-    if(class(x)!="numeric" && class(x)!="data.frame"){
-    stop("Data needs to be either a numeric vector or a dataframe. Change the class and try again.")
+    if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
+    stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
   }
 
   if(missing("control")){
@@ -57,7 +57,7 @@ minMaxScale <- function(x, control=FALSE, multiplicationFactor=1){
     print("Warning. Column names of the x data and the control data are mismatched or are ordered differently, which may affect the result. Consider correcting this.")
   }
 
-    if(class(x)=="numeric"){
+    if(class(x)!="data.frame"){
    result <-  multiplicationFactor*(x-min(control))/(max(control)-min(control))
   }
   if(class(x)=="data.frame"){
