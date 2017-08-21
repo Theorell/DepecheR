@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // sparse_k_means
 List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, const bool no_zero, const unsigned long seed_off_set);
-RcppExport SEXP _DepecheR_sparse_k_means(SEXP XSEXP, SEXP kSEXP, SEXP regSEXP, SEXP no_zeroSEXP, SEXP seed_off_setSEXP) {
+RcppExport SEXP DepecheR_sparse_k_means(SEXP XSEXP, SEXP kSEXP, SEXP regSEXP, SEXP no_zeroSEXP, SEXP seed_off_setSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,7 +23,7 @@ END_RCPP
 }
 // grid_search
 List grid_search(NumericMatrix X, IntegerVector k, NumericVector reg, const unsigned int iterations, const unsigned int bootstrapSamples, const unsigned long seed_off_set);
-RcppExport SEXP _DepecheR_grid_search(SEXP XSEXP, SEXP kSEXP, SEXP regSEXP, SEXP iterationsSEXP, SEXP bootstrapSamplesSEXP, SEXP seed_off_setSEXP) {
+RcppExport SEXP DepecheR_grid_search(SEXP XSEXP, SEXP kSEXP, SEXP regSEXP, SEXP iterationsSEXP, SEXP bootstrapSamplesSEXP, SEXP seed_off_setSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // allocate_points
 List allocate_points(NumericMatrix X, NumericMatrix mu, const bool no_zero);
-RcppExport SEXP _DepecheR_allocate_points(SEXP XSEXP, SEXP muSEXP, SEXP no_zeroSEXP) {
+RcppExport SEXP DepecheR_allocate_points(SEXP XSEXP, SEXP muSEXP, SEXP no_zeroSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,9 +52,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_DepecheR_sparse_k_means", (DL_FUNC) &_DepecheR_sparse_k_means, 5},
-    {"_DepecheR_grid_search", (DL_FUNC) &_DepecheR_grid_search, 6},
-    {"_DepecheR_allocate_points", (DL_FUNC) &_DepecheR_allocate_points, 3},
+    {"DepecheR_sparse_k_means", (DL_FUNC) &DepecheR_sparse_k_means, 5},
+    {"DepecheR_grid_search", (DL_FUNC) &DepecheR_grid_search, 6},
+    {"DepecheR_allocate_points", (DL_FUNC) &DepecheR_allocate_points, 3},
     {NULL, NULL, 0}
 };
 
