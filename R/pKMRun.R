@@ -64,43 +64,30 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 		}
 	}
 
-
-
 	if(withOrWithoutZeroClust=="stabWZero"){
 			clusterVector <- returnLowest$i
-
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
-			
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
-
 			penalizedClusterCenters <- returnLowest$c			  
 			colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
-
 			#Remove all rows that do not contain any information
 			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
-			
-			#Make the row names the same as the cluster names in the clusterVectorEquidistant
-			row.names(reducedPenalizedClusterCenters) <- c(0:(nrow(reducedPenalizedClusterCenters-1)))
-			
-			}
+	}
 
 	if(withOrWithoutZeroClust=="stabWOZero"){
 			clusterVector <- returnLowest$o
-
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
-	
 			penalizedClusterCenters <- returnLowest$v		
 			colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
-
 			#Remove all rows that do not contain any information
 			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
-			
-			#Make the row names the same as the cluster names in the clusterVectorEquidistant
-			row.names(reducedPenalizedClusterCenters) <- c(1:nrow(reducedPenalizedClusterCenters))
 
-			}
+	}
 
+	#Make the row names the same as the cluster names in the clusterVectorEquidistant
+	rownames(reducedPenalizedClusterCenters) <- sort(unique(clusterVectorEquidistant))
+	
 #A table with the percentage of cells in each cluster for each individual is created
 
 clusterTable <- table(clusterVectorEquidistant, ids)
@@ -110,7 +97,7 @@ clusterTable <- table(clusterVectorEquidistant, ids)
 
 countTable <- table(ids)
 
-clusterPercentagesForAllIds <- clusterTable
+clusterFractionsForAllIds <- clusterTable
 
 for(i in 1:length(countTable)){
 	x <- clusterTable[,i]/countTable[i]

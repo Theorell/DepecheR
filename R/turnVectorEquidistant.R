@@ -25,11 +25,11 @@
 turnVectorEquidistant <- function(x, startValue=1){
 
 	originalNumbers <- sort(unique(x))
-	newNumbers <- c(startValue:(length(originalNumbers)+(statValue-1)))
+	newNumbers <- c(startValue:(length(originalNumbers)+(startValue-1)))
   result <- x
 	for(i in 1:length(originalNumbers)){
 	  result[(x==originalNumbers[i])] <- newNumbers[i]
 	}
 
-	return(as.numeric(x))
+	return(as.numeric(result))
 }
