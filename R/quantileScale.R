@@ -3,7 +3,7 @@
 #'
 #' This is a robust alternative to minMax scaling. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
 #' @importFrom Hmisc hdquantile
-#' @param x A numeric/integer vector
+#' @param x A numeric/integer vector or dataframe
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
 #' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
@@ -67,8 +67,6 @@ quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, cen
   if(identical(colnames(x), colnames(control))==FALSE){
     print("Warning. Column names of the x data and the control data are mismatched or are ordered differently, which may affect the result. Consider correcting this.")
   }
-
-
 
     if(class(x)!="data.frame"){
     result <- quantileScaleCoFunction(x, control=control, lowQuantile=lowQuantile, highQuantile=highQuantile, center=center, multiplicationFactor=multiplicationFactor)

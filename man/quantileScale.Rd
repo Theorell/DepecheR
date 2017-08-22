@@ -8,7 +8,7 @@ quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
   center = FALSE, multiplicationFactor = 1)
 }
 \arguments{
-\item{x}{A numeric/integer vector}
+\item{x}{A numeric/integer vector or dataframe}
 
 \item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
 

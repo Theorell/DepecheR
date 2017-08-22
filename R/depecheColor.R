@@ -84,8 +84,9 @@ depecheColor <- function(colorData, names="default", xYData,  title=FALSE, dotSi
 
 depecheColorCoFunction <- function(colorVariable, name, xYDataPercent, title=FALSE, dotSize=20000/nrow(colorVariable)){
 	fname = paste(name,'.png', sep="")
-
-	colorVariablePercent <- minMaxScale(colorVariable, multiplicationFactor=100)
+  
+	colorVariableTruncated <- truncateData(colorVariable)
+	colorVariablePercent <- minMaxScale(colorVariableTruncated, multiplicationFactor=100)
 
 colnames(xYDataPercent) <- c("V1", "V2")
 

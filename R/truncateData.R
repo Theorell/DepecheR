@@ -18,7 +18,7 @@
 #' min(x)
 #'
 #' #Here, the function is used to truncate the two most extreme percent of the observations.
-#' y <- truncateColorScale(x, lowQuantile=0.01, highQuantile=0.99)
+#' y <- truncateData(x, lowQuantile=0.01, highQuantile=0.99)
 #'
 #' #The maximum and minimum values are less extreme:
 #' max(y)
@@ -29,14 +29,14 @@
 #' summary(x_df)
 #'
 #' #Run the function
-#' y_df <- truncateColorScale(x_df, lowQuantile=0.01, highQuantile=0.99)
+#' y_df <- truncateData(x_df, lowQuantile=0.01, highQuantile=0.99)
 #'
 #' #And the most extreme values have been reduced
 #' summary(y_df)
 #'
-#' @export truncateColorScale
+#' @export truncateData
 
-truncateColorScale <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
+truncateData <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -52,17 +52,17 @@ truncateColorScale <- function(x, control, lowQuantile=0.0001, highQuantile=0.99
 
 
   if(class(x)!="data.frame"){
-    result <- truncateColorScaleCoFunction(x, control=control, lowQuantile=lowQuantile, highQuantile=highQuantile)
+    result <- truncateDataCoFunction(x, control=control, lowQuantile=lowQuantile, highQuantile=highQuantile)
   }
   if(class(x)=="data.frame"){
-    result <- as.data.frame(mapply(truncateColorScaleCoFunction, x, control, MoreArgs=list(lowQuantile=lowQuantile, highQuantile=highQuantile), SIMPLIFY = FALSE))
+    result <- as.data.frame(mapply(truncateDataCoFunction, x, control, MoreArgs=list(lowQuantile=lowQuantile, highQuantile=highQuantile), SIMPLIFY = FALSE))
   }
 
   return(result)
 }
 
 
-truncateColorScaleCoFunction <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
+truncateDataCoFunction <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
   high <- hdquantile(control, highQuantile)
   low <- hdquantile(control, lowQuantile)
 
