@@ -24,7 +24,7 @@
 #' summary(y)
 #' 
 #' @export maxPeakScale
-maxPeakScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, multiplicationFactor=1){
+maxPeakScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
