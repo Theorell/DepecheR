@@ -40,7 +40,7 @@ x_scaled <- quantileScale(x[,2:ncol(x)])
 setwd("~/Desktop")
 
 #Run the function
-x_optim <- pKMOptim(x_scaled, bootstrapObservations=1000)
+x_optim <- pKMOptim(x_scaled)
 }
 \seealso{
 \code{\link{pKMRun}}, \code{\link{pKMPredict}}

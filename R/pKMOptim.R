@@ -4,6 +4,7 @@
 #' This function is used before the pKMRun function to identify the optimal regVec value for the specific dataset. This value decides the penalization and consequently also the number of clusters that are identified.
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
 #' @importFrom Rcpp evalCpp
+#' @importFrom graphics box
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
 #' @param kVec Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 #' @param iterations As it sounds, the number of bootstrap reiterations that are performed.
@@ -26,10 +27,10 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the function
-#' x_optim <- pKMOptim(x_scaled, bootstrapObservations=1000)
+#' x_optim <- pKMOptim(x_scaled)
 #' @export pKMOptim
 #' @useDynLib DepecheR
-pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=1000, regVecOffset=c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)){
+pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)){
 
 #The constant k is empirically identified by running a large number of regVec values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)

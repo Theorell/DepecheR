@@ -70,8 +70,12 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
 			penalizedClusterCenters <- returnLowest$c			  
 			colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
-			#Remove all rows that do not contain any information
+			#Remove all rows that do not contain any information.
+			
 			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
+			
+			#Add the zero cluster back
+			reducedPenalizedClusterCenters <- rbind(penalizedClusterCenters[1,], reducedPenalizedClusterCenters)
 	}
 
 	if(withOrWithoutZeroClust=="stabWOZero"){
