@@ -94,7 +94,7 @@ List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, con
     ret["v"]=centers_no_zero;
     ret["n"]=partitioning.norm;
     ret["m"]=partitioning.norm_no_zero;
-    //std::cout<<"the norm is: "<< partitioning.norm<<std::endl;
+    //Rcout<<"the norm is: "<< partitioning.norm<<std::endl;
   return ret;
 }
 
@@ -155,7 +155,7 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
     for(unsigned int i = 0; i< mu_rows; i++){
         if(no_zero){
             if(!mu.row(i).isZero(0)){
-                //std::cout<<"muRow: "<< mu.row(i)<< " and I:"<<i<<std::endl;
+                //Rcout<<"muRow: "<< mu.row(i)<< " and I:"<<i<<std::endl;
                 active_indices.push_back(i);
             }
         }else{
@@ -163,7 +163,7 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
         }
     }
     if(active_indices.size()<2){
-        std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
+        Rcout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
         return Eigen::VectorXi::Zero(X_rows);
     }
     //allocate all points to the first active cluster.
@@ -181,7 +181,7 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
             }
         }
     }
-    //std::cout<<"mu ind: "<< mu_ind<<std::endl;
+    //Rcout<<"mu ind: "<< mu_ind<<std::endl;
     return mu_ind;
 }
 
@@ -254,7 +254,7 @@ RowMatrixXd Clusterer::initialize_mu(const RowMatrixXd& X, const unsigned int k)
     mu.row(0)=X.row(randi);
     //compute distances
     Eigen::VectorXd dists =  ((-X).rowwise()+mu.row(0)).rowwise().squaredNorm();
-    //std::cout<<"element from vector 1: dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
+    //Rcout<<"element from vector 1: dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
     unsigned int element_index = element_from_vector(dists);
     mu.row(1)=X.row(element_index);
     for(unsigned int i = 2; i<k; i++){
@@ -265,7 +265,7 @@ RowMatrixXd Clusterer::initialize_mu(const RowMatrixXd& X, const unsigned int k)
                 dists(j)=temp_dists(j);
             }
         }
-        //std::cout<<"element from vector "<<i<<": dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
+        //Rcout<<"element from vector "<<i<<": dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
         element_index = element_from_vector(dists);
         mu.row(i)=X.row(element_index);
     }
@@ -304,7 +304,7 @@ RowMatrixXd Clusterer::m_rescale(const RowMatrixXd& Xin){
 //    X = X.array().rowwise()/abs_dev.array();
 
 //    if((st_dev.array()==0.0).any()){
-//        std::cout<<"Input matrix contains degenrate dimensions with no variance: Aborting"<<std::endl;
+//        Rcout<<"Input matrix contains degenrate dimensions with no variance: Aborting"<<std::endl;
 //        RowMatrixXd ret;
 //        return ret;
 //    }
@@ -326,7 +326,7 @@ double Clusterer::cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers,
             ssq+=centers(j,i)*reg;
         }
     }
-    //std::cout<<"The ssq is: "<<ssq<<std::endl;
+    //Rcout<<"The ssq is: "<<ssq<<std::endl;
     return ssq;
 }
 
@@ -346,7 +346,7 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     Eigen::VectorXi mu_ind_old =  Eigen::VectorXi::Zero(rows);
     unsigned int count_limit = 1000;
     for(unsigned int i = 0; i<count_limit; i++){
-        std::cout << "Iteration: " <<i<< std::endl;
+        Rcout << "Iteration: " <<i<< std::endl;
         mu_ind=allocate_clusters(X,mu);
         if((mu_ind_old-mu_ind).isZero(0)){
             break;
@@ -362,9 +362,9 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     ret.norm = cluster_norm(X,mu,mu_ind, reg);
     //if no zero is true, continue to deallocate all points from the zero clusters.
     if(no_zero){
-        std::cout << "Removing zero clusters"<< std::endl;
+        Rcout << "Removing zero clusters"<< std::endl;
         for(unsigned int i = 0; i<count_limit; i++){
-            std::cout << "Iteration: " <<i<< std::endl;
+            Rcout << "Iteration: " <<i<< std::endl;
             mu_ind=allocate_clusters(X,mu, no_zero);
             if((mu_ind_old-mu_ind).isZero(0)){
                 break;
@@ -395,7 +395,7 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
         population2(c2(i))+=1.0/size;
     }
     //now calculate the false positives
-    //std::cout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
+    //Rcout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
     const double false1 = (population1.array()*(population1.array()-1.0/size)*(size/(size-1))).sum()*(population2.array()*(population2.array()-1.0/size)*(size/(size-1))).sum();
     const double false2 = (population1.array()*(1-(population1.array()-1.0/size)*(size/(size-1)))).sum()*(population2.array()*(1-(population2.array()-1.0/size)*(size/(size-1)))).sum();
 
@@ -412,14 +412,14 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
             j = rand_inds(1)%intSize;
         }
         if(c1(i)==c1(j)&& c2(i)==c2(j)){
-            stability+= 1 - false1;
+            stability+= 1;
         } else if((c1(i)!=c1(j)&& c2(i)!=c2(j))){
-            stability+=1 - false2;
+            stability+=1;
         }
 
     }
 
-    return 1-(stability/indice_num);
+    return 1-((stability/indice_num)-(false1+false2))/(1-(false1+false2));
 }
 
 //generates bootstrapped data sets by resampling an old data set
@@ -460,7 +460,7 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     RowMatrixXd found_cluster_no_zero = RowMatrixXd::Zero(k_size,reg_size);
 
     for(unsigned int i = 0; i<iterations; i++){
-        std::cout<<"Overall iteration: "<< i << std::endl;
+        Rcout<<"Overall iteration: "<< i << std::endl;
         for(unsigned int j = 0; j<k_size; j++){
             for(unsigned int l = 0; l<reg_size; l++){
                 //create three bootstrap samples
@@ -468,7 +468,7 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
                 const RowMatrixXd b2 = bootstrap_data(X,bootstrapSamples);
                 const RowMatrixXd b3 = bootstrap_data(X,bootstrapSamples);
                 //create two partitionings
-                //std::cout<<"Finding centers: "<< std::endl;
+                //Rcout<<"Finding centers: "<< std::endl;
                 //try to remove zeros by default
                 bool remove_zeros = true;
                 const Return_values ret1 = find_centers(b1,k(j), reg(l),remove_zeros);
@@ -479,10 +479,10 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
                 //allocate with no_zero
                 const Eigen::VectorXi ind1_no_zero = allocate_clusters(b3, ret1.centers_no_zero, true);
                 const Eigen::VectorXi ind2_no_zero = allocate_clusters(b3, ret2.centers_no_zero, true);
-                //std::cout<<"calculating distances: "<< std::endl;
+                //Rcout<<"calculating distances: "<< std::endl;
                 distances(j,l)+=cluster_distance(ind1,ind2,k(j));
                 distances_no_zero(j,l)+=cluster_distance(ind1_no_zero,ind2_no_zero,k(j));
-                //std::cout<<"countng non-zero: "<< std::endl;
+                //Rcout<<"countng non-zero: "<< std::endl;
                 found_cluster(j,l)+=n_used_clusters(k(j),ret1.indexes);
                 found_cluster(j,l)+=n_used_clusters(k(j),ret2.indexes);
                 found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret1.indexes_no_zero);
