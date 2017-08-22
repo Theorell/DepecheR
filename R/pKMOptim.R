@@ -29,7 +29,7 @@
 #' x_optim <- pKMOptim(x_scaled, bootstrapObservations=1000)
 #' @export pKMOptim
 #' @useDynLib DepecheR
-pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)){
+pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=1000, regVecOffset=c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)){
 
 #The constant k is empirically identified by running a large number of regVec values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
