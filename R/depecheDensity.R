@@ -20,21 +20,24 @@
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
 #' x <- generateFlowCytometryData(samplings=5, observations=2000)
 #'
-#' #Scale the data (not actually necessary in this artificial example due to the nature of the generated data)
+#' #Scale the data (not actually necessary in this artificial 
+#' #example due to the nature of the generated data)
 #' x_scaled <- quantileScale(x[2:ncol(x)])
 #'
-#' #Run Barnes Hut tSNE on this. NB! This takes quite a while (a minute or so) as the algorithm is slow.
-#' library(Rtsne)
-#' xSNE <- Rtsne(x_scaled, pca=FALSE)
+#' #Run Barnes Hut tSNE on this. 
+#' library(Rtsne.multicore)
+#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
 #' #Plot all ids together and use rainbowColors
-#' sneDensityPlot(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", color="rainbowCols", createDirectory=FALSE)
+#' depecheDensity(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
+#' color="rainbowCols", createDirectory=FALSE)
 #'
 #' #Now plot each id separately
-#' sneDensityPlot(xYData=as.data.frame(xSNE$Y), plotEachIdSeparately=TRUE, idsVector=x[,1], commonName="sampling", color="idSpecific")
+#' depecheDensity(xYData=as.data.frame(xSNE$Y), plotEachIdSeparately=TRUE, 
+#' idsVector=x[,1], commonName="sampling", color="idSpecific")
 #'
 #' @export depecheDensity
 depecheDensity <- function(xYData, scalingControl, plotEachIdSeparately=FALSE, idsVector, commonName, color=c("blue", "rainbowCols", "idSpecific", "multipleColors"), densContour, bandColor="black", dotSize=400/sqrt(nrow(xYData)), title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep="")){

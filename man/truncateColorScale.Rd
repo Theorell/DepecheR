@@ -7,9 +7,9 @@
 truncateColorScale(x, control, lowQuantile = 1e-04, highQuantile = 0.9999)
 }
 \arguments{
-\item{x}{A numeric vector or dataframe.}
+\item{x}{A numeric/integer vector or dataframe.}
 
-\item{control}{A numeric vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.}
+\item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.}
 
 \item{lowQuantile}{The lower border below which the values are treated as outliers and will be outside of the defined quantile range.}
 

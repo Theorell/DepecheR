@@ -9,7 +9,7 @@ depecheWilcox(idGroupClusterData, paired = FALSE,
   name = "depecheWilcox", groupName1 = "Group 1", groupName2 = "Group 2",
   title = FALSE, maxAbsPlottingValues, bandColor = "black",
   createDirectory = FALSE, directoryName = "depecheWilcox",
-  dotsize = 400/sqrt(nrow(xYData)))
+  dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{idGroupClusterData}{This dataframe should contain three columns with information about the cluster identity (named "cluster"), the id (named "ids")and the group (named "group")identity for each observation.}
@@ -50,22 +50,27 @@ This function is used to compare groups of individuals from whom comparable cyto
 #Generate a dataframe with bimodally distributed data and 20 subsamplings.
 xindividuals <- generateFlowCytometryData(samplings=40, ncols=7, observations=500)
 
-#Now add three columns that will separate the first ten from the second ten individuals and merge the datasets
+#Now add three columns that will separate the first ten from 
+#the second ten individuals and merge the datasets
 xgroups <- generateFlowCytometryData(samplings=2, ncols=3, observations=10000)
 colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
-x <- cbind(xindividuals[,1], xgroups[,1], xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
+x <- cbind(xindividuals[,1], xgroups[,1], 
+xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
+
 colnames(x)[1:2] <- c("ids", "group")
 
-#Scale the data (not actually necessary in this artificial example due to the nature of the generated data)
+#Scale the data (not actually necessary in this artificial 
+#example due to the nature of the generated data)
 x_scaled <- quantileScale(x[3:ncol(x)])
 
 #Create the optimized number of clusters for this dataset
 x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 
-#Run Barnes Hut tSNE on this dataset. XXX NB! This takes quite a while (two minutes or so) as the algorithm is slow.
-library(Rtsne)
-xSNE <- Rtsne(x_scaled, pca=FALSE)
+#Run Barnes Hut tSNE on this. 
+library(Rtsne.multicore)
+xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #Create the idGroupClusterData object
 idGroupClusterData <- cbind(x[,1:2], x_pKM$clusterVector)

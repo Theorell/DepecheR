@@ -4,14 +4,14 @@
 \alias{variableViolinsAllClust}
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
-variableViolinsAllClust(sparsityMatrix, clusterVector, inDataFrame)
+variableViolinsAllClust(clusterCenters, clusterVector, inDataFrame)
 }
 \arguments{
-\item{sparsityMatrix}{A matrix containing information about}
+\item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
 
 \item{clusterVector}{A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.}
 
-\item{inDataFrame}{A dataframe that has been used to generate the cluster vector and the sparsityMatrix. Note that the scaling does not matter in this case, as each variable wil be plotted separately.}
+\item{inDataFrame}{A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.}
 }
 \value{
 One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.

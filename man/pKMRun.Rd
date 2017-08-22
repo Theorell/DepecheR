@@ -24,7 +24,7 @@ pKMRun(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec = 30,
 A list with three components:
 \describe{
     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
-    \item{penalizedClusterCenters}{A matrix containing information about which variables and clusters that have been penalizedd out, shown by zero, and for the non-penalized variables and clusters, where the cluster center is located. This is done with one row per cluster.}
+    \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
     \item{clusterPercentagesForAllIds}{A matrix showing the percentage of observations for each id in each cluster.}
 }
 }
@@ -45,7 +45,8 @@ setwd("~/Desktop")
 x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
 
 #Then run the actual function
-x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 
 #And finally look at your great result
 str(x_pKM)

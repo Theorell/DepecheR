@@ -18,12 +18,13 @@
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateFlowCytometryData()
 #'
-#' #Scale the data (not actually necessary in this artificial example due to the nature of the generated data)
+#' #Scale the data (not actually necessary in this artificial 
+#' #example due to the nature of the generated data)
 #' x_scaled <- quantileScale(x[2:ncol(x)])
 #'
-#' #Run Barnes Hut tSNE on this. NB! This takes quite a while (a minute or so) as the algorithm is slow.
-#' library(Rtsne)
-#' xSNE <- Rtsne(x_scaled, pca=FALSE)
+#' #Run Barnes Hut tSNE on this. 
+#' library(Rtsne.multicore)
+#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")

@@ -3,9 +3,9 @@
 #' Here, violin plots of a specific cluster and the total population are created for each variable that has not been penalized away in the penalized K-means analysis. As al such plots are generated for each cluster, this function creates a great number of plots in most instances.
 #' @importFrom ggplot2 ggplot aes geom_violin scale_color_manual scale_fill_manual theme_classic labs ggsave
 #' @importFrom gplots rich.colors
-#' @param sparsityMatrix A matrix containing information about
+#' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
 #' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
-#' @param inDataFrame A dataframe that has been used to generate the cluster vector and the sparsityMatrix. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
+#' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
@@ -26,7 +26,7 @@
 #' #And finally create all the clusters
 #' variableViolinsAllClust(x_$penalizedClusterCenters, as.numeric(x_$clusterVector), x[,2:ncol(x)])
 #' @export variableViolinsAllClust
-variableViolinsAllClust <- function(sparsityMatrix, clusterVector, inDataFrame){
+variableViolinsAllClust <- function(clusterCenters, clusterVector, inDataFrame){
 
   number <- sort(unique(clusterVector))
 
@@ -60,7 +60,7 @@ variableViolinsAllClust <- function(sparsityMatrix, clusterVector, inDataFrame){
     clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
 
     #Here, the mu variables for the specific cluster is extracted
-    oneClustAllMu <- sparsityMatrix[rownames(sparsityMatrix)==number[i],]
+    oneClustAllMu <- clusterCenters[rownames(clusterCenters)==number[i],]
 
     #Here the variable names is exported
     allVarNames <- colnames(inDataFrame)

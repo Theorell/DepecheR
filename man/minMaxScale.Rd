@@ -7,9 +7,9 @@
 minMaxScale(x, control = FALSE, multiplicationFactor = 1)
 }
 \arguments{
-\item{x}{A numeric vector or dataframe.}
+\item{x}{A numeric/integer vector or dataframe.}
 
-\item{control}{A numeric vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.}
+\item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.}
 
 \item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.}
 }
@@ -30,7 +30,9 @@ min(x)
 #Run the function
 y <- minMaxScale(x)
 
-#And the data has been scaled to the range of the data. In this case, the standard 0-1 range is used, as the multiplicationFactor has not been changed from the default.
+#And the data has been scaled to the range of the data. 
+#In this case, the standard 0-1 range is used, as the 
+#multiplicationFactor has not been changed from the default.
 max(y)
 min(y)
 
@@ -41,7 +43,9 @@ summary(x_df)
 #Run the function
 y_df <- minMaxScale(x_df, multiplicationFactor=100)
 
-#And the data has been rescaled to a percentage of the range between the minimal and the maximal values in the original dataframe columns.
+#And the data has been rescaled to a percentage of the 
+#range between the minimal and the maximal values in the 
+#original dataframe columns.
 summary(y_df)
 
 #Here, dataframes are used, and control data is included.
@@ -50,9 +54,13 @@ summary(x_df)
 control_df <- data.frame(cbind(rnorm(1000, 55, 20), rnorm(1000, 10, 200), rnorm(1000, 450, 350)))
 
 #Run the function
-y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, highQuantile=0.99, multiplicationFactor=100)
+y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, 
+highQuantile=0.99, multiplicationFactor=100)
 
-#And the data has been rescaled to a percentage of the range between the most extreme values of of the data in the control dataframe columns. Note that as the range of the values in the control data iscol larger, the data is compressed.
+#And the data has been rescaled to a percentage of the range 
+#between the most extreme values of of the data in the control 
+#dataframe columns. Note that as the range of the values in the 
+#control data iscol larger, the data is compressed.
 summary(y_df)
 }
 \seealso{

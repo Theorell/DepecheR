@@ -13,7 +13,7 @@
 #' @return A list with three components:
 #' \describe{
 #'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
-#'     \item{penalizedClusterCenters}{A matrix containing information about which variables and clusters that have been penalizedd out, shown by zero, and for the non-penalized variables and clusters, where the cluster center is located. This is done with one row per cluster.}
+#'     \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
 #'     \item{clusterPercentagesForAllIds}{A matrix showing the percentage of observations for each id in each cluster.}
 #' }
 #' @examples
@@ -30,7 +30,8 @@
 #' x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
 #'
 #' #Then run the actual function
-#' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+#' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 #'
 #' #And finally look at your great result
 #' str(x_pKM)
@@ -53,7 +54,7 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 	return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,kVec,regVec,1,x))
 	stopCluster(cl)
 
-#Here, the lowest iteration is retrieved
+#Here, the best iteration is retrieved
 
 	for(i in 1:length(return_all)){
 		minimumN <- min(do.call("rbind", lapply(return_all, "[[", 5)))
@@ -67,22 +68,42 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 
 	if(withOrWithoutZeroClust=="stabWZero"){
 			clusterVector <- returnLowest$i
-			penalizedClusterCenters <- returnLowest$c
 
-	}
+			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
+			
+			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
+
+			penalizedClusterCenters <- returnLowest$c			  
+			colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
+
+			#Remove all rows that do not contain any information
+			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
+			
+			#Make the row names the same as the cluster names in the clusterVectorEquidistant
+			row.names(reducedPenalizedClusterCenters) <- c(0:(nrow(reducedPenalizedClusterCenters-1)))
+			
+			}
 
 	if(withOrWithoutZeroClust=="stabWOZero"){
 			clusterVector <- returnLowest$o
-			penalizedClusterCenters <- returnLowest$v
-	}
 
+			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
+			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
+	
+			penalizedClusterCenters <- returnLowest$v		
+			colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
 
-	colnames(penalizedClusterCenters) <- colnames(inDataFrameScaled)
-	rownames(penalizedClusterCenters) <- c(seq(0,kVec-1))
+			#Remove all rows that do not contain any information
+			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
+			
+			#Make the row names the same as the cluster names in the clusterVectorEquidistant
+			row.names(reducedPenalizedClusterCenters) <- c(1:nrow(reducedPenalizedClusterCenters))
+
+			}
 
 #A table with the percentage of cells in each cluster for each individual is created
 
-clusterTable <- table(clusterVector, ids)
+clusterTable <- table(clusterVectorEquidistant, ids)
 	if(nrow(clusterTable)==1){
 		print("Warning. The number of clusters is one, i.e. no separation of observations is present with the current settings. Try lowering the regVec.")
 	}
@@ -92,14 +113,14 @@ countTable <- table(ids)
 clusterPercentagesForAllIds <- clusterTable
 
 for(i in 1:length(countTable)){
-	x <- 100*clusterTable[,i]/countTable[i]
-	clusterPercentagesForAllIds[,i] <- x
+	x <- clusterTable[,i]/countTable[i]
+	clusterFractionsForAllIds[,i] <- x
 }
 
 
-pKMResult <- list(clusterVector, penalizedClusterCenters, as.data.frame.matrix(t(clusterPercentagesForAllIds)))
+pKMResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
 
-names(pKMResult) <- c("clusterVector", "penalizedClusterCenters", "clusterPercentagesForAllIds")
+names(pKMResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
 
 
 	return(pKMResult)

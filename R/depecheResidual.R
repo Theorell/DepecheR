@@ -20,16 +20,18 @@
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
 #' x <- generateFlowCytometryData(samplings=2, ncols=7, observations=1000)
 #'
-#' #Scale the data (not actually necessary in this artificial example due to the nature of the generated data)
+#' #Scale the data (not actually necessary in this artificial 
+#' #example due to the nature of the generated data)
 #' x_scaled <- quantileScale(x[2:ncol(x)])
 #'
 #' #Create the optimized number of clusters for this dataset
 #' x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
-#' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+#' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 #'
-#' #Run Barnes Hut tSNE on this dataset. XXX NB! This takes quite a while (two minutes or so) as the algorithm is slow.
-#' library(Rtsne)
-#' xSNE <- Rtsne(x_scaled, pca=FALSE)
+#' #Run Barnes Hut tSNE on this. 
+#' library(Rtsne.multicore)
+#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Create the groupClusterData object
 #' groupClusterData <- as.data.frame(cbind(x[,1], x_pKM$clusterVector))
@@ -41,7 +43,7 @@
 #' #And finally run the function
 #' depecheResidual(groupClusterData=groupClusterData, xYData=as.data.frame(xSNE$Y))
 #' @export depecheResidual
-depecheResidual <- function(groupClusterData, xYData, densContour, name="depecheResidual", groupName1="Group 1", groupName2="Group 2", title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheResidual", dotsize=400/sqrt(nrow(xYData))){
+depecheResidual <- function(groupClusterData, xYData, densContour, name="depecheResidual", groupName1="Group 1", groupName2="Group 2", title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheResidual", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -110,7 +112,7 @@ depecheResidual <- function(groupClusterData, xYData, densContour, name="depeche
 
   if(title==TRUE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotsize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+  plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
   par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
   contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
 
@@ -119,7 +121,7 @@ depecheResidual <- function(groupClusterData, xYData, densContour, name="depeche
 
   if(title==FALSE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotsize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+  plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
   par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
   contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
 

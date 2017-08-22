@@ -8,7 +8,7 @@ depecheResidual(groupClusterData, xYData, densContour,
   name = "depecheResidual", groupName1 = "Group 1",
   groupName2 = "Group 2", title = FALSE, maxAbsPlottingValues,
   bandColor = "black", createDirectory = FALSE,
-  directoryName = "depecheResidual", dotsize = 400/sqrt(nrow(xYData)))
+  directoryName = "depecheResidual", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{groupClusterData}{This dataframe should contain at least two columns  with information about the cluster (named "cluster") and the group identity (named "group") for each observation.}
@@ -45,16 +45,18 @@ This function is used to compare groups of individuals from whom comparable cyto
 #Generate a dataframe with bimodally distributed data and 2 subsamplings.
 x <- generateFlowCytometryData(samplings=2, ncols=7, observations=1000)
 
-#Scale the data (not actually necessary in this artificial example due to the nature of the generated data)
+#Scale the data (not actually necessary in this artificial 
+#example due to the nature of the generated data)
 x_scaled <- quantileScale(x[2:ncol(x)])
 
 #Create the optimized number of clusters for this dataset
 x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 
-#Run Barnes Hut tSNE on this dataset. XXX NB! This takes quite a while (two minutes or so) as the algorithm is slow.
-library(Rtsne)
-xSNE <- Rtsne(x_scaled, pca=FALSE)
+#Run Barnes Hut tSNE on this. 
+library(Rtsne.multicore)
+xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #Create the groupClusterData object
 groupClusterData <- as.data.frame(cbind(x[,1], x_pKM$clusterVector))

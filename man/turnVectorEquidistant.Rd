@@ -4,10 +4,12 @@
 \alias{turnVectorEquidistant}
 \title{Turn a vector into a equally ordered, but equidistant vector.}
 \usage{
-turnVectorEquidistant(x)
+turnVectorEquidistant(x, startValue = 1)
 }
 \arguments{
 \item{x}{Any vector, numeric or otherwise.}
+
+\item{startValue}{The first value in the range of integers that will be the return vector. Default is 1.}
 }
 \value{
 A numeric vector with equal distances between the unique values in the vector. The lowest unique value in the x vector will get the lowest value in this vector. The second lowest value in the x vector will get the second lowest value and so on.
@@ -28,6 +30,7 @@ y <- turnVectorEquidistant(x)
 #Now, the unique values are distributed equally
 sort(unique(y))
 
-#The first occurence of the lowest value still comes in the same place, so the structure of the original vector is retained.
+#The first occurence of the lowest value still comes in the same place, 
+#so the structure of the original vector is retained.
 identical(grep(min(x),x), grep(min(y), y))
 }

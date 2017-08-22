@@ -3,8 +3,8 @@
 #'
 #' This is a robust alternative to minMax scaling. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
 #' @importFrom Hmisc hdquantile
-#' @param x A numeric vector
-#' @param control A numeric vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
+#' @param x A numeric/integer vector
+#' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
 #' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
 #' @param center If mean centering should be performed or not. Defaults to FALSE.
@@ -27,13 +27,16 @@
 #' min(y)
 #'
 #' #Do the same but with a dataframe.
-#' x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), rnorm(1000, 430, 200)))
+#' x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), 
+#' rnorm(1000, 430, 200)))
 #' summary(x_df)
 #'
 #' #Run the function
-#' y_df <- quantileScale(x_df, lowQuantile=0.01, highQuantile=0.99, center=TRUE, multiplicationFactor=100)
+#' y_df <- quantileScale(x_df, lowQuantile=0.01, highQuantile=0.99, 
+#' center=TRUE, multiplicationFactor=100)
 #'
-#' #And the data has been rescaled to the range between the first and the 99:th percentile of the data in the original dataframe columns. The data has also been centered.
+#' #And the data has been rescaled to the range between the first and the 99:th percentile 
+#' #of the data in the original dataframe columns. The data has also been centered.
 #' summary(y_df)
 #'
 #' #Here, dataframes are used, and control data is included.
@@ -42,15 +45,19 @@
 #' control_df <- data.frame(cbind(rnorm(1000, 55, 15), rnorm(1000, 10, 200), rnorm(1000, 450, 350)))
 #'
 #' #Run the function
-#' y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, highQuantile=0.99, center=TRUE, multiplicationFactor=100)
+#' y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, 
+#' highQuantile=0.99, center=TRUE, multiplicationFactor=100)
 #'
-#' #And the data has been rescaled to the range between the first and the 99:th percentile of the data in the control dataframe columns. The data has also been centered. Note that as the range of the values in the control data is larger, the data is compressed.
+#' #And the data has been rescaled to the range between the first 
+#' #and the 99:th percentile of the data in the control dataframe columns. 
+#' #The data has also been centered. Note that as the range of the values in 
+#' #the control data is larger, the data is compressed.
 #' summary(y_df)
 #' @export quantileScale
 quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, center=FALSE, multiplicationFactor=1){
 
-  if(class(x)!="numeric" && class(x)!="data.frame"){
-    stop("Data needs to be either a numeric vector or a dataframe. Change the class and try again.")
+  if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
+    stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
   }
 
   if(missing("control")){
@@ -63,7 +70,7 @@ quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, cen
 
 
 
-    if(class(x)=="numeric"){
+    if(class(x)!="data.frame"){
     result <- quantileScaleCoFunction(x, control=control, lowQuantile=lowQuantile, highQuantile=highQuantile, center=center, multiplicationFactor=multiplicationFactor)
   }
   if(class(x)=="data.frame"){

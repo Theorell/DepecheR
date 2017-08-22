@@ -8,9 +8,9 @@ quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
   center = FALSE, multiplicationFactor = 1)
 }
 \arguments{
-\item{x}{A numeric vector}
+\item{x}{A numeric/integer vector}
 
-\item{control}{A numeric vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
+\item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
 
 \item{lowQuantile}{The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).}
 
@@ -42,13 +42,16 @@ max(y)
 min(y)
 
 #Do the same but with a dataframe.
-x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), rnorm(1000, 430, 200)))
+x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), 
+rnorm(1000, 430, 200)))
 summary(x_df)
 
 #Run the function
-y_df <- quantileScale(x_df, lowQuantile=0.01, highQuantile=0.99, center=TRUE, multiplicationFactor=100)
+y_df <- quantileScale(x_df, lowQuantile=0.01, highQuantile=0.99, 
+center=TRUE, multiplicationFactor=100)
 
-#And the data has been rescaled to the range between the first and the 99:th percentile of the data in the original dataframe columns. The data has also been centered.
+#And the data has been rescaled to the range between the first and the 99:th percentile 
+#of the data in the original dataframe columns. The data has also been centered.
 summary(y_df)
 
 #Here, dataframes are used, and control data is included.
@@ -57,9 +60,13 @@ summary(x_df)
 control_df <- data.frame(cbind(rnorm(1000, 55, 15), rnorm(1000, 10, 200), rnorm(1000, 450, 350)))
 
 #Run the function
-y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, highQuantile=0.99, center=TRUE, multiplicationFactor=100)
+y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, 
+highQuantile=0.99, center=TRUE, multiplicationFactor=100)
 
-#And the data has been rescaled to the range between the first and the 99:th percentile of the data in the control dataframe columns. The data has also been centered. Note that as the range of the values in the control data is larger, the data is compressed.
+#And the data has been rescaled to the range between the first 
+#and the 99:th percentile of the data in the control dataframe columns. 
+#The data has also been centered. Note that as the range of the values in 
+#the control data is larger, the data is compressed.
 summary(y_df)
 }
 \seealso{

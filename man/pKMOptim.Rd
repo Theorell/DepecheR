@@ -11,13 +11,13 @@ pKMOptim(inDataFrameScaled, kVec = 30, iterations = 50,
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.}
 
+\item{kVec}{Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30}
+
 \item{iterations}{As it sounds, the number of bootstrap reiterations that are performed.}
 
 \item{bootstrapObservations}{The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.}
 
 \item{regVecOffset}{These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
-
-\item{kVec=30}{Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30}
 }
 \value{
 A graph showing the performance of the algorithm under the different regVec values and a list with two components:

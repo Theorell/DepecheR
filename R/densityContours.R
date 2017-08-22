@@ -20,7 +20,10 @@
 #' contour_result <- densityContours(x_df)
 #'
 #' #Plot the result
-#' contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+#' contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, 
+#' xlim=c(-0.05, 1.05), 
+#' ylim=c(-0.05, 1.05), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
+#' xaxs="i", yaxs="i")
 #'
 #' @export densityContours
 

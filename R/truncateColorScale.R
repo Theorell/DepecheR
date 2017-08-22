@@ -3,8 +3,8 @@
 #'
 #' This function reduces the most extremely low and high observations to their less extreme border. Currently, the standard quantile cutoff is a hundredth of a percent. It is done to decrease these observations influence on color scaling for vizualisations. The function accepts vectors and dataframes.
 #' @importFrom Hmisc hdquantile
-#' @param x A numeric vector or dataframe.
-#' @param control A numeric vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.
+#' @param x A numeric/integer vector or dataframe.
+#' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.
 #' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined quantile range.
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined quantile range.
 #' @seealso \code{\link{minMaxScale}}
@@ -38,8 +38,8 @@
 
 truncateColorScale <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
 
-  if(class(x)!="numeric" && class(x)!="data.frame"){
-    stop("Data needs to be either a numeric vector or a dataframe. Change the class and try again.")
+  if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
+    stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
   }
 
   if(missing("control")){
@@ -51,7 +51,7 @@ truncateColorScale <- function(x, control, lowQuantile=0.0001, highQuantile=0.99
   }
 
 
-  if(class(x)=="numeric"){
+  if(class(x)!="data.frame"){
     result <- truncateColorScaleCoFunction(x, control=control, lowQuantile=lowQuantile, highQuantile=highQuantile)
   }
   if(class(x)=="data.frame"){

@@ -48,13 +48,17 @@ id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
 id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 
 #Then run the pKMRun function for the train set
-x_pKM_train <- pKMRun(x_scaled_train, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=id_vector_train)
+x_pKM_train <- pKMRun(x_scaled_train, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=id_vector_train)
 
 #This is followed by running the actual function in question
-x_pKM_test <- pKMPredict(x_scaled_test, penalizedClusterCenters=x_pKM_train$penalizedClusterCenters, withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], ids=id_vector_test)
+x_pKM_test <- pKMPredict(x_scaled_test, 
+penalizedClusterCenters=x_pKM_train$penalizedClusterCenters, 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
-xmatrix <- as.matrix(rbind(x_pKM_train$clusterPercentagesForAllIds, x_pKM_test$realloClusterPercentagesForAllIds))
+xmatrix <- as.matrix(rbind(x_pKM_train$clusterPercentagesForAllIds, 
+x_pKM_test$realloClusterPercentagesForAllIds))
 library(gplots)
 barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
 title(main = "Difference between train and test set")

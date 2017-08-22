@@ -58,27 +58,32 @@ orderingDfOrdered <- orderingDf[order(orderingDf[,1]),]
 
 #Simulate some survival data
 library(survsim)
-surv.data <- simple.surv.sim(n=100, foltime=3600, dist.ev=c('llogistic'), anc.ev=c(0.69978200185280),beta0.ev=c(5.84298525742252),,anc.cens=1.17783687569519, beta0.cens=7.39773677281100,z=list(c("unif", 0.8, 1.2)))
+surv.data <- simple.surv.sim(n=100, foltime=3600, dist.ev=c('llogistic'), 
+anc.ev=c(0.69978200185280),beta0.ev=c(5.84298525742252),,anc.cens=1.17783687569519, 
+beta0.cens=7.39773677281100,z=list(c("unif", 0.8, 1.2)))
 
 #Combine the relevant parts from these survival objects
 survival <- data.frame(surv.data$stop, surv.data$status)
 colnames(survival) <- c("survivalTime", "status")
 
-#Now sort the survival data in the same order as the means of the first column in the synthetic flow data.
+#Now sort the survival data in the same order as the means of 
+#the first column in the synthetic flow data.
 survivalOrdered <- survival[order(survival$survivalTime),]
 survivalOrdered$Identity <- orderingDfOrdered$splitNumber
 survivalMatched <- survivalOrdered[order(survivalOrdered$Identity),]
 
-#Scale the flow data (not actually necessary in this artificial example due to the nature of the generated data)
+#Scale the data (not actually necessary in this artificial 
+#example due to the nature of the generated data)
 x_scaled <- quantileScale(x[2:ncol(x)])
 
 #Create the optimized number of clusters for this dataset
 x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 
-#Run Barnes Hut tSNE on this dataset. XXX NB! This takes a long while (a few minutes) as the algorithm is slow.
-library(Rtsne)
-xSNE <- Rtsne(x_scaled, pca=FALSE)
+#Run Barnes Hut tSNE on this. 
+library(Rtsne.multicore)
+xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #Create the idClusterData object
 idClusterData <- data.frame(x[,1], x_pKM$clusterVector)
@@ -89,5 +94,6 @@ colnames(idClusterData) <- c("id", "cluster")
 setwd("~/Desktop")
 
 #And finally run the function
-depecheSurvival(idGroupClusterData=idGroupClusterData, survival=survival, xYData=as.data.frame(xSNE$Y))
+depecheSurvival(idGroupClusterData=idGroupClusterData, survival=survival, 
+xYData=as.data.frame(xSNE$Y))
 }
