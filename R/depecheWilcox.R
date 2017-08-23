@@ -34,7 +34,9 @@
 #' #Scale the data (not actually necessary in this artificial 
 #' #example due to the nature of the generated data)
 #' x_scaled <- quantileScale(x[3:ncol(x)])
-#'
+#' #Set a reasonable working directory, e.g.
+#' setwd("~/Desktop")
+#' 
 #' #Create the optimized number of clusters for this dataset
 #' x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
 #' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
@@ -47,9 +49,6 @@
 #' #Create the idGroupClusterData object
 #' idGroupClusterData <- cbind(x[,1:2], x_pKM$clusterVector)
 #' colnames(idGroupClusterData)[3] <- "cluster"
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'
 #' #And finally run the function
 #' depecheWilcox(idGroupClusterData=idGroupClusterData, xYData=as.data.frame(xSNE$Y))
@@ -123,7 +122,7 @@ depecheWilcox <- function(idGroupClusterData, paired=FALSE, multipleCorrMethod="
   }
 
   #Here the data that will be used for plotting are scaled.
-  xYDataScaled <- minMaxScale(xYData)
+  xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data

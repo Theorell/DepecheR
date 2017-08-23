@@ -38,7 +38,7 @@ x <- generateFlowCytometryData()
 
 #Scale the data (not actually necessary in this artificial 
 #example due to the nature of the generated data)
-x_scaled <- quantileScale(x[2:ncol(x)])
+x_scaled <- quantileScale(x=x[2:ncol(x)])
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)

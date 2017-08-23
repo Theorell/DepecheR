@@ -20,8 +20,8 @@
 #'
 #' #Scale the data (not actually necessary in this artificial 
 #' #example due to the nature of the generated data)
-#' x_scaled <- quantileScale(x[2:ncol(x)])
-#'
+#' x_scaled <- quantileScale(x=x[2:ncol(x)])
+#' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
@@ -67,8 +67,8 @@ depecheColor <- function(colorData, names="default", xYData,  title=FALSE, dotSi
     palette(rev(rich.colors(100, plot=FALSE)))
   }
 
-  xYDataPercent <- minMaxScale(xYData, multiplicationFactor=100)
-
+  xYDataPercent <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+  
   if(class(colorData)=="numeric"){
     depecheColorCoFunction(colorVariable=colorData, name=names, xYDataPercent=xYDataPercent, title=title, dotSize=dotSize)
   }
@@ -86,7 +86,7 @@ depecheColorCoFunction <- function(colorVariable, name, xYDataPercent, title=FAL
 	fname = paste(name,'.png', sep="")
   
 	colorVariableTruncated <- truncateData(colorVariable)
-	colorVariablePercent <- minMaxScale(colorVariableTruncated, multiplicationFactor=100)
+	colorVariablePercent <- quantileScale(colorVariableTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
 
 colnames(xYDataPercent) <- c("V1", "V2")
 

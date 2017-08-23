@@ -29,7 +29,7 @@
 
 densityContours <- function(sneData, n=100){
 
-	sneDataNorm <- minMaxScale(x=sneData)
+	sneDataNorm <- quantileScale(x=sneData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 
 	V1 <- sneDataNorm[,1]
 	V2 <- sneDataNorm[,2]

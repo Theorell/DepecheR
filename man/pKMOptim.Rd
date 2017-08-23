@@ -5,8 +5,7 @@
 \title{Function to find the optimal penalty value for penalized K means}
 \usage{
 pKMOptim(inDataFrameScaled, kVec = 30, iterations = 50,
-  bootstrapObservations = 10000, regVecOffset = c(0, 5, 10, 15, 20, 25, 30,
-  35, 40, 45, 50))
+  bootstrapObservations = 10000, regVecOffset = c(0, 2, 4, 8, 16, 32, 64))
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.}

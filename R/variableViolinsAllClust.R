@@ -21,7 +21,8 @@
 #' x_optim <- Optim(x_scaled, iterations=5, bootstrapObservations=1000)
 #'
 #' #Then run the clustering function
-#' x_ <- Run(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=x[,1])
+#' x_ <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
 #' variableViolinsAllClust(x_$penalizedClusterCenters, as.numeric(x_$clusterVector), x[,2:ncol(x)])
@@ -30,10 +31,9 @@ variableViolinsAllClust <- function(clusterCenters, clusterVector, inDataFrame){
 
   number <- sort(unique(clusterVector))
 
-  percentClusterVector <- minMaxScale(clusterVector, multiplicationFactor=100)
+  percentClusterVector <- quantileScale(clusterVector, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
 
-
-  percentNumber <- minMaxScale(number, multiplicationFactor=100)
+  percentNumber <- quantileScale(number, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
   paletteColors <- palette(rev(rich.colors(100, plot=FALSE)))[1 + 0.98*(102-percentNumber)]
   dev.off()
 

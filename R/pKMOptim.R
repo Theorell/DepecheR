@@ -30,7 +30,7 @@
 #' x_optim <- pKMOptim(x_scaled)
 #' @export pKMOptim
 #' @useDynLib DepecheR
-pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)){
+pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0,2,4,8,16,32,64)){
 
 #The constant k is empirically identified by running a large number of regVec values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -41,14 +41,25 @@ dataMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	no_cores <- detectCores() - 1
 	cl <- makeCluster(no_cores, type="FORK")
 
-	optim_list <- parLapply(cl,1:iterations,function(x) grid_search(dataMat,kVec,regVec,1,bootstrapObservations,x))
+	optimList <- parLapply(cl,1:iterations,function(x) grid_search(dataMat,kVec,regVec,1,bootstrapObservations,x))
 	stopCluster(cl)
 
+	#Before any further analyses are performed, any regVec that can result in a trivial solution are practically eliminated.
+	optimListNonTrivial <- optimList
+	for(i in 1:length(optimListNonTrivial)){
+	  
+	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
+	 
+	  optimListNonTrivial[[i]]$z[which(optimList[[i]]$m==1)] <- 1
+	  
+	}	
+  
+	#Now average these runs	
 	meanOptimList <- list()
+	
+	for(i in 1:length(optimListNonTrivial[[1]])){
 
-	for(i in 1:length(optim_list[[1]])){
-
-		x <- do.call("rbind", lapply(optim_list, "[[", i))
+		x <- do.call("rbind", lapply(optimListNonTrivial, "[[", i))
 		meanOptimList[[i]] <- apply(x, 2, mean)
 
 	}
@@ -56,17 +67,14 @@ dataMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 #Here, the regVec values for the real dataset, not the bootstrap subsamples, is used.
 realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 	rownames(meanOptimDf) <- as.integer(regVecOffset*realK)
-	colnames(meanOptimDf) <- c("stabWZero", "stabWOZero", "nClustWZero", "nClustWOZero")
+	colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
 
-#The simplest solution to the problem below is to first exclude all regVec values that are trivial (result in one cluster) and then go on to the itentification of the variant that renders the distance between the bootstraps lowest.
-		meanOptimDfNoTrivial <- meanOptimDf[meanOptimDf[,3]>1 & meanOptimDf[,4]>1,]
-
-	regOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDfNoTrivial[,1:2]==min(meanOptimDfNoTrivial[,1:2]), arr.ind=TRUE))))
+	regOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
 
 	colnames(regOpt.df)[1] <- "optimalRegularizationValue"
 
 #Export if the solution with or without zero clusters give the optimal result
-regOpt.df$withOrWithoutZeroClust <- colnames(meanOptimDfNoTrivial)[which(meanOptimDfNoTrivial[,1:2]==min(meanOptimDfNoTrivial[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
+regOpt.df$withOrWithoutZeroClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
 
 lowestRegVec <- as.numeric(row.names(meanOptimDf[1,]))
 highestRegVec <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
@@ -90,10 +98,6 @@ plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrWithoutZeroClust]], pc
 axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
 mtext("Distance between bootstraps (low is good)",side=2,line=2.5)
 box()
-
-## Allow a second plot on the same graph
-par(new=TRUE)
-
 
 ## Draw the regVec axis
 axis(1,pretty(range(as.numeric(row.names(meanOptimDf))), n=10))

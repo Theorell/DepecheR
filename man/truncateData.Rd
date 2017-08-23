@@ -48,5 +48,5 @@ summary(y_df)
 
 }
 \seealso{
-\code{\link{minMaxScale}}
+\code{\link{quantileScale}}
 }

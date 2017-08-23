@@ -62,6 +62,8 @@ colnames(x)[1:2] <- c("ids", "group")
 #Scale the data (not actually necessary in this artificial 
 #example due to the nature of the generated data)
 x_scaled <- quantileScale(x[3:ncol(x)])
+#Set a reasonable working directory, e.g.
+setwd("~/Desktop")
 
 #Create the optimized number of clusters for this dataset
 x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
@@ -75,9 +77,6 @@ xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #Create the idGroupClusterData object
 idGroupClusterData <- cbind(x[,1:2], x_pKM$clusterVector)
 colnames(idGroupClusterData)[3] <- "cluster"
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
 
 #And finally run the function
 depecheWilcox(idGroupClusterData=idGroupClusterData, xYData=as.data.frame(xSNE$Y))

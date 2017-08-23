@@ -7,7 +7,7 @@
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using x as control data. NB! The control file needs to be the same class, i.e vector or dataframe, as the x, and in the case of a dataframe it needs to have the same number of columns.
 #' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined quantile range.
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined quantile range.
-#' @seealso \code{\link{minMaxScale}}
+#' @seealso \code{\link{quantileScale}}
 #' @return A vector or dataframe with the same size but where the extreme values have been substituted with the less extreme values.
 #' @examples
 #' #Generate a random vector

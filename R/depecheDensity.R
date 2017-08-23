@@ -22,7 +22,7 @@
 #'
 #' #Scale the data (not actually necessary in this artificial 
 #' #example due to the nature of the generated data)
-#' x_scaled <- quantileScale(x[2:ncol(x)])
+#' x_scaled <- quantileScale(x=x[2:ncol(x)])
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
@@ -56,7 +56,7 @@ depecheDensity <- function(xYData, scalingControl, plotEachIdSeparately=FALSE, i
 		scalingControl <- xYData
 	}
 
-  xYDataScaled <- minMaxScale(xYData, scalingControl)
+  xYDataScaled <- quantileScale(xYData, scalingControl, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 
   #If there is no matrix present to construct the contour lines, create the density matrix for all_data to make them.
   if(missing("densContour")){
@@ -82,10 +82,10 @@ depecheDensity <- function(xYData, scalingControl, plotEachIdSeparately=FALSE, i
       }
     }
   }
-
+  
   if(plotEachIdSeparately==TRUE && color=="idSpecific"){
     equidistantIds <- turnVectorEquidistant(idsVector)
-    normIds <- minMaxScale(equidistantIds, multiplicationFactor=100)
+    normIds <- quantileScale(equidistantIds, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
     normNumber <- unique(normIds)
     palette(rev(rich.colors(100, plot=FALSE)))
     for (i in 1:length(normNumber)){

@@ -33,7 +33,8 @@ setwd("~/Desktop")
 x_optim <- Optim(x_scaled, iterations=5, bootstrapObservations=1000)
 
 #Then run the clustering function
-x_ <- Run(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=x[,1])
+x_ <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=x[,1])
 
 #And finally create all the clusters
 variableViolinsAllClust(x_$penalizedClusterCenters, as.numeric(x_$clusterVector), x[,2:ncol(x)])

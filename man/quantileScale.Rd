@@ -2,21 +2,23 @@
 % Please edit documentation in R/quantileScale.R
 \name{quantileScale}
 \alias{quantileScale}
-\title{Scaling of a vector or a dataframe to a certain quantile.}
+\title{Scaling of a vector or a dataframe.}
 \usage{
-quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
-  center = FALSE, multiplicationFactor = 1)
+quantileScale(x, control, robustVarScale = TRUE, lowQuantile = 0.001,
+  highQuantile = 0.999, center = "peak", multiplicationFactor = 1)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
 
 \item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
 
+\item{robustVarScale}{If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.}
+
 \item{lowQuantile}{The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).}
 
 \item{highQuantile}{The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).}
 
-\item{center}{If mean centering should be performed or not. Defaults to FALSE.}
+\item{center}{If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering.}
 
 \item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.}
 }
@@ -24,51 +26,36 @@ quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
 A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
 }
 \description{
-This is a robust alternative to minMax scaling. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
+This is a scaling function with a number of alternatives. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
 }
 \examples{
-#Generate a random vector
-x <- rnorm(1000, 55, 10)
+#Generate a default size dataframe with bimodally distributed data
+x <- generateFlowCytometryData()
+
+#Retrieve the first column
+x2 <- x[,2]
 
 #The maximum and minimum values are
-max(x)
-min(x)
+max(x2)
+min(x2)
 
-#Run the function
-y <- quantileScale(x, lowQuantile=0.01, highQuantile=0.99)
+#Run the function without mean centering and with the quantiles set to 0 and 1.
+y2 <- quantileScale(x2, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 
-#And the data has been scaled. Note that the most extreme values are outside of the range 0-1.
-max(y)
-min(y)
+#And the data has been scaled to the range between 0 and 1.
+max(y2)
+min(y2)
 
-#Do the same but with a dataframe.
-x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), 
-rnorm(1000, 430, 200)))
-summary(x_df)
+#Now run the default function for a dataframe
+summary(x[,2:ncol(x)])
 
-#Run the function
-y_df <- quantileScale(x_df, lowQuantile=0.01, highQuantile=0.99, 
-center=TRUE, multiplicationFactor=100)
+y_df <- quantileScale(x[,2:ncol(x)])
 
-#And the data has been rescaled to the range between the first and the 99:th percentile 
-#of the data in the original dataframe columns. The data has also been centered.
-summary(y_df)
-
-#Here, dataframes are used, and control data is included.
-x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90), rnorm(1000, 430, 200)))
-summary(x_df)
-control_df <- data.frame(cbind(rnorm(1000, 55, 15), rnorm(1000, 10, 200), rnorm(1000, 450, 350)))
-
-#Run the function
-y_df <- quantileScale(x_df, control=control_df, lowQuantile=0.01, 
-highQuantile=0.99, center=TRUE, multiplicationFactor=100)
-
-#And the data has been rescaled to the range between the first 
-#and the 99:th percentile of the data in the control dataframe columns. 
-#The data has also been centered. Note that as the range of the values in 
-#the control data is larger, the data is compressed.
+#Here, the data has first been truncated to the default percentiles, then scaled 
+#to the standard deviation in the remaining interval and finally the center has been
+#placed where the highest peak in the data is present.
 summary(y_df)
 }
 \seealso{
-\code{\link{minMaxScale}}
+\code{\link{truncateData}}
 }
