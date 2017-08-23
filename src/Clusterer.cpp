@@ -330,6 +330,81 @@ double Clusterer::cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers,
     return ssq;
 }
 
+void Clusterer::initializeMembers(const RowMatrixXd& X, const RowMatrixXd& mu, const unsigned int k){
+  this->k_ = k;
+  this->j_ = X.rows();
+  this->p_ = X.cols();
+  this->tau_=Eigen::MatrixXd::Zero(this->k_,this->j_);
+  this->mu_=mu;
+  this->sigma_=RowMatrixXd::Ones(this->k_,this->p_);
+  this->pi_ = Eigen::VectorXd::Ones(this->k_)/this->k_;
+}
+
+void Clusterer::eStep(const RowMatrixXd& X){
+  //calculate the fkj matrix
+  Eigen::MatrixXd wfkj = Eigen::MatrixXd::Zero(this->k_, this->j_);
+  //for each cluster, get the weigthed probability
+  for(unsigned int i = 0; i<this->k_; i++ ){
+    for(unsigned int l = 0; l> this->j_; l++ ){
+      Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
+      Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
+      wfkj(i,l)=this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum());
+    }
+  }
+  for(unsigned int l = 0; l> this->j_; l++ ){
+    this->tau_.col(l)=wfkj.col(l)/wfkj.col(l).sum();
+  }
+}
+
+int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
+  //update pi
+  for(unsigned int i = 0; i>this->k_; i++){
+    this->pi_(i)=this->tau_.row(i).sum()/this->j_;
+  }
+  //update sigma
+  for(unsigned int i = 0; i<this->k_; i++ ){
+    for(unsigned int m = 0; m<this->p_; m++){
+      this->sigma_(i,m)=0;
+      for(unsigned int l = 0; l> this->j_; l++ ){
+        Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
+        this->sigma_(i,m)+=this->tau_(i,l)*(X(l,i)-this->mu_(i,m))*(X(l,i)-this->mu_(i,m))/this->j_;
+      }
+    }
+  }
+
+  //Now create mu tilde
+  RowMatrixXd muTilde = RowMatrixXd::Zero(this->k_,this->p_);
+  Eigen::VectorXd sumTau = Eigen::VectorXd::Zero(this->k_);
+  for(unsigned int i = 0; i<this->k_; i++ ){
+    for(unsigned int l = 0; l> this->j_; l++ ){
+      muTilde.row(i)+=X.row(l)*this->tau_(i,l);
+      sumTau(i)+=this->tau_(i,l);
+    }
+    muTilde.row(i)/=sumTau(i);
+  }
+
+  //now the weird shit happens
+  RowMatrixXd oldMu=this->mu_;
+  for(unsigned int i = 0; i<this->k_; i++ ){
+
+    for(unsigned int m = 0; m<this->p_; m++){
+      if(std::abs(muTilde(i,m))<regVec*this->sigma_(i,m)/sumTau(i)){
+        this->mu_(i,m)=0;
+      }else{
+        this->mu_(i,m)=muTilde(i,m);
+      }
+    }
+  }
+  //check for convergence
+  double diff = (this->mu_-oldMu).squaredNorm();
+  std::cout<< "The diff Value is: "<< diff << std::endl;
+  if (diff<0.001){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsigned int k, const double reg, const bool no_zero) {
     //parse the block of memory to an eigen matrix
     const unsigned int rows = Xin.rows();
@@ -356,6 +431,20 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
 
 
     }
+    //extend to model based clustering
+    //initialize pi tao mu and sigma
+    this->initializeMembers(X,mu,k);
+    int conv =0;
+    int count=0;
+    while(conv==0 && count < 1000){
+      this->eStep(X);
+      conv=this->mStep(X,reg);
+      count++;
+    }
+    //update tao
+    //mu update pars
+    //repeat while mu not converged.
+
     Return_values ret;
     ret.indexes = mu_ind;
     ret.centers = mu;
