@@ -42,7 +42,7 @@ x_scaled <- quantileScale(x[,2:ncol(x)])
 setwd("~/Desktop")
 
 #Run the pKMOptim function to get good starting points
-x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
+x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
 
 #Then run the actual function
 x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 

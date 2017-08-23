@@ -27,7 +27,7 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the pKMOptim function to get good starting points
-#' x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
+#' x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
 #'
 #' #Then run the actual function
 #' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
@@ -64,7 +64,7 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 		}
 	}
 
-	if(withOrWithoutZeroClust=="stabWZero"){
+	if(withOrWithoutZeroClust=="distWZero"){
 			clusterVector <- returnLowest$i
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
@@ -78,7 +78,7 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 			reducedPenalizedClusterCenters <- rbind(penalizedClusterCenters[1,], reducedPenalizedClusterCenters)
 	}
 
-	if(withOrWithoutZeroClust=="stabWOZero"){
+	if(withOrWithoutZeroClust=="distWOZero"){
 			clusterVector <- returnLowest$o
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			

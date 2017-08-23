@@ -53,7 +53,7 @@ x_scaled <- quantileScale(x=x[2:ncol(x)])
 setwd("~/Desktop")
 
 #Create the optimized number of clusters for this dataset
-x_optim <- pKMOptim(x_scaled, iterations=50, bootstrapObservations=1000)
+x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
 x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
 withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 

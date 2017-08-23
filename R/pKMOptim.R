@@ -27,10 +27,10 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the function
-#' x_optim <- pKMOptim(x_scaled)
+#' x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
 #' @export pKMOptim
 #' @useDynLib DepecheR
-pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0,2,4,8,16,32,64)){
+pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0,2,4,8,16,32,64,128)){
 
 #The constant k is empirically identified by running a large number of regVec values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -48,7 +48,7 @@ dataMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	optimListNonTrivial <- optimList
 	for(i in 1:length(optimListNonTrivial)){
 	  
-	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
+	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n<=2)] <- 1
 	 
 	  optimListNonTrivial[[i]]$z[which(optimList[[i]]$m==1)] <- 1
 	  
@@ -96,7 +96,7 @@ par(mar=c(5, 4, 4, 6) + 0.1)
 plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrWithoutZeroClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
    type="b",col="black", main="Distance between bootstraps as a function of regVec values")
 axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
-mtext("Distance between bootstraps (low is good)",side=2,line=2.5)
+mtext("Distance between bootstraps",side=2,line=2.5)
 box()
 
 ## Draw the regVec axis
