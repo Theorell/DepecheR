@@ -4,8 +4,7 @@
 \alias{maxPeakScale}
 \title{Scaling and centering around the peak of the data}
 \usage{
-maxPeakScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
-  multiplicationFactor = 1)
+maxPeakScale(x, control, lowQuantile = 0.001, highQuantile = 0.999)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}

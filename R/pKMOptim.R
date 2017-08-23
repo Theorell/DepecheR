@@ -58,7 +58,7 @@ realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 	rownames(meanOptimDf) <- as.integer(regVecOffset*realK)
 	colnames(meanOptimDf) <- c("stabWZero", "stabWOZero", "nClustWZero", "nClustWOZero")
 
-#The simplest solution to the problem below is to first exclude all regVec values that result in zero for the stability and then go on to the itentification of the most stable variant.
+#The simplest solution to the problem below is to first exclude all regVec values that are trivial (result in one cluster) and then go on to the itentification of the variant that renders the distance between the bootstraps lowest.
 		meanOptimDfNoTrivial <- meanOptimDf[meanOptimDf[,3]>1 & meanOptimDf[,4]>1,]
 
 	regOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDfNoTrivial[,1:2]==min(meanOptimDfNoTrivial[,1:2]), arr.ind=TRUE))))
@@ -82,13 +82,13 @@ regOpt.df$kVec <- kVec
 
 #Here, the optimization is plotted. It should be integrated into the function.
 
-pdf("Stability as a function of regVec values.pdf")
+pdf("Distance as a function of regVec values.pdf")
 par(mar=c(5, 4, 4, 6) + 0.1)
 ## Plot first set of data and draw its axis
 plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrWithoutZeroClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
-   type="b",col="black", main="Number stability as a function of regVec values")
+   type="b",col="black", main="Distance between bootstraps as a function of regVec values")
 axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
-mtext("Stability (low is good)",side=2,line=2.5)
+mtext("Distance between bootstraps (low is good)",side=2,line=2.5)
 box()
 
 ## Allow a second plot on the same graph
@@ -100,7 +100,7 @@ axis(1,pretty(range(as.numeric(row.names(meanOptimDf))), n=10))
 mtext("RegVec values",side=1,col="black",line=2.5)
 
 ## Add Legend
-legend("topleft",legend="Stability (low is good)",
+legend("topleft",legend="Distance (low is good)",
   text.col="black",pch=c(16,15),col="black")
 
 dev.off()
