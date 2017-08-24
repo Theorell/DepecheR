@@ -31,17 +31,8 @@
 #' @export colorVector
 colorVector <- function(x, order=unique(x)){
 	
-	orderNumbers <- quantileScale(c(1:length(order)), robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-	
-	#This is done to prevent any events being fully at a 100 or at 0.
-	orderColorNumbers <- quantileScale(c(1:length(orderNumbers)), control=c(-3, 103), robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-	
-	orderColors <- orderColorNumbers
-	for(i in 1:length(orderColorNumbers)){
- 
-		orderColors[i] <- colorRampPalette(orderColorNumbers[i])(1)
-
-	}
+	#orderColors <- orderColorNumbers
+	orderColors <- colorRampPalette(rev(rich.colors(100, plot=FALSE)))(length(order))
 
   	#Here, a vector with the same length as the x vector is generated, but where the x info has been substituted with a color.
   	colorVector <- x
