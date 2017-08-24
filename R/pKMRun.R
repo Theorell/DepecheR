@@ -115,7 +115,6 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
   names(pKMResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
 
   #Here, a heatmap over the cluster centers is saved
-  setwd("~/Desktop/CyTOF_benchmark_2A_bootstrap/Graphics")
   pdf("Cluster centers.pdf")
   heatmap.2(reducedPenalizedClusterCenters, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
   dev.off()
