@@ -3,6 +3,7 @@
 #'
 #' This function is the core user function of the Depeche package. It clusters the data with a penalized version of K-means.
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
+#' @importFrom gplots heatmap.2
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
 #' @param regVec The parameter that controls the level of penalization. Preferrably, it should be inherited from a pKMOptim run, as the algorithm will then generate the most stable result.
 #' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by pKMOptim, again.
@@ -116,7 +117,7 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
   #Here, a heatmap over the cluster centers is saved
   setwd("~/Desktop/CyTOF_benchmark_2A_bootstrap/Graphics")
   pdf("Cluster centers.pdf")
-  heatmap.2(as.matrix(clusterCenters), col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+  heatmap.2(reducedPenalizedClusterCenters, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
   dev.off()
 
 	return(pKMResult)
