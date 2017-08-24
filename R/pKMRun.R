@@ -92,27 +92,32 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 	#Make the row names the same as the cluster names in the clusterVectorEquidistant
 	rownames(reducedPenalizedClusterCenters) <- sort(unique(clusterVectorEquidistant))
 	
-#A table with the percentage of cells in each cluster for each individual is created
+  #A table with the percentage of cells in each cluster for each individual is created
 
-clusterTable <- table(clusterVectorEquidistant, ids)
-	if(nrow(clusterTable)==1){
-		print("Warning. The number of clusters is one, i.e. no separation of observations is present with the current settings. Try lowering the regVec.")
-	}
+  clusterTable <- table(clusterVectorEquidistant, ids)
+  	if(nrow(clusterTable)==1){
+  		print("Warning. The number of clusters is one, i.e. no separation of observations is present with the current settings. Try lowering the regVec.")
+  	}
 
-countTable <- table(ids)
+  countTable <- table(ids)
 
-clusterFractionsForAllIds <- clusterTable
+  clusterFractionsForAllIds <- clusterTable
 
-for(i in 1:length(countTable)){
-	x <- clusterTable[,i]/countTable[i]
-	clusterFractionsForAllIds[,i] <- x
-}
+  for(i in 1:length(countTable)){
+  	x <- clusterTable[,i]/countTable[i]
+  	clusterFractionsForAllIds[,i] <- x
+  }
 
 
-pKMResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
+  pKMResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
 
-names(pKMResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
+  names(pKMResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
 
+  #Here, a heatmap over the cluster centers is saved
+  setwd("~/Desktop/CyTOF_benchmark_2A_bootstrap/Graphics")
+  pdf("Cluster centers.pdf")
+  heatmap.2(as.matrix(clusterCenters), col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+  dev.off()
 
 	return(pKMResult)
 
