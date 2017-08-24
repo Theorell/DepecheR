@@ -5,7 +5,8 @@
 \title{Display third variable as color on 2D plot}
 \usage{
 depecheColor(colorData, names = "default", xYData, title = FALSE,
-  dotSize = 20000/nrow(colorData), drawColorPalette = FALSE,
+  densContour, bandColor = "black", dotSize = 30000/nrow(xYData),
+  drawColorPalette = FALSE, addLegend = FALSE, idsVector,
   createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field")
 }
@@ -18,9 +19,17 @@ depecheColor(colorData, names = "default", xYData, title = FALSE,
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
+\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+
+\item{bandColor}{The color of the contour bands. Defaults to black.}
+
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 
 \item{drawColorPalette}{If a separate plot with the color palette used for the plots should be printed and saved.}
+
+\item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters.}
+
+\item{idsVector}{If a legend is added, this argument controls the naming in the legend.}
 
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
@@ -34,7 +43,7 @@ Function to overlay one variable for a set of observations on a field created by
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateFlowCytometryData()
+x <- generateFlowCytometryData(samplings=3, observations=3000)
 
 #Scale the data (not actually necessary in this artificial 
 #example due to the nature of the generated data)
@@ -50,7 +59,11 @@ setwd("~/Desktop")
 #Run the function for all the variables
 depecheColor(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 
+#Create a color vector and display it on the SNE field.
+xColor <- colorVector(x[,1])
+depecheColor(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+
 }
 \seealso{
-\code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}
+\code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}, \code{\link{colorVector}}
 }
