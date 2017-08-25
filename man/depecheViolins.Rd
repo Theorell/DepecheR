@@ -26,7 +26,7 @@ Here, violin plots of a specific cluster and the total population are created fo
 #Generate a default size dataframe with bimodally distributed data
 x <- generateFlowCytometryData(samplings=2, ncols=8)
 
-#Scale this datamframe
+#Scale this dataframe
 x_scaled <- quantileScale(x[2:ncol(x)])
 
 #Set a reasonable working directory, e.g.

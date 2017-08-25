@@ -45,8 +45,7 @@ Function to overlay one variable for a set of observations on a field created by
 #Generate a default size dataframe with bimodally distributed data
 x <- generateFlowCytometryData(samplings=3, observations=3000)
 
-#Scale the data (not actually necessary in this artificial 
-#example due to the nature of the generated data)
+#Scale the data 
 x_scaled <- quantileScale(x=x[2:ncol(x)])
 
 #Run Barnes Hut tSNE on this. 

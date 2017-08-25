@@ -13,7 +13,7 @@
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateFlowCytometryData(samplings=2, ncols=8)
 #'
-#' #Scale this datamframe
+#' #Scale this dataframe
 #' x_scaled <- quantileScale(x[2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.

@@ -54,8 +54,7 @@ Function to show density for a set of observations on a field created by two var
 #Generate a dataframe with bimodally distributed data and a few separate subsamplings
 x <- generateFlowCytometryData(samplings=5, observations=2000)
 
-#Scale the data (not actually necessary in this artificial 
-#example due to the nature of the generated data)
+#Scale the data 
 x_scaled <- quantileScale(x=x[2:ncol(x)])
 
 #Run Barnes Hut tSNE on this. 

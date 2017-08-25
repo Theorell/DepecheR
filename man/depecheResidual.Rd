@@ -4,16 +4,18 @@
 \alias{depecheResidual}
 \title{Showing the residuals when subtracting the values from one group from another on a sne plot}
 \usage{
-depecheResidual(groupClusterData, xYData, densContour,
-  name = "depecheResidual", groupName1 = "Group 1",
-  groupName2 = "Group 2", title = FALSE, maxAbsPlottingValues,
+depecheResidual(xYData, groupVector, clusterVector, densContour,
+  name = "depecheResidual", groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
   bandColor = "black", createDirectory = FALSE,
   directoryName = "depecheResidual", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
-\item{groupClusterData}{This dataframe should contain at least two columns  with information about the cluster (named "cluster") and the group identity (named "group") for each observation.}
+\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
 
-\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation. It needs to have the same number of rows as groupClusterData.}
+\item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
+
+\item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 
@@ -45,8 +47,7 @@ This function is used to compare groups of individuals from whom comparable cyto
 #Generate a dataframe with bimodally distributed data and 2 subsamplings.
 x <- generateFlowCytometryData(samplings=2, ncols=7)
 
-#Scale the data (not actually necessary in this artificial 
-#example due to the nature of the generated data)
+#Scale the data 
 x_scaled <- quantileScale(x=x[2:ncol(x)])
 
 #Set a reasonable working directory, e.g.
@@ -61,12 +62,8 @@ withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, i
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
-#Create the groupClusterData object
-groupClusterData <- as.data.frame(cbind(x[,1], x_pKM$clusterVector))
-colnames(groupClusterData) <- c("group", "cluster")
-
 #And finally run the function
-depecheResidual(groupClusterData=groupClusterData, xYData=as.data.frame(xSNE$Y))
+depecheResidual(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
 }
 \seealso{
 \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheWilcox}}

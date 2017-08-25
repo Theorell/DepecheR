@@ -4,21 +4,25 @@
 \alias{depecheWilcox}
 \title{Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result}
 \usage{
-depecheWilcox(idGroupClusterData, paired = FALSE,
-  multipleCorrMethod = "hochberg", xYData, densContour,
-  name = "depecheWilcox", groupName1 = "Group 1", groupName2 = "Group 2",
-  title = FALSE, maxAbsPlottingValues, bandColor = "black",
-  createDirectory = FALSE, directoryName = "depecheWilcox",
+depecheWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
+  multipleCorrMethod = "hochberg", densContour, name = "depecheWilcox",
+  groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
+  title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
+  directoryName = "depecheWilcox", bandColor = "black",
   dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
-\item{idGroupClusterData}{This dataframe should contain three columns with information about the cluster identity (named "cluster"), the id (named "ids")and the group (named "group")identity for each observation.}
+\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
+
+\item{idsVector}{Vector with the same length as xYData containing information about the id of each observation.}
+
+\item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
+
+\item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
 \item{paired}{If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.}
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.}
-
-\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation. It needs to have the same number of rows as idGroupClusterData.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 
@@ -32,11 +36,11 @@ depecheWilcox(idGroupClusterData, paired = FALSE,
 
 \item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
 
-\item{bandColor}{The color of the contour bands. Defaults to black.}
-
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
 \item{directoryName}{The name of the created directory, if it should be created.}
+
+\item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 }
@@ -59,8 +63,7 @@ xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
 
 colnames(x)[1:2] <- c("ids", "group")
 
-#Scale the data (not actually necessary in this artificial 
-#example due to the nature of the generated data)
+#Scale the data
 x_scaled <- quantileScale(x[3:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
@@ -74,12 +77,8 @@ withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, i
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
-#Create the idGroupClusterData object
-idGroupClusterData <- cbind(x[,1:2], x_pKM$clusterVector)
-colnames(idGroupClusterData)[3] <- "cluster"
-
-#And finally run the function
-depecheWilcox(idGroupClusterData=idGroupClusterData, xYData=as.data.frame(xSNE$Y))
+#Run the function
+depecheWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
 }
 \seealso{
 \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheResidual}}

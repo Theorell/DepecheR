@@ -2,8 +2,9 @@
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated where the number of individuals does not allow any statistical comparisons.
-#' @param groupClusterData This dataframe should contain at least two columns  with information about the cluster (named "cluster") and the group identity (named "group") for each observation.
-#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation. It needs to have the same number of rows as groupClusterData.
+#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
+#' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
+#' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
@@ -20,8 +21,7 @@
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
 #' x <- generateFlowCytometryData(samplings=2, ncols=7)
 #'
-#' #Scale the data (not actually necessary in this artificial 
-#' #example due to the nature of the generated data)
+#' #Scale the data 
 #' x_scaled <- quantileScale(x=x[2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.
@@ -36,14 +36,10 @@
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
-#' #Create the groupClusterData object
-#' groupClusterData <- as.data.frame(cbind(x[,1], x_pKM$clusterVector))
-#' colnames(groupClusterData) <- c("group", "cluster")
-#'
 #' #And finally run the function
-#' depecheResidual(groupClusterData=groupClusterData, xYData=as.data.frame(xSNE$Y))
+#' depecheResidual(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
 #' @export depecheResidual
-depecheResidual <- function(groupClusterData, xYData, densContour, name="depecheResidual", groupName1="Group 1", groupName2="Group 2", title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheResidual", dotSize=400/sqrt(nrow(xYData))){
+depecheResidual <- function(xYData, groupVector, clusterVector, densContour, name="depecheResidual", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheResidual", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -52,16 +48,16 @@ depecheResidual <- function(groupClusterData, xYData, densContour, name="depeche
 
   }
 
-  if(length(unique(groupClusterData$group))!=2){
+  if(length(unique(groupVector))!=2){
     stop("More or less than two groups are present. Please correct this.")
   }
 
   #Here, the residuals are identified.
   #A table with the percentage of cells in each cluster for each group is created in analogy with XXX pKMRun.
 
-  clusterTable <- table(groupClusterData$cluster, groupClusterData$group)
+  clusterTable <- table(clusterVector, groupVector)
 
-  countTable <- table(groupClusterData$group)
+  countTable <- table(groupVector)
 
   clusterPercentagesForGroups <- clusterTable
 
@@ -85,9 +81,9 @@ depecheResidual <- function(groupClusterData, xYData, densContour, name="depeche
   residualVector[residualVector < -maxAbsPlottingValues] <- -maxAbsPlottingValues
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
-  residualVectorLong <- groupClusterData$cluster
+  residualVectorLong <- clusterVector
   for(i in 1:length(residualVector)){
-    residualVectorLong[groupClusterData$cluster==names(residualVector)[i]] <- residualVector[i]
+    residualVectorLong[clusterVector==names(residualVector)[i]] <- residualVector[i]
   }
 
   #Here the data that will be used for plotting is scaled.

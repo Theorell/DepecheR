@@ -2,20 +2,22 @@
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
-#' @param idGroupClusterData This dataframe should contain three columns with information about the cluster identity (named "cluster"), the id (named "ids")and the group (named "group")identity for each observation.
+#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
+#' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
+#' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
+#' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
-#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation. It needs to have the same number of rows as idGroupClusterData.
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
 #' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
-#' @param bandColor The color of the contour bands. Defaults to black.
-#' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
+#' @param bandColor The color of the contour bands. Defaults to black.
+#' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @seealso \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheResidual}}
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
@@ -31,8 +33,7 @@
 #' 
 #' colnames(x)[1:2] <- c("ids", "group")
 #'
-#' #Scale the data (not actually necessary in this artificial 
-#' #example due to the nature of the generated data)
+#' #Scale the data
 #' x_scaled <- quantileScale(x[3:ncol(x)])
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
@@ -46,14 +47,10 @@
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
-#' #Create the idGroupClusterData object
-#' idGroupClusterData <- cbind(x[,1:2], x_pKM$clusterVector)
-#' colnames(idGroupClusterData)[3] <- "cluster"
-#'
-#' #And finally run the function
-#' depecheWilcox(idGroupClusterData=idGroupClusterData, xYData=as.data.frame(xSNE$Y))
+#' #Run the function
+#' depecheWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
 #' @export depecheWilcox
-depecheWilcox <- function(idGroupClusterData, paired=FALSE, multipleCorrMethod="hochberg", xYData, densContour, name="depecheWilcox", groupName1="Group 1", groupName2="Group 2", title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheWilcox", dotSize=400/sqrt(nrow(xYData))){
+depecheWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="depecheWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="depecheWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -62,25 +59,27 @@ depecheWilcox <- function(idGroupClusterData, paired=FALSE, multipleCorrMethod="
 
   }
 
-  if(length(unique(idGroupClusterData$group))!=2){
+  if(length(unique(groupVector))!=2){
     stop("More or less than two groups are present. Please correct this.")
   }
 
-  if(length(unique(idGroupClusterData$ids))<8){
-    warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use depechePlotResidual instead to view differences.")
+  if(length(unique(idsVector))<8){
+    warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use depecheResidual instead to view differences.")
   }
 
   #Here, the statistical evaluation is performed. First, the data is divided into each group.
-  group1 <- idGroupClusterData[idGroupClusterData$group==unique(idGroupClusterData$group)[1],]
-  group2 <- idGroupClusterData[idGroupClusterData$group==unique(idGroupClusterData$group)[2],]
+  clusterVectorGroup1 <- clusterVector[groupVector==unique(groupVector)[1]]
+  clusterVectorGroup2 <- clusterVector[groupVector==unique(groupVector)[2]]
+  idsVectorGroup1 <- idsVector[groupVector==unique(groupVector)[1]]
+  idsVectorGroup2 <- idsVector[groupVector==unique(groupVector)[2]]
 
   #Now, a table with the percentage of cells in each cluster for each individual is created for both groups, in analogy with XXX pKMRun.
 
-  clusterTable1 <- table(group1$cluster, group1$ids)
-  clusterTable2 <- table(group2$cluster, group2$ids)
+  clusterTable1 <- table(clusterVectorGroup1, idsVectorGroup1)
+  clusterTable2 <- table(clusterVectorGroup2, idsVectorGroup2)
 
-  countTable1 <- table(group1$ids)
-  countTable2 <- table(group2$ids)
+  countTable1 <- table(idsVectorGroup1)
+  countTable2 <- table(idsVectorGroup2)
 
   clusterFractionsForAllIds1 <- clusterTable1
   clusterFractionsForAllIds2 <- clusterTable2
@@ -105,15 +104,19 @@ depecheWilcox <- function(idGroupClusterData, paired=FALSE, multipleCorrMethod="
   #Here, adjustments for multiple comparisons are performed
   p_adjusted <- p.adjust(p_values, method=multipleCorrMethod)
 
-  #Combine the three
-  result <- data.frame(as.numeric(names(p_values)), statistic, p_values, p_adjusted)
+  #Now the median for each group and cluster is calculated
+  median1 <- 100*apply(clusterFractionsForAllIds1, 1, median)
+  median2 <- 100*apply(clusterFractionsForAllIds2, 1, median)
+  
+  #Combine the four
+  result <- data.frame(as.numeric(names(p_values)), median1, median2, statistic, p_values, p_adjusted)
   row.names(result) <- c(1:nrow(result))
-  colnames(result) <- c("cluster", "statistic", "p-value", paste(method, "corrected p-value", sep=" "))
+  colnames(result) <- c("Cluster", paste("Median percentage for", groupName1, sep=" "), paste("Median percentage for", groupName2, sep=" "), "Wilcoxon statistic", "p-value", paste(multipleCorrMethod, "corrected p-value", sep=" "))
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
-  statisticVector <- idGroupClusterData$cluster
+  statisticVector <- clusterVector
   for(i in 1:nrow(result)){
-    statisticVector[idGroupClusterData$cluster==result$cluster[i]] <- result$statistic[i]
+    statisticVector[clusterVector==result$cluster[i]] <- result$statistic[i]
   }
 
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
@@ -179,7 +182,7 @@ depecheWilcox <- function(idGroupClusterData, paired=FALSE, multipleCorrMethod="
   box()
   dev.off()
 
-  write.csv(result, "depecheWilcoxResult.csv")
+  write.csv(result, "depecheWilcoxResult.csv", row.names=FALSE)
 
   if(createDirectory==TRUE){
     setwd(workingDirectory)
