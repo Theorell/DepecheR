@@ -27,7 +27,7 @@
 #' setwd("~/Desktop")
 #'
 #' #Plot all ids together and use rainbowColors
-#' dDensityPlot(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
+#' dDensityPlot(xYData=as.data.frame(xSNE$Y), idsVector=x[,1], commonName="All_samplings", 
 #' color=xColors, createDirectory=FALSE)
 #'
 #' @export colorVector

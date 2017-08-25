@@ -24,7 +24,7 @@
 #'
 #' #Then run the clustering function
 #' x_clustered <- pKMRun(x_scaled, regVec=x_optim[[1]][1,1], 
-#' withOrWithoutZeroClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
+#' withOrigoClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
 #' dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])

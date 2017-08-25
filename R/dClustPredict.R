@@ -3,7 +3,7 @@
 #'
 #' Here, observations of a dataset are allocated to a set of preestablished cluster centers. This is intended to be used for the test set in train-test dataset situations. It is called "predict" as most similar functions of other clustering algorithms have this term.
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function. It should naturally be scaled together with the data used to genreate the cluster centers.
-#' @param penalizedClusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
+#' @param clusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
 #' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClustOpt, again.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
 #' @seealso \code{\link{dClustOpt}}, \code{\link{dClust}}
@@ -34,13 +34,13 @@
 #' id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 #'
 #' #Then run the dClust function for the train set
-#' x_dClust_train <- dClust(x_scaled_train, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
-#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=id_vector_train)
+#' x_dClust_train <- dClust(x_scaled_train, regVec=x_optim[[1]][["bestRegVec"]], 
+#' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=2, ids=id_vector_train)
 #'
 #' #This is followed by running the actual function in question
 #' x_dClust_test <- dClustPredict(x_scaled_test, 
-#' penalizedClusterCenters=x_dClust_train$penalizedClusterCenters, 
-#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], ids=id_vector_test)
+#' clusterCenters=x_dClust_train$clusterCenters, 
+#' withOrigoClust=x_optim[[1]][["withOrigoClust"]], ids=id_vector_test)
 #'
 #' #And finally plot this to see how great the overlap was:
 #' xmatrix <- as.matrix(rbind(x_dClust_train$clusterPercentagesForAllIds, 
@@ -51,15 +51,15 @@
 #' title(xlab = "Clusters")
 #' title(ylab = "Percentage")
 #' @export dClustPredict
-dClustPredict <- function(inDataFrameScaled, penalizedClusterCenters, withOrWithoutZeroClust, ids){
+dClustPredict <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
 
 myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 
-	if(withOrWithoutZeroClust=="stabWZero"){
-	newInds <- allocate_points(myMat,penalizedClusterCenters,0)
+	if(withOrigoClust=="yes"){
+	newInds <- allocate_points(myMat,clusterCenters,0)
 	}
-	if(withOrWithoutZeroClust=="stabWOZero"){
-	newInds <- allocate_points(myMat,penalizedClusterCenters,1)
+	if(withOrigoClust=="no"){
+	newInds <- allocate_points(myMat,clusterCenters,1)
 	}
 
 #A table with the percentage of cells in each cluster for each individual is created

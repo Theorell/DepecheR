@@ -35,5 +35,5 @@ xaxs="i", yaxs="i")
 
 }
 \seealso{
-\code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}, \code{\link{kde2d}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
 }

@@ -13,7 +13,7 @@
 #' @seealso \code{\link{dClust}}, \code{\link{pClustPredict}}
 #' @return A graph showing the performance of the algorithm under the different regVec values and a list with two components:
 #' \describe{
-#'     \item{regOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering. The "withOrWithoutZeroClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. Generally it is the clustering without an origo cluster ("stabWOZero) that is optimal.}
+#'     \item{regOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
 #'     \item{meanOptimDf}{A dataframe with the information about the results with all tested regVec values}
 #' }
 #' @examples
@@ -71,18 +71,21 @@ realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 
 	regOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
 
-	colnames(regOpt.df)[1] <- "optimalRegularizationValue"
+	colnames(regOpt.df)[1] <- "bestRegVec"
 
 #Export if the solution with or without zero clusters give the optimal result
-regOpt.df$withOrWithoutZeroClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
+regOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
+
+#Dirty solution to change these names to something more meaningful
+regOpt.df$withOrigoClust <- ifelse(regOpt.df$withOrigoClust=="distWZero", "yes", "no")
 
 lowestRegVec <- as.numeric(row.names(meanOptimDf[1,]))
 highestRegVec <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
 
-	if(regOpt.df$optimalRegularizationValue==lowestRegVec){
+	if(regOpt.df$bestRegVec==lowestRegVec){
 		print("Warning: the lowest regVec was the most optimal in the range. It is suggested to run with a few lower regVec values to make sure that the most optimal has been found")
 	}
-	if(regOpt.df$optimalRegularizationValue==highestRegVec){
+	if(regOpt.df$bestRegVec==highestRegVec){
 		print("Warning: the highest regVec was the most optimal in the range. It is suggested to run with a few higher regVec values to make sure that the most optimal has been found")
 	}
 #Export the used kVec, as this needs to be used also when running dClust based on the optimizations.
@@ -93,7 +96,7 @@ regOpt.df$kVec <- kVec
 pdf("Distance as a function of regVec values.pdf")
 par(mar=c(5, 4, 4, 6) + 0.1)
 ## Plot first set of data and draw its axis
-plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrWithoutZeroClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
+plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
    type="b",col="black", main="Distance between bootstraps as a function of regVec values")
 axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
 mtext("Distance between bootstraps",side=2,line=2.5)

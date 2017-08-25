@@ -31,13 +31,13 @@
 #' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
 #'
 #' #Then run the actual function
-#' x_dClust <- dClust(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
-#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
+#' x_dClust <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVec"]], 
+#' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
 #' #And finally look at your great result
 #' str(x_dClust)
 #' @export dClust
-dClust <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, iterations=10, ids){
+dClust <- function(inDataFrameScaled, regVec, withOrigoClust, kVec=30, iterations=10, ids){
 
   if(missing(ids)){
     stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
@@ -65,7 +65,7 @@ dClust <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 		}
 	}
 
-	if(withOrWithoutZeroClust=="distWZero"){
+	if(withOrigoClust=="yes"){
 			clusterVector <- returnLowest$i
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
@@ -79,7 +79,7 @@ dClust <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
 			reducedPenalizedClusterCenters <- rbind(penalizedClusterCenters[1,], reducedPenalizedClusterCenters)
 	}
 
-	if(withOrWithoutZeroClust=="distWOZero"){
+	if(withOrigoClust=="no"){
 			clusterVector <- returnLowest$o
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			

@@ -38,10 +38,10 @@ xColors <- colorVector(x[,1])
 setwd("~/Desktop")
 
 #Plot all ids together and use rainbowColors
-depecheDensity(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
+dDensityPlot(xYData=as.data.frame(xSNE$Y), idsVector=x[,1], commonName="All_samplings", 
 color=xColors, createDirectory=FALSE)
 
 }
 \seealso{
-\code{\link{depecheDensity}}, \code{\link{depecheColor}}, \code{\link{depecheViolins}}
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
 }
