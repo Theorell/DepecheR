@@ -11,7 +11,12 @@
 #' }
 #' @param commonName A name that is common to all density plots created. It can be the groups name, e.g. "Malaria patients" or "Clusters". If only one plot is created, the name is still taken from here.
 #' @param plotEachIdSeparately Separates the xYData into subframes specified in the idsVector and plots all ids together but with separate colors. Especially useful when all clusters in a simultaneous analysis should be shown. Colors are inherited from color. Defaults to FALSE.
-#' @param idsVector If "plotEachIdSeparately" is TRUE, then this argument is needed to provide information about which rows that belong to which id.
+#' @param idsVector Needed in two situations:
+#' \describe{
+#'     \item{When "plotEachIdSeparately"=TRUE}{Provides information about which rows that belong to which id and the names for the individual plots.}
+#'     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
+#' }
+
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
@@ -47,8 +52,8 @@
 #' idsVector=x[,1], commonName="sampling")
 #' 
 #' #Now all clusters are plotted together using the same predefined colorscale
-#' depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor,
-#' commonName="sampling")
+#' depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor, idsVector=x[,1],
+#' commonName="all samplings")
 #'
 #' @export depecheDensity
 depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=400/sqrt(nrow(xYData))){
@@ -102,6 +107,11 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
   
     if(plotEachIdSeparately==FALSE && length(color)>1){
       depecheDensityCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+    
+      pdf(paste("Legend for ", commonName, ".pdf", sep=""))
+      plot.new()
+      legend("center",legend = unique(idsVector), col=unique(color), cex=5, pch=19)
+      dev.off()
     }
 
     if(plotEachIdSeparately==TRUE){
@@ -115,7 +125,6 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
         
     
   }
-    
 
   if(createDirectory==TRUE){
     setwd(workingDirectory)

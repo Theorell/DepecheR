@@ -19,7 +19,7 @@ depecheColor(colorData, xYData, names = "default", densContour,
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 
-\item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters.}
+\item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.}
 
 \item{idsVector}{If a legend is added, this argument controls the naming in the legend.}
 
