@@ -5,8 +5,10 @@
 #' @importFrom viridis inferno
 #' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
 #' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
+#' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
+#' @seealso \code{\link{depecheDensity}}, \code{\link{depecheColor}}, \code{\link{colorVector}}
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateFlowCytometryData(samplings=2, ncols=8)
@@ -25,17 +27,13 @@
 #' withOrWithoutZeroClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
-#' variableViolins(x_clustered$clusterCenters, as.numeric(x_clustered$clusterVector), x[,2:ncol(x)])
-#' @export variableViolins
-variableViolins <- function(clusterCenters, clusterVector, inDataFrame){
-
-  number <- sort(unique(clusterVector))
+#' depecheViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
+#' @export depecheViolins
+depecheViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), inDataFrame){
 
   percentClusterVector <- quantileScale(clusterVector, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
 
-  #percentNumber <- quantileScale(number, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-  #paletteColors <- palette(rev(rich.colors(100, plot=FALSE)))[1 + 0.98*(102-percentNumber)]
-  paletteColors <- inferno(length(number))
+  paletteColors <- inferno(length(order))
 
   #Here, a directory for all the subdirectories for each cluster is made
   directoryName <- "Cluster expressions"
@@ -43,10 +41,10 @@ variableViolins <- function(clusterCenters, clusterVector, inDataFrame){
   workingDirectory <- getwd()
   setwd(paste(workingDirectory, directoryName, sep="/"))
 
-  for(i in 1:length(number)){
+  for(i in 1:length(order)){
 
     #Here, a specific directory for the graphics are made.
-    directoryName <- paste("Cluster", number[i])
+    directoryName <- paste("Cluster", order[i])
     dir.create(directoryName)
     workingDirectoryClusters <- getwd()
     setwd(paste(workingDirectoryClusters, directoryName, sep="/"))
@@ -54,18 +52,18 @@ variableViolins <- function(clusterCenters, clusterVector, inDataFrame){
 
     #This code is an efficient way of giving all rows in the "Clusters" column the same name, except for the rows with the cluster of interest.
 
-    clustIndicesSpecific <- sapply(clusterVector, singleEventClusterNaming, n=number[i])
+    clustIndicesSpecific <- sapply(clusterVector, singleEventClusterNaming, n=order[i])
 
     #Create a color vector for the visualzation
     clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
 
     #Here, the mu variables for the specific cluster is extracted
-    oneClustAllMu <- clusterCenters[rownames(clusterCenters)==number[i],]
+    oneClustAllMu <- clusterCenters[rownames(clusterCenters)==order[i],]
 
     #Here the variable names is exported
     allVarNames <- colnames(inDataFrame)
     #Then a list is created that contin the objects for the prot creation
-    oneClustAllVarList <- mapply(createAllClustOneVarMu, inDataFrame, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=number[i]), SIMPLIFY=FALSE)
+    oneClustAllVarList <- mapply(createAllClustOneVarMu, inDataFrame, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
     #And then the plots are created
     sapply(oneClustAllVarList, createOneViolin)
 

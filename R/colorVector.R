@@ -7,6 +7,7 @@
 #' @param order The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.
 #' @param colorScale The color scale. Inherited from the viridis package. Four possible scales: inferno, magma, plasma, viridis.
 #' @return A vector, the same length as x with each unique value substitutet with a color.
+#' @seealso \code{\link{depecheDensity}}, \code{\link{depecheColor}}, \code{\link{depecheViolins}}
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
 #' x <- generateFlowCytometryData(samplings=5, observations=2000)

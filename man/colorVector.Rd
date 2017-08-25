@@ -42,3 +42,6 @@ depecheDensity(xYData=as.data.frame(xSNE$Y), commonName="All_samplings",
 color=xColors, createDirectory=FALSE)
 
 }
+\seealso{
+\code{\link{depecheDensity}}, \code{\link{depecheColor}}, \code{\link{depecheViolins}}
+}
