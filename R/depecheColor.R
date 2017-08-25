@@ -94,11 +94,16 @@ depecheColor <- function(colorData, xYData,  names="default", densContour, addLe
   }
 
   if(addLegend==TRUE){
+
+    #Some preparations for the legend
+    #Create a dataframe from the ids and the color vectors
+    colorIdsDataFrame <- data.frame(unique(colorData), unique(idsVector), stringsAsFactors = FALSE)
+    colorIdsDataFrame <- colorIdsDataFrame[order(colorIdsDataFrame[,2]),]
     pdf(paste("Legend for ", names, ".pdf", sep=""))
     plot.new()
-    legend("center",legend = unique(idsVector), col=unique(colorData), cex=15/length(unique(idsVector)), pch=19)
+    legend("center",legend = colorIdsDataFrame[,2], col=colorIdsDataFrame[,1], cex=15/length(unique(idsVector)), pch=19)
     dev.off()
-    }
+  }
   
   
   if(createDirectory==TRUE){
