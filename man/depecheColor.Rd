@@ -4,36 +4,36 @@
 \alias{depecheColor}
 \title{Display third variable as color on 2D plot}
 \usage{
-depecheColor(colorData, names = "default", xYData, title = FALSE,
-  densContour, bandColor = "black", dotSize = 30000/nrow(xYData),
-  drawColorPalette = FALSE, addLegend = FALSE, idsVector,
+depecheColor(colorData, xYData, names = "default", densContour,
+  addLegend = FALSE, idsVector, drawColorPalette = FALSE, title = FALSE,
   createDirectory = TRUE,
-  directoryName = "Variables displayed as color on SNE field")
+  directoryName = "Variables displayed as color on SNE field",
+  bandColor = "black", dotSize = 30000/nrow(xYData))
 }
 \arguments{
 \item{colorData}{A vector or a dataframe of numeric observations that will be displayed as color on the plot.}
 
-\item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
-
 \item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.}
 
-\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
+\item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
-
-\item{bandColor}{The color of the contour bands. Defaults to black.}
-
-\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
-
-\item{drawColorPalette}{If a separate plot with the color palette used for the plots should be printed and saved.}
 
 \item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters.}
 
 \item{idsVector}{If a legend is added, this argument controls the naming in the legend.}
 
+\item{drawColorPalette}{If a separate plot with the color palette used for the plots should be printed and saved.}
+
+\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
+
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
 \item{directoryName}{The name of the created directory, if it should be created.}
+
+\item{bandColor}{The color of the contour bands. Defaults to black.}
+
+\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 }
 \value{
 Plots showing the colorData displayed as color on the field created by xYData.
@@ -60,7 +60,7 @@ setwd("~/Desktop")
 depecheColor(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 
 #Create a color vector and display it on the SNE field.
-xColor <- colorVector(x[,1])
+xColor <- colorVector(x[,1], colorScale="plasma")
 depecheColor(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 
 }

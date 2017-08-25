@@ -3,17 +3,17 @@
 #'
 #' Function to overlay one variable for a set of observations on a field created by two other variables known for the same observations. The plot is constructed primarily for displaying variables on 2D-stochastic neighbour embedding fields, but can be used for any sets of (two or) three variables known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become extremely big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 #' @param colorData A vector or a dataframe of numeric observations that will be displayed as color on the plot.
-#' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.
-#' @param title If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
+#' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
-#' @param bandColor The color of the contour bands. Defaults to black.
-#' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-#' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
 #' @param addLegend If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters.
 #' @param idsVector If a legend is added, this argument controls the naming in the legend.
+#' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
+#' @param title If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
+#' @param bandColor The color of the contour bands. Defaults to black.
+#' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @seealso \code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}, \code{\link{colorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
@@ -35,11 +35,11 @@
 #' depecheColor(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 #'
 #' #Create a color vector and display it on the SNE field.
-#' xColor <- colorVector(x[,1])
+#' xColor <- colorVector(x[,1], colorScale="plasma")
 #' depecheColor(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export depecheColor
-depecheColor <- function(colorData, names="default", xYData,  title=FALSE, densContour, bandColor="black", dotSize=30000/nrow(xYData), drawColorPalette=FALSE, addLegend=FALSE, idsVector, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field"){
+depecheColor <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=30000/nrow(xYData)){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")

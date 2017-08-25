@@ -4,12 +4,14 @@
 \alias{colorVector}
 \title{Creates a vector of colors of the same length as the data}
 \usage{
-colorVector(x, order = unique(x))
+colorVector(x, order = unique(x), colorScale = "inferno")
 }
 \arguments{
 \item{x}{A vector, in most cases of identities of individuals or clusters ect.}
 
 \item{order}{The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.}
+
+\item{colorScale}{The color scale. Inherited from the viridis package. Four possible scales: inferno, magma, plasma, viridis.}
 }
 \value{
 A vector, the same length as x with each unique value substitutet with a color.

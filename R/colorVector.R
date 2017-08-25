@@ -2,9 +2,10 @@
 #'
 #'
 #' This function takes a vector x and a shorter ordering vector with all the unique values of the x vector in the specific order that the colors should be in and returns a vector of RGB colors the same length as the initial x vector.
-#' @importFrom gplots rich.colors
+#' @importFrom viridis inferno magma plasma viridis
 #' @param x A vector, in most cases of identities of individuals or clusters ect.
 #' @param order The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.
+#' @param colorScale The color scale. Inherited from the viridis package. Four possible scales: inferno, magma, plasma, viridis.
 #' @return A vector, the same length as x with each unique value substitutet with a color.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
@@ -29,11 +30,21 @@
 #' color=xColors, createDirectory=FALSE)
 #'
 #' @export colorVector
-colorVector <- function(x, order=unique(x)){
+colorVector <- function(x, order=unique(x), colorScale="inferno"){
 	
-	#orderColors <- orderColorNumbers
-	orderColors <- colorRampPalette(rev(rich.colors(100, plot=FALSE)))(length(order))
-
+  if(colorScale=="inferno"){
+    orderColors <- inferno(length(order)) 
+  }
+  if(colorScale=="viridis"){
+    orderColors <- viridis(length(order)) 
+  }
+  if(colorScale=="plasma"){
+    orderColors <- plasma(length(order)) 
+  }
+  if(colorScale=="magma"){
+    orderColors <- magma(length(order)) 
+  }
+ 
   	#Here, a vector with the same length as the x vector is generated, but where the x info has been substituted with a color.
   	colorVector <- x
   		for(i in 1:length(order)){

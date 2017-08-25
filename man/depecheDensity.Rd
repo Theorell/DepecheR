@@ -4,36 +4,41 @@
 \alias{depecheDensity}
 \title{Display density on 2D plot}
 \usage{
-depecheDensity(xYData, scalingControl, plotEachIdSeparately = FALSE,
-  idsVector, commonName, color = c("blue", "rainbowCols", "idSpecific",
-  "multipleColors"), densContour, bandColor = "black",
-  dotSize = 400/sqrt(nrow(xYData)), title = FALSE, createDirectory = TRUE,
-  directoryName = paste("Density plots for ", commonName, "s", sep = ""))
+depecheDensity(xYData, color = c("blue", "rainbowCols", "a colorVector"),
+  commonName, plotEachIdSeparately = FALSE, idsVector, densContour,
+  title = FALSE, createDirectory = TRUE,
+  directoryName = paste("Density plots for ", commonName, "s", sep = ""),
+  scalingControl, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
 
-\item{scalingControl}{A dataframe with two columns. This argument is only necessary if the xYData should be scaled to another range than its internal maximum and minimum values.}
-
-\item{plotEachIdSeparately}{If the xYData is made up of data from multiple, individual subjects, these can be plotted separately. Defaults to FALSE.}
-
-\item{idsVector}{If "plotEachIdSeparately" is TRUE, then this argument is needed to provide information about which rows that belong to which id.}
+\item{color}{This gives the specific color of the plot. It has three potential return values:
+\describe{
+    \item{A specific color, e.g. "red" or "#FF0000"}{This will be the color in the densest part of the plot(s)}
+    \item{"rainbowCols"}{Creates a specific set of colors similar to the rainbow.}
+    \item{A vector of colors, the same length as nrow(xYData)}{Here, a separate density estimate will be performed for each color subcompartment of the xYData and these will be plotted together.}
+}}
 
 \item{commonName}{A name that is common to all density plots created. It can be the groups name, e.g. "Malaria patients" or "Clusters". If only one plot is created, the name is still taken from here.}
 
-\item{color}{This gives the specific color of the plot. It has four potential return values. Either it is a specific color ("red" or "#FF0000"), it is "rainbowCols", which creates a specific set of colors similar to the rainbow. The third alternative is "idSpecific", which will then give each plot a different color depending on their id. The fourth alternative is that a vector of colors (e.g. either "red" or "#FF0000") with the same length as the number of rows in xYData is provided. Here, a separate density estimate will be performed for each color subcompartment of the xYData and these will be plotted together.}
+\item{plotEachIdSeparately}{Separates the xYData into subframes specified in the idsVector and plots all ids together but with separate colors. Especially useful when all clusters in a simultaneous analysis should be shown. Colors are inherited from color. Defaults to FALSE.}
+
+\item{idsVector}{If "plotEachIdSeparately" is TRUE, then this argument is needed to provide information about which rows that belong to which id.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
-
-\item{bandColor}{The color of the contour bands. Defaults to black.}
-
-\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
 \item{directoryName}{The name of the created directory, if it should be created.}
+
+\item{scalingControl}{A dataframe with two columns. This argument is only necessary if the xYData should be scaled to another range than its internal maximum and minimum values.}
+
+\item{bandColor}{The color of the contour bands. Defaults to black.}
+
+\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 }
 \value{
 Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
@@ -56,13 +61,18 @@ xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Plot all ids together and use rainbowColors
+#Plot all ids together and use a fixed color
 depecheDensity(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
-color="rainbowCols", createDirectory=FALSE)
+color="blue", createDirectory=FALSE)
 
-#Now plot each id separately
-depecheDensity(xYData=as.data.frame(xSNE$Y), plotEachIdSeparately=TRUE, 
-idsVector=x[,1], commonName="sampling", color="idSpecific")
+#Now plot each id separately using a predefined colorscale separating each cluster
+xColor <- colorVector(x[,1], colorScale="plasma")
+depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor, plotEachIdSeparately=TRUE, 
+idsVector=x[,1], commonName="sampling")
+
+#Now all clusters are plotted together using the same predefined colorscale
+depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor,
+commonName="sampling")
 
 }
 \seealso{

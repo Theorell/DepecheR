@@ -2,7 +2,7 @@
 #'
 #' Here, violin plots of a specific cluster and the total population are created for each variable that has not been penalized away in the penalized K-means analysis. As al such plots are generated for each cluster, this function creates a great number of plots in most instances.
 #' @importFrom ggplot2 ggplot aes geom_violin scale_color_manual scale_fill_manual theme_classic labs ggsave
-#' @importFrom gplots rich.colors
+#' @importFrom viridis inferno
 #' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
 #' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
 #' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
@@ -18,24 +18,24 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the Optim function to get good starting points
-#' x_optim <- Optim(x_scaled, iterations=5, bootstrapObservations=1000)
+#' x_optim <- pKMOptim(x_scaled, iterations=5, bootstrapObservations=1000)
 #'
 #' #Then run the clustering function
-#' x_ <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
-#' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=2, ids=x[,1])
+#' x_clustered <- pKMRun(x_scaled, regVec=x_optim[[1]][1,1], 
+#' withOrWithoutZeroClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
-#' variableViolinsAllClust(x_$penalizedClusterCenters, as.numeric(x_$clusterVector), x[,2:ncol(x)])
-#' @export variableViolinsAllClust
-variableViolinsAllClust <- function(clusterCenters, clusterVector, inDataFrame){
+#' variableViolins(x_clustered$clusterCenters, as.numeric(x_clustered$clusterVector), x[,2:ncol(x)])
+#' @export variableViolins
+variableViolins <- function(clusterCenters, clusterVector, inDataFrame){
 
   number <- sort(unique(clusterVector))
 
   percentClusterVector <- quantileScale(clusterVector, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
 
-  percentNumber <- quantileScale(number, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-  paletteColors <- palette(rev(rich.colors(100, plot=FALSE)))[1 + 0.98*(102-percentNumber)]
-  dev.off()
+  #percentNumber <- quantileScale(number, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+  #paletteColors <- palette(rev(rich.colors(100, plot=FALSE)))[1 + 0.98*(102-percentNumber)]
+  paletteColors <- inferno(length(number))
 
   #Here, a directory for all the subdirectories for each cluster is made
   directoryName <- "Cluster expressions"
