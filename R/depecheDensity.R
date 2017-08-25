@@ -107,10 +107,9 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
   
     if(plotEachIdSeparately==FALSE && length(color)>1){
       depecheDensityCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
-    
       pdf(paste("Legend for ", commonName, ".pdf", sep=""))
       plot.new()
-      legend("center",legend = unique(idsVector), col=unique(color), cex=5, pch=19)
+      legend("center",legend = unique(idsVector), col=unique(color), cex=15/length(unique(idsVector)), pch=19)
       dev.off()
     }
 

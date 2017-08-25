@@ -8,7 +8,7 @@ depecheColor(colorData, xYData, names = "default", densContour,
   addLegend = FALSE, idsVector, drawColorPalette = FALSE, title = FALSE,
   createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
-  bandColor = "black", dotSize = 30000/nrow(xYData))
+  bandColor = "black", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{colorData}{A vector or a dataframe of numeric observations that will be displayed as color on the plot.}

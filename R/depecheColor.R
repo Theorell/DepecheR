@@ -39,7 +39,7 @@
 #' depecheColor(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export depecheColor
-depecheColor <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=30000/nrow(xYData)){
+depecheColor <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -96,7 +96,7 @@ depecheColor <- function(colorData, xYData,  names="default", densContour, addLe
   if(addLegend==TRUE){
     pdf(paste("Legend for ", names, ".pdf", sep=""))
     plot.new()
-    legend("center",legend = unique(idsVector), col=unique(colorData), cex=5, pch=19)
+    legend("center",legend = unique(idsVector), col=unique(colorData), cex=15/length(unique(idsVector)), pch=19)
     dev.off()
     }
   
