@@ -74,10 +74,7 @@ realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 	colnames(regOpt.df)[1] <- "bestRegVec"
 
 #Export if the solution with or without zero clusters give the optimal result
-regOpt.df$withOrigoClustInternal <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
-
-#Dirty solution to change these names to something more meaningful
-regOpt.df$withOrigoClust <- ifelse(regOpt.df$withOrigoClustInternal=="distWZero", "yes", "no")
+regOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
 
 lowestRegVec <- as.numeric(row.names(meanOptimDf[1,]))
 highestRegVec <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
@@ -96,7 +93,7 @@ regOpt.df$kVec <- kVec
 pdf("Distance as a function of regVec values.pdf")
 par(mar=c(5, 4, 4, 6) + 0.1)
 ## Plot first set of data and draw its axis
-plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrigoClustInternal]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
+plot(row.names(meanOptimDf), meanOptimDf[[regOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="",
    type="b",col="black", main="Distance between bootstraps as a function of regVec values")
 axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
 mtext("Distance between bootstraps",side=2,line=2.5)
@@ -111,6 +108,9 @@ legend("topleft",legend="Distance (low is good)",
   text.col="black",pch=c(16,15),col="black")
 
 dev.off()
+
+#Dirty solution to change the resulting names in withOrigoClust to something more meaningful
+regOpt.df$withOrigoClust <- ifelse(regOpt.df$withOrigoClust=="distWZero", "yes", "no")
 
 #Return the list.
 	regOptList <- list(regOpt.df, meanOptimDf)
