@@ -5,12 +5,12 @@
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
 #' @importFrom gplots heatmap.2
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
-#' @param regVec The parameter that controls the level of penalization. Preferrably, it should be inherited from a pKMOptim run, as the algorithm will then generate the most stable result.
-#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by pKMOptim, again.
+#' @param regVec The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.
+#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClustOpt, again.
 #' @param kVec Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
-#' @param iterations As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If pKMOptim has been performed before, this number should not need to be extensive. Default is 10.
+#' @param iterations As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dClustOpt has been performed before, this number should not need to be extensive. Default is 10.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @seealso \code{\link{pKMOptim}}, \code{\link{pKMPredict}}
+#' @seealso \code{\link{dClustOpt}}, \code{\link{dClustPredict}}
 #' @return A list with three components:
 #' \describe{
 #'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -27,17 +27,17 @@
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
-#' #Run the pKMOptim function to get good starting points
-#' x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
+#' #Run the dClustOpt function to get good starting points
+#' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
 #'
 #' #Then run the actual function
-#' x_pKM <- pKMRun(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
+#' x_dClust <- dClust(x_scaled, regVec=x_optim[[1]][["optimalRegularizationValue"]], 
 #' withOrWithoutZeroClust=x_optim[[1]][["withOrWithoutZeroClust"]], iterations=1, ids=x[,1])
 #'
 #' #And finally look at your great result
-#' str(x_pKM)
-#' @export pKMRun
-pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, iterations=10, ids){
+#' str(x_dClust)
+#' @export dClust
+dClust <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, iterations=10, ids){
 
   if(missing(ids)){
     stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
@@ -110,16 +110,16 @@ pKMRun <- function(inDataFrameScaled, regVec, withOrWithoutZeroClust, kVec=30, i
   }
 
 
-  pKMResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
+  dClustResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
 
-  names(pKMResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
+  names(dClustResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
 
   #Here, a heatmap over the cluster centers is saved
   pdf("Cluster centers.pdf")
   heatmap.2(reducedPenalizedClusterCenters, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
   dev.off()
 
-	return(pKMResult)
+	return(dClustResult)
 
 }
 

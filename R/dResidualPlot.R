@@ -15,7 +15,7 @@
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
-#' @seealso \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheWilcox}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcoxPlot}}
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
@@ -37,9 +37,9 @@
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #And finally run the function
-#' depecheResidual(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
-#' @export depecheResidual
-depecheResidual <- function(xYData, groupVector, clusterVector, densContour, name="depecheResidual", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="depecheResidual", dotSize=400/sqrt(nrow(xYData))){
+#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
+#' @export dResidualPlot
+dResidualPlot <- function(xYData, groupVector, clusterVector, densContour, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)

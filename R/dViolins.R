@@ -8,7 +8,7 @@
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
-#' @seealso \code{\link{depecheDensity}}, \code{\link{depecheColor}}, \code{\link{colorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateFlowCytometryData(samplings=2, ncols=8)
@@ -27,9 +27,9 @@
 #' withOrWithoutZeroClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
-#' depecheViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
-#' @export depecheViolins
-depecheViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), inDataFrame){
+#' dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
+#' @export dViolins
+dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), inDataFrame){
 
   percentClusterVector <- quantileScale(clusterVector, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
 

@@ -25,7 +25,7 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 
-#' @seealso \code{\link{depecheColor}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
@@ -42,20 +42,20 @@
 #' setwd("~/Desktop")
 #'
 #' #Plot all ids together and use a fixed color
-#' depecheDensity(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
+#' dDensityPlot(xYData=as.data.frame(xSNE$Y), commonName="All_samplings", 
 #' color="blue", createDirectory=FALSE)
 #'
 #' #Now plot each id separately using a predefined colorscale separating each cluster
 #' xColor <- colorVector(x[,1], colorScale="plasma")
-#' depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor, plotEachIdSeparately=TRUE, 
+#' dDensityPlot(xYData=as.data.frame(xSNE$Y), color=xColor, plotEachIdSeparately=TRUE, 
 #' idsVector=x[,1], commonName="sampling")
 #' 
 #' #Now all clusters are plotted together using the same predefined colorscale
-#' depecheDensity(xYData=as.data.frame(xSNE$Y), color=xColor, idsVector=x[,1],
+#' dDensityPlot(xYData=as.data.frame(xSNE$Y), color=xColor, idsVector=x[,1],
 #' commonName="all samplings")
 #'
-#' @export depecheDensity
-depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' @export dDensityPlot
+dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -80,14 +80,14 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
                                                              "#FCFF00", "#FF9400", "#FF3100"))(256), cols <- colorRampPalette(c("black", "grey", color))(256))
 
     if(plotEachIdSeparately==FALSE){
-      depecheDensityCoFunction(xYDataScaled=xYDataScaled, cols=cols, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, cols=cols, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
     }   
 
     if(plotEachIdSeparately==TRUE){
       uniqueIds <- unique(idsVector)
       
       for (i in 1:length(uniqueIds)){
-        depecheDensityCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=cols, name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=cols, name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
       }
       
     }
@@ -105,7 +105,7 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
     colorList[[length(colors)+2]] <- color
   
     if(plotEachIdSeparately==FALSE && length(color)>1){
-      depecheDensityCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
 
       #Some preparations for the legend
       #Create a dataframe from the ids and the color vectors
@@ -121,7 +121,7 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
       uniqueIds <- unique(idsVector)
       
       for (i in 1:length(uniqueIds)){
-        depecheDensityCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=colorList[[i]], name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=colorList[[i]], name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
       }
       
     }
@@ -135,7 +135,7 @@ depecheDensity <- function(xYData, color=c("blue", "rainbowCols", "a colorVector
 
 }
 
-depecheDensityCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title){
+dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title){
 
 if(multipleColors==FALSE){
 

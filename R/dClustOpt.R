@@ -1,7 +1,7 @@
 #' Function to find the optimal penalty value for penalized K means
 #'
 #'
-#' This function is used before the pKMRun function to identify the optimal regVec value for the specific dataset. This value decides the penalization and consequently also the number of clusters that are identified.
+#' This function is used before the dClust function to identify the optimal regVec value for the specific dataset. This value decides the penalization and consequently also the number of clusters that are identified.
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
@@ -10,7 +10,7 @@
 #' @param iterations As it sounds, the number of bootstrap reiterations that are performed.
 #' @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
 #' @param regVecOffset These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
-#' @seealso \code{\link{pKMRun}}, \code{\link{pKMPredict}}
+#' @seealso \code{\link{dClust}}, \code{\link{pClustPredict}}
 #' @return A graph showing the performance of the algorithm under the different regVec values and a list with two components:
 #' \describe{
 #'     \item{regOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering. The "withOrWithoutZeroClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. Generally it is the clustering without an origo cluster ("stabWOZero) that is optimal.}
@@ -27,10 +27,10 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the function
-#' x_optim <- pKMOptim(x_scaled, iterations=10, bootstrapObservations=1000)
-#' @export pKMOptim
+#' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
+#' @export dClustOpt
 #' @useDynLib DepecheR
-pKMOptim <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0,2,4,8,16,32,64,128)){
+dClustOpt <- function(inDataFrameScaled, kVec=30, iterations=50, bootstrapObservations=10000, regVecOffset=c(0,2,4,8,16,32,64,128)){
 
 #The constant k is empirically identified by running a large number of regVec values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -85,7 +85,7 @@ highestRegVec <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
 	if(regOpt.df$optimalRegularizationValue==highestRegVec){
 		print("Warning: the highest regVec was the most optimal in the range. It is suggested to run with a few higher regVec values to make sure that the most optimal has been found")
 	}
-#Export the used kVec, as this needs to be used also when running pKMRun based on the optimizations.
+#Export the used kVec, as this needs to be used also when running dClust based on the optimizations.
 regOpt.df$kVec <- kVec
 
 #Here, the optimization is plotted. It should be integrated into the function.

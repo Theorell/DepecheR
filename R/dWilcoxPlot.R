@@ -18,7 +18,7 @@
 #' @param directoryName The name of the created directory, if it should be created.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-#' @seealso \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheResidual}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
@@ -48,9 +48,9 @@
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Run the function
-#' depecheWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
-#' @export depecheWilcox
-depecheWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="depecheWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="depecheWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' dWilcoxPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+#' @export dWilcoxPlot
+dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="dWilcoxPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcoxPlot", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -64,7 +64,7 @@ depecheWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=
   }
 
   if(length(unique(idsVector))<8){
-    warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use depecheResidual instead to view differences.")
+    warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
   }
 
   #Here, the statistical evaluation is performed. First, the data is divided into each group.
@@ -182,7 +182,7 @@ depecheWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=
   box()
   dev.off()
 
-  write.csv(result, "depecheWilcoxResult.csv", row.names=FALSE)
+  write.csv(result, "dWilcoxPlotResult.csv", row.names=FALSE)
 
   if(createDirectory==TRUE){
     setwd(workingDirectory)

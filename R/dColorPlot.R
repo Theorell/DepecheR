@@ -14,7 +14,7 @@
 #' @param directoryName The name of the created directory, if it should be created.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-#' @seealso \code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}, \code{\link{colorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{colorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
@@ -31,14 +31,14 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the function for all the variables
-#' depecheColor(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
+#' dColorPlot(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 #'
 #' #Create a color vector and display it on the SNE field.
 #' xColor <- colorVector(x[,1], colorScale="plasma")
-#' depecheColor(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+#' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
-#' @export depecheColor
-depecheColor <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' @export dColorPlot
+dColorPlot <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -83,13 +83,13 @@ depecheColor <- function(colorData, xYData,  names="default", densContour, addLe
   xYDataFraction <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   
   if(class(colorData)=="numeric"){
-    depecheColorCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
   }
   if(class(colorData)=="data.frame"){
-    mapply(depecheColorCoFunction, colorData, names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize))
+    mapply(dColorPlotCoFunction, colorData, names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize))
   }
   if(class(colorData)=="character"){
-    depecheColorCoFunctionSetCols(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    dColorPlotCoFunctionSetCols(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
   }
 
   if(addLegend==TRUE){
@@ -111,7 +111,7 @@ depecheColor <- function(colorData, xYData,  names="default", densContour, addLe
 
 }
 
-depecheColorCoFunction <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
+dColorPlotCoFunction <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
 
   colorVariableTruncated <- truncateData(colorVariable)
   colorVariablePercent <- quantileScale(colorVariableTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
@@ -136,7 +136,7 @@ depecheColorCoFunction <- function(colorVariable, name, xYDataFraction, title=FA
 }
 
 
-depecheColorCoFunctionSetCols <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
+dColorPlotCoFunctionSetCols <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
 
   colnames(xYDataFraction) <- c("V1", "V2")
   

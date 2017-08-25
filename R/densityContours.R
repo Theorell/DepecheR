@@ -5,7 +5,7 @@
 #' @importFrom MASS kde2d
 #' @param sneData A dataframe with two columns containing position information for each observation in the dataset. Typically, this is the raw result from the SNE analysis.
 #' @param n The number fo grid points. Default is 100.
-#' @seealso \code{\link{depecheColor}}, \code{\link{depecheDensity}}, \code{\link{depecheResidual}}, \code{\link{depecheWilcox}}, \code{\link{kde2d}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
 #' @return A list of three components
 #' \describe{
 #'     \item{x, y}{The x and y coordinates of the grid points, vectors of length n.}
