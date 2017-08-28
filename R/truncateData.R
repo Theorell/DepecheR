@@ -34,7 +34,6 @@
 #' #And the most extreme values have been reduced
 #' summary(y_df)
 #'
-#' @export truncateData
 
 truncateData <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
 

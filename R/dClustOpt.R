@@ -76,6 +76,18 @@ realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 #Export if the solution with or without zero clusters give the optimal result
 regOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
 
+
+#In the exceptional event that one solution is as good for both with and without a origo cluster, this argument is added that always prefers the solution without an origo cluster. It also prefers solutions with a higher regVec in cases where two origo-cluster free solutions give identical results
+if(nrow(regOpt.df)>1 && length(grep("nClustWOZero", regOpt.df$withOrigoClust))>0){
+  
+  regOpt.df <- regOpt.df[which(regOpt.df[,2]=="nClustWOZero"),]
+}
+
+if(nrow(regOpt.df)>1){
+  
+  regOpt.df <- regOpt.df[min(which(regOpt.df[,1]==max(regOpt.df[,1]))),]
+}
+
 lowestRegVec <- as.numeric(row.names(meanOptimDf[1,]))
 highestRegVec <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
 

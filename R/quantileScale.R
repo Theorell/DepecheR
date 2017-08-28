@@ -5,10 +5,16 @@
 #' @importFrom Hmisc hdquantile
 #' @param x A numeric/integer vector or dataframe
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
-#' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.
 #' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
+#' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.
 #' @param center If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering. 
+#' @param truncate If truncation of the most extreme values should be performed. Three possible values:
+#' #' \describe{
+#'     \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
+#'     \item{FALSE}{No truncation.}
+#'     \item{A vector with two values, eg c(0.01, 0.99)}{Data outside of these quantiles will be truncated.}
+#' }   
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.
 #' @seealso \code{\link{truncateData}} 
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
@@ -40,7 +46,7 @@
 #' #placed where the highest peak in the data is present.
 #' summary(y_df)
 #' @export quantileScale
-quantileScale <- function(x, control, robustVarScale=TRUE, lowQuantile=0.001, highQuantile=0.999, center="peak", multiplicationFactor=1){
+quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -55,15 +61,15 @@ quantileScale <- function(x, control, robustVarScale=TRUE, lowQuantile=0.001, hi
   }
 
     if(class(x)!="data.frame"){
-    result <- quantileScaleCoFunction(x, control=control, robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, center=center, multiplicationFactor=multiplicationFactor)
+    result <- quantileScaleCoFunction(x, control=control, robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
   }
   if(class(x)=="data.frame"){
-    result <- as.data.frame(mapply(quantileScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
+    result <- as.data.frame(mapply(quantileScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
   }
  return(result)
 }
 
-quantileScaleCoFunction <- function(x, control, robustVarScale, lowQuantile, highQuantile, center, multiplicationFactor){
+quantileScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robustVarScale, truncate, center, multiplicationFactor){
 
     #Define quartiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
     top <- hdquantile(control, probs = highQuantile, se=FALSE, na.rm=TRUE)
@@ -81,6 +87,8 @@ quantileScaleCoFunction <- function(x, control, robustVarScale, lowQuantile, hig
     responseVector <- multiplicationFactor*scale(xTruncated, center=FALSE)
     
   }
+  
+  
     
   if(center=="mean"){
     responseVector <- responseVector-mean(responseVector)
