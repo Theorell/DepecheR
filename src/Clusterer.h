@@ -59,7 +59,7 @@ private:
     int mStep(const RowMatrixXd& X, const double regVec);
     void eStep(const RowMatrixXd& X);
     void initializeMembers(const RowMatrixXd& X, const RowMatrixXd& mu, const unsigned int k);
-    double cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers, const Eigen::VectorXi ind, const double reg);
+    double cluster_norm(const RowMatrixXd& X, const double reg);
     RowMatrixXd m_rescale(const RowMatrixXd& Xin);
     const RowMatrixXd  reevaluate_centers(const RowMatrixXd& X, const Eigen::VectorXi inds, const unsigned int k, const double reg );
     Eigen::VectorXi indexFromTau();

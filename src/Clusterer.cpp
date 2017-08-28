@@ -315,27 +315,44 @@ RowMatrixXd Clusterer::m_rescale(const RowMatrixXd& Xin){
 
     return X;
 }
-double Clusterer::cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers, const Eigen::VectorXi ind, const double reg){
-    const unsigned int rows = X.rows();
-    double ssq = 0;
-    for(unsigned int i = 0; i<rows; i++){
-        ssq+= (X.row(i)-centers.row(ind(i))).squaredNorm();
+double Clusterer::cluster_norm(const RowMatrixXd& X, const double reg){
+  double norm = 0;
+  for(unsigned int i = 0; i<this->k_; i++ ){
+    for(unsigned int l = 0; l< this->j_; l++ ){
+      Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
+      Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
+      norm+=this->tau_(i,l)*(std::log(this->pi_(i))+std::log(inv.prod())-0.5*(diff*diff*inv*inv).sum());
     }
-    for(unsigned int i = 0; i<centers.cols(); i++){
-        for(unsigned int j = 0; j<centers.rows(); j++){
-            ssq+=centers(j,i)*reg;
-        }
-    }
-    //Rcout<<"The ssq is: "<<ssq<<std::endl;
-    return ssq;
+  }
+  norm+=this->mu_.lpNorm<1>()*reg;
+
+    return norm;
 }
 
 void Clusterer::initializeMembers(const RowMatrixXd& X, const RowMatrixXd& mu, const unsigned int k){
-  this->k_ = k;
+  const unsigned int mu_rows = mu.rows();
+  const unsigned int X_rows = X.rows();
+
+  //make a vector to iterate over
+
+  std::vector<unsigned int> active_indices;
+  for(unsigned int i = 0; i< mu_rows; i++){
+      if(!mu.row(i).isZero(0)){
+        active_indices.push_back(i);
+      }
+  }
+  if(active_indices.size()<2){
+    std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
+  }
+
+  this->k_ = active_indices.size();
   this->j_ = X.rows();
   this->p_ = X.cols();
   this->tau_=Eigen::MatrixXd::Zero(this->k_,this->j_);
-  this->mu_=mu;
+  this->mu_=Eigen::MatrixXd::Zero(this->k_,this->p_);
+  for(unsigned int i;i<this->k_; i++){
+    this->mu_.row(i)=mu.row(active_indices.at(i));
+  }
   this->sigma_=RowMatrixXd::Ones(this->k_,this->p_);
   this->pi_ = Eigen::VectorXd::Ones(this->k_)/this->k_;
 }
@@ -412,7 +429,12 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
       if(std::abs(muTilde(i,m))<regVec*this->sigma_(i,m)/sumTau(i)){
         this->mu_(i,m)=0;
       }else{
-        this->mu_(i,m)=muTilde(i,m);
+        if(muTilde(i,m)>0){
+          this->mu_(i,m)=muTilde(i,m)-regVec*this->sigma_(i,m)/sumTau(i);
+        }else{
+          this->mu_(i,m)=muTilde(i,m)+regVec*this->sigma_(i,m)/sumTau(i);
+        }
+
       }
     }
   }
@@ -471,9 +493,14 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     int conv =0;
     int count=0;
     std::cout<<"Starting PMC"<<std::endl;
+    double old_norm = 0;
+    double norm = 0;
     while(conv==0 && count < 100){
       this->eStep(X);
       conv=this->mStep(X,reg);
+      old_norm=norm;
+      norm= this->cluster_norm(X,reg);
+      std::cout<<"The norm diff is: "<< norm-old_norm << std::endl;
       count++;
     }
     //index from tau
@@ -481,10 +508,10 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     Return_values ret;
     ret.indexes = mu_ind;
     ret.centers = this->mu_;
-    ret.norm = cluster_norm(X,mu,mu_ind, reg);
+    ret.norm = cluster_norm(X,reg);
     ret.indexes_no_zero = mu_ind;
     ret.centers_no_zero = this->mu_;
-    ret.norm_no_zero = cluster_norm(X,mu,mu_ind,reg);
+    ret.norm_no_zero = cluster_norm(X,reg);
 
     //std::tuple<Eigen::VectorXi,RowMatrixXd> tuple;
 
