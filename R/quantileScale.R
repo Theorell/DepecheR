@@ -90,7 +90,7 @@ quantileScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robus
     
   }
   
-  if(truncate=TRUE){
+  if(truncate==TRUE){
     responseVector <- truncateData(responseVector, lowQuantile=lowQuantile, highQuantile=highQuantile)
   }
   

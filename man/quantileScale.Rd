@@ -21,7 +21,7 @@ quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
 
 \item{center}{If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering.}
 
-\item{truncate}{If truncation of the most extreme values should be performed. Three possible values:
+\item{truncate}{If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:
 #' \describe{
     \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
     \item{FALSE}{No truncation.}
@@ -61,7 +61,7 @@ y_df <- quantileScale(x[,2:ncol(x)])
 
 #Here, the data has first been truncated to the default percentiles, then scaled 
 #to the standard deviation in the remaining interval and finally the center has been
-#placed where the highest peak in the data is present.
+#placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 summary(y_df)
 }
 \seealso{
