@@ -344,31 +344,38 @@ void Clusterer::eStep(const RowMatrixXd& X){
   //calculate the fkj matrix
   Eigen::MatrixXd wfkj = Eigen::MatrixXd::Zero(this->k_, this->j_);
   //for each cluster, get the weigthed probability
+  //std::cout<<"Some random outputs, mu , pi sigma: "<<mu_<<pi_<<sigma_<<std::endl;
+  //std::cout<<"k and j: "<<k_<<j_<<std::endl;
   for(unsigned int i = 0; i<this->k_; i++ ){
-    for(unsigned int l = 0; l> this->j_; l++ ){
+    for(unsigned int l = 0; l< this->j_; l++ ){
       Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
       Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
+      //std::cout<<"diff and inv: "<<diff<<inv<<std::endl;
+      //std::cout<<"assignment: "<<this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum())<<std::endl;
       wfkj(i,l)=this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum());
     }
   }
-  for(unsigned int l = 0; l> this->j_; l++ ){
+  for(unsigned int l = 0; l< this->j_; l++ ){
     this->tau_.col(l)=wfkj.col(l)/wfkj.col(l).sum();
   }
+  //std::cout<<"Tau is: "<< tau_<< "And the col sums are: "<< tau_.colwise().sum()<<std::endl;
 }
 
 int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   //update pi
-  for(unsigned int i = 0; i>this->k_; i++){
+  for(unsigned int i = 0; i<this->k_; i++){
     this->pi_(i)=this->tau_.row(i).sum()/this->j_;
   }
   //update sigma
   for(unsigned int i = 0; i<this->k_; i++ ){
     for(unsigned int m = 0; m<this->p_; m++){
       this->sigma_(i,m)=0;
-      for(unsigned int l = 0; l> this->j_; l++ ){
+      for(unsigned int l = 0; l< this->j_; l++ ){
         Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
         this->sigma_(i,m)+=this->tau_(i,l)*(X(l,i)-this->mu_(i,m))*(X(l,i)-this->mu_(i,m))/this->j_;
       }
+      //Don't let sigma be too small
+      this->sigma_(i,m)=std::max(std::sqrt(this->sigma_(i,m)),0.01);
     }
   }
 
@@ -376,7 +383,7 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   RowMatrixXd muTilde = RowMatrixXd::Zero(this->k_,this->p_);
   Eigen::VectorXd sumTau = Eigen::VectorXd::Zero(this->k_);
   for(unsigned int i = 0; i<this->k_; i++ ){
-    for(unsigned int l = 0; l> this->j_; l++ ){
+    for(unsigned int l = 0; l< this->j_; l++ ){
       muTilde.row(i)+=X.row(l)*this->tau_(i,l);
       sumTau(i)+=this->tau_(i,l);
     }
@@ -397,7 +404,11 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   }
   //check for convergence
   double diff = (this->mu_-oldMu).squaredNorm();
+
   std::cout<< "The diff Value is: "<< diff << std::endl;
+  std::cout<< "The mixture fractions are: "<< pi_<<std::endl;
+  std::cout<< "The stds are: "<< sigma_<<std::endl;
+  std::cout<< "The mus are: "<< mu_<<std::endl;
   if (diff<0.001){
     return 1;
   } else {
@@ -436,7 +447,7 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     this->initializeMembers(X,mu,k);
     int conv =0;
     int count=0;
-    while(conv==0 && count < 1000){
+    while(conv==0 && count < 100){
       this->eStep(X);
       conv=this->mStep(X,reg);
       count++;
