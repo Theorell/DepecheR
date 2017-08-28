@@ -9,7 +9,7 @@
 #' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
 #' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.
 #' @param center If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering. 
-#' @param truncate If truncation of the most extreme values should be performed. Three possible values:
+#' @param truncate If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:
 #' #' \describe{
 #'     \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
 #'     \item{FALSE}{No truncation.}
@@ -43,7 +43,7 @@
 #'
 #' #Here, the data has first been truncated to the default percentiles, then scaled 
 #' #to the standard deviation in the remaining interval and finally the center has been
-#' #placed where the highest peak in the data is present.
+#' #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export quantileScale
 quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1){
@@ -83,12 +83,21 @@ quantileScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robus
     #First truncate the data to the quantiles defined by the quantiles
     xTruncated <- truncateData(x, lowQuantile=lowQuantile, highQuantile=highQuantile)
     
+    sdxTruncated <- sd(xTruncated)
+    
     #Now the data is scaled
-    responseVector <- multiplicationFactor*scale(xTruncated, center=FALSE)
+    responseVector <- multiplicationFactor*x/sdxTruncated
     
   }
   
+  if(truncate=TRUE){
+    responseVector <- truncateData(responseVector, lowQuantile=lowQuantile, highQuantile=highQuantile)
+  }
   
+  if(length(truncate)==2){
+      responseVector <- truncateData(responseVector, lowQuantile=truncate[1], highQuantile=truncate[2])
+  }
+    
     
   if(center=="mean"){
     responseVector <- responseVector-mean(responseVector)
