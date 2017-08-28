@@ -352,21 +352,26 @@ void Clusterer::eStep(const RowMatrixXd& X){
       Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
       //std::cout<<"diff and inv: "<<diff<<inv<<std::endl;
       //std::cout<<"assignment: "<<this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum())<<std::endl;
-      wfkj(i,l)=this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum());
+      wfkj(i,l)=this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv*inv).sum());
     }
   }
   for(unsigned int l = 0; l< this->j_; l++ ){
     this->tau_.col(l)=wfkj.col(l)/wfkj.col(l).sum();
+  }
+  if(!((tau_.array() == tau_.array())).all()){
+    std::cout<< "Nan values in tau_ found"<<std::endl;
   }
   //std::cout<<"Tau is: "<< tau_<< "And the col sums are: "<< tau_.colwise().sum()<<std::endl;
 }
 
 int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   //update pi
+  RowMatrixXd oldPi=this->pi_;
   for(unsigned int i = 0; i<this->k_; i++){
     this->pi_(i)=this->tau_.row(i).sum()/this->j_;
   }
   //update sigma
+  RowMatrixXd oldSigma=this->sigma_;
   for(unsigned int i = 0; i<this->k_; i++ ){
     for(unsigned int m = 0; m<this->p_; m++){
       this->sigma_(i,m)=0;
@@ -387,7 +392,16 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
       muTilde.row(i)+=X.row(l)*this->tau_(i,l);
       sumTau(i)+=this->tau_(i,l);
     }
-    muTilde.row(i)/=sumTau(i);
+    if(sumTau(i)==0){
+      muTilde.row(i).setZero();
+    }else{
+      muTilde.row(i)/=sumTau(i);
+    }
+
+  }
+  if(!((muTilde.array() == muTilde.array())).all()){
+
+    std::cout<< "Nan values in MuTilde found"<<muTilde<<std::endl;
   }
 
   //now the weird shit happens
@@ -403,13 +417,13 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
     }
   }
   //check for convergence
-  double diff = (this->mu_-oldMu).squaredNorm();
+  double diffMu = (this->mu_-oldMu).squaredNorm();
+  double diffSigma = (this->sigma_-oldSigma).squaredNorm();
+  double diffPi = (this->pi_-oldPi).squaredNorm();
 
-  std::cout<< "The diff Value is: "<< diff << std::endl;
-  std::cout<< "The mixture fractions are: "<< pi_<<std::endl;
-  std::cout<< "The stds are: "<< sigma_<<std::endl;
-  std::cout<< "The mus are: "<< mu_<<std::endl;
-  if (diff<0.001){
+  std::cout<< "The diff Values for Mu, Sigma and Pi are: "<< diffMu <<", " <<diffSigma<<", " << diffPi<< std::endl;
+
+  if (diffMu<0.001){
     return 1;
   } else {
     return 0;
@@ -447,11 +461,17 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     this->initializeMembers(X,mu,k);
     int conv =0;
     int count=0;
-    while(conv==0 && count < 100){
+    while(conv==0 && count < 10){
       this->eStep(X);
       conv=this->mStep(X,reg);
       count++;
     }
+    this->eStep(X);
+    conv=this->mStep(X,reg);
+    //std::cout<< "The mixture fractions are: "<< pi_<<std::endl;
+    //std::cout<< "The stds are: "<< sigma_<<std::endl;
+    //std::cout<< "The mus are: "<< mu_<<std::endl;
+    //std::cout<< "The taus are: "<< tau_<<std::endl;
     //update tao
     //mu update pars
     //repeat while mu not converged.
