@@ -461,13 +461,12 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     this->initializeMembers(X,mu,k);
     int conv =0;
     int count=0;
+    std::cout<<"Starting PMC"<<std::endl;
     while(conv==0 && count < 10){
       this->eStep(X);
       conv=this->mStep(X,reg);
       count++;
     }
-    this->eStep(X);
-    conv=this->mStep(X,reg);
     //std::cout<< "The mixture fractions are: "<< pi_<<std::endl;
     //std::cout<< "The stds are: "<< sigma_<<std::endl;
     //std::cout<< "The mus are: "<< mu_<<std::endl;
