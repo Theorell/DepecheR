@@ -401,7 +401,7 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   }
   if(!((muTilde.array() == muTilde.array())).all()){
 
-    std::cout<< "Nan values in MuTilde found"<<muTilde<<std::endl;
+    std::cout<< "Nan values in MuTilde found"<<std::endl;
   }
 
   //now the weird shit happens
@@ -428,6 +428,15 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   } else {
     return 0;
   }
+}
+
+Eigen::VectorXi Clusterer::indexFromTau(){
+  Eigen::VectorXi mu_ind = Eigen::VectorXi::Zero(this->j_);
+  Eigen::MatrixXf::Index max_index;
+  for(unsigned int l; l<this->j_;l++){
+    mu_ind(l)=this->tau_.col(l).maxCoeff(&max_index);
+  }
+  return mu_ind;
 }
 
 const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsigned int k, const double reg, const bool no_zero) {
@@ -462,38 +471,19 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     int conv =0;
     int count=0;
     std::cout<<"Starting PMC"<<std::endl;
-    while(conv==0 && count < 10){
+    while(conv==0 && count < 100){
       this->eStep(X);
       conv=this->mStep(X,reg);
       count++;
     }
-    //std::cout<< "The mixture fractions are: "<< pi_<<std::endl;
-    //std::cout<< "The stds are: "<< sigma_<<std::endl;
-    //std::cout<< "The mus are: "<< mu_<<std::endl;
-    //std::cout<< "The taus are: "<< tau_<<std::endl;
-    //update tao
-    //mu update pars
-    //repeat while mu not converged.
-
+    //index from tau
+    mu_ind=this->indexFromTau();
     Return_values ret;
     ret.indexes = mu_ind;
-    ret.centers = mu;
+    ret.centers = this->mu_;
     ret.norm = cluster_norm(X,mu,mu_ind, reg);
-    //if no zero is true, continue to deallocate all points from the zero clusters.
-    if(no_zero){
-        Rcout << "Removing zero clusters"<< std::endl;
-        for(unsigned int i = 0; i<count_limit; i++){
-            Rcout << "Iteration: " <<i<< std::endl;
-            mu_ind=allocate_clusters(X,mu, no_zero);
-            if((mu_ind_old-mu_ind).isZero(0)){
-                break;
-            }
-            mu_ind_old=mu_ind;
-            mu = reevaluate_centers(X,mu_ind,k,reg);
-        }
-    }
     ret.indexes_no_zero = mu_ind;
-    ret.centers_no_zero = mu;
+    ret.centers_no_zero = this->mu_;
     ret.norm_no_zero = cluster_norm(X,mu,mu_ind,reg);
 
     //std::tuple<Eigen::VectorXi,RowMatrixXd> tuple;

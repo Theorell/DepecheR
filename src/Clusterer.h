@@ -62,7 +62,7 @@ private:
     double cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers, const Eigen::VectorXi ind, const double reg);
     RowMatrixXd m_rescale(const RowMatrixXd& Xin);
     const RowMatrixXd  reevaluate_centers(const RowMatrixXd& X, const Eigen::VectorXi inds, const unsigned int k, const double reg );
-
+    Eigen::VectorXi indexFromTau();
     RowMatrixXd initialize_mu(const RowMatrixXd& X, const unsigned int k);
     unsigned int element_from_vector(Eigen::VectorXd elements);
     const double cluster_distance(const Eigen::VectorXi c1, const Eigen::VectorXi c2, const unsigned int k);
