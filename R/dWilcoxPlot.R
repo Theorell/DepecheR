@@ -111,12 +111,12 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   #Combine the four
   result <- data.frame(as.numeric(names(p_values)), median1, median2, statistic, p_values, p_adjusted)
   row.names(result) <- c(1:nrow(result))
-  colnames(result) <- c("Cluster", paste("Median percentage for", groupName1, sep=" "), paste("Median percentage for", groupName2, sep=" "), "Wilcoxon statistic", "p-value", paste(multipleCorrMethod, "corrected p-value", sep=" "))
+  colnames(result) <- c("Cluster", paste("Median percentage for", groupName1, sep=" "), paste("Median percentage for", groupName2, sep=" "), "Wilcoxon_statistic", "p-value", paste(multipleCorrMethod, "corrected p-value", sep=" "))
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   statisticVector <- clusterVector
   for(i in 1:nrow(result)){
-    statisticVector[clusterVector==result$cluster[i]] <- result$statistic[i]
+    statisticVector[clusterVector==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
   }
 
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
