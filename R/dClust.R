@@ -76,7 +76,8 @@ dClust <- function(inDataFrameScaled, regVec, withOrigoClust, kVec=30, iteration
 			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
 			
 			#Add the zero cluster back
-			reducedPenalizedClusterCenters <- rbind(penalizedClusterCenters[1,], reducedPenalizedClusterCenters)
+			reducedPenalizedClusterCentersOrigo <- penalizedClusterCenters[1,which(colSums(penalizedClusterCenters)!=0)]
+			reducedPenalizedClusterCenters <- rbind(reducedPenalizedClusterCentersOrigo, reducedPenalizedClusterCenters)
 	}
 
 	if(withOrigoClust=="no"){
