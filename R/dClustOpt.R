@@ -66,7 +66,7 @@ dataMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	meanOptimDf <- as.data.frame(meanOptimList)
 #Here, the regVec values for the real dataset, not the bootstrap subsamples, is used.
 realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
-	rownames(meanOptimDf) <- round(regVecOffset*realK)
+	rownames(meanOptimDf) <- round(regVecOffset*realK, 2)
 	colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
 
 	regOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
