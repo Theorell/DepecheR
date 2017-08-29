@@ -33,10 +33,10 @@ x_scaled <- quantileScale(x[2:ncol(x)])
 setwd("~/Desktop")
 
 #Run the Optim function to get good starting points
-x_optim <- pKMOptim(x_scaled, iterations=5, bootstrapObservations=1000)
+x_optim <- dClustOpt(x_scaled, iterations=5, bootstrapObservations=1000)
 
 #Then run the clustering function
-x_clustered <- pKMRun(x_scaled, regVec=x_optim[[1]][1,1], 
+x_clustered <- dClust(x_scaled, regVec=x_optim[[1]][1,1], 
 withOrigoClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 
 #And finally create all the clusters

@@ -20,10 +20,10 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the Optim function to get good starting points
-#' x_optim <- pKMOptim(x_scaled, iterations=5, bootstrapObservations=1000)
+#' x_optim <- dClustOpt(x_scaled, iterations=5, bootstrapObservations=1000)
 #'
 #' #Then run the clustering function
-#' x_clustered <- pKMRun(x_scaled, regVec=x_optim[[1]][1,1], 
+#' x_clustered <- dClust(x_scaled, regVec=x_optim[[1]][1,1], 
 #' withOrigoClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 #'
 #' #And finally create all the clusters
@@ -41,6 +41,9 @@ dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector),
   workingDirectory <- getwd()
   setwd(paste(workingDirectory, directoryName, sep="/"))
 
+  #Here, all the columns in the inDataFrame that are not selected as contributing are excluded from further analysis
+  inDataFocused <- subset(inDataFrame, select=colnames(clusterCenters))
+  
   for(i in 1:length(order)){
 
     #Here, a specific directory for the graphics are made.
@@ -61,9 +64,9 @@ dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector),
     oneClustAllMu <- clusterCenters[rownames(clusterCenters)==order[i],]
 
     #Here the variable names is exported
-    allVarNames <- colnames(inDataFrame)
-    #Then a list is created that contin the objects for the prot creation
-    oneClustAllVarList <- mapply(createAllClustOneVarMu, inDataFrame, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
+    allVarNames <- colnames(inDataFocused)
+    #Then a list is created that contains the objects for the plot creation
+    oneClustAllVarList <- mapply(createAllClustOneVarMu, inDataFocused, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
     #And then the plots are created
     sapply(oneClustAllVarList, createOneViolin)
 

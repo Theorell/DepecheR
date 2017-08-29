@@ -34,7 +34,11 @@
 #'
 #' @export colorVector
 colorVector <- function(x, order=unique(x), colorScale="dark_rainbow"){
-	
+	if(class(x)=="factor"){
+	  x <- as.character(x)
+	  order <- as.character(order)
+	}
+  
   if(colorScale=="inferno"){
     orderColors <- inferno(length(order)) 
   }
