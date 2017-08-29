@@ -321,10 +321,10 @@ double Clusterer::cluster_norm(const RowMatrixXd& X, const double reg){
     for(unsigned int l = 0; l< this->j_; l++ ){
       Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
       Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
-      norm+=this->tau_(i,l)*(std::log(this->pi_(i))+std::log(inv.prod())-0.5*(diff*diff*inv*inv).sum());
+      norm+=std::exp(this->tau_(i,l))*(std::log(this->pi_(i))+std::log(inv.prod())-0.5*(diff*diff*inv*inv).sum());
     }
   }
-  norm+=this->mu_.lpNorm<1>()*reg;
+  norm-=this->mu_.lpNorm<1>()*reg;
 
     return norm;
 }
@@ -359,6 +359,7 @@ void Clusterer::initializeMembers(const RowMatrixXd& X, const RowMatrixXd& mu, c
 
 void Clusterer::eStep(const RowMatrixXd& X){
   //calculate the fkj matrix
+  Eigen::MatrixXd wfkj_log = Eigen::MatrixXd::Zero(this->k_, this->j_);
   Eigen::MatrixXd wfkj = Eigen::MatrixXd::Zero(this->k_, this->j_);
   //for each cluster, get the weigthed probability
   //std::cout<<"Some random outputs, mu , pi sigma: "<<mu_<<pi_<<sigma_<<std::endl;
@@ -369,11 +370,12 @@ void Clusterer::eStep(const RowMatrixXd& X){
       Eigen::ArrayXd inv = 1.0/this->sigma_.row(i).array();
       //std::cout<<"diff and inv: "<<diff<<inv<<std::endl;
       //std::cout<<"assignment: "<<this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv).sum())<<std::endl;
-      wfkj(i,l)=this->pi_(i)*inv.prod()*std::exp(-0.5*(diff*diff*inv*inv).sum());
+      wfkj_log(i,l)=std::log(this->pi_(i))+std::log(inv.prod())-0.5*(diff*diff*inv*inv).sum();
+      wfkj(i,l)=std::exp(wfkj_log(i,l));
     }
   }
   for(unsigned int l = 0; l< this->j_; l++ ){
-    this->tau_.col(l)=wfkj.col(l)/wfkj.col(l).sum();
+    this->tau_.col(l)=(wfkj_log.col(l).array()-std::log(wfkj.col(l).sum())).matrix();
   }
   if(!((tau_.array() == tau_.array())).all()){
     std::cout<< "Nan values in tau_ found"<<std::endl;
@@ -385,7 +387,7 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   //update pi
   RowMatrixXd oldPi=this->pi_;
   for(unsigned int i = 0; i<this->k_; i++){
-    this->pi_(i)=this->tau_.row(i).sum()/this->j_;
+    this->pi_(i)=this->tau_.row(i).array().exp().sum()/this->j_;
   }
   //update sigma
   RowMatrixXd oldSigma=this->sigma_;
@@ -394,7 +396,7 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
       this->sigma_(i,m)=0;
       for(unsigned int l = 0; l< this->j_; l++ ){
         Eigen::ArrayXd diff = X.row(l).array()-this->mu_.row(i).array();
-        this->sigma_(i,m)+=this->tau_(i,l)*(X(l,i)-this->mu_(i,m))*(X(l,i)-this->mu_(i,m))/this->j_;
+        this->sigma_(i,m)+=std::exp(this->tau_(i,l))*(X(l,i)-this->mu_(i,m))*(X(l,i)-this->mu_(i,m))/this->j_;
       }
       //Don't let sigma be too small
       this->sigma_(i,m)=std::max(std::sqrt(this->sigma_(i,m)),0.01);
@@ -402,42 +404,42 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
   }
 
   //Now create mu tilde
-  RowMatrixXd muTilde = RowMatrixXd::Zero(this->k_,this->p_);
-  Eigen::VectorXd sumTau = Eigen::VectorXd::Zero(this->k_);
-  for(unsigned int i = 0; i<this->k_; i++ ){
-    for(unsigned int l = 0; l< this->j_; l++ ){
-      muTilde.row(i)+=X.row(l)*this->tau_(i,l);
-      sumTau(i)+=this->tau_(i,l);
-    }
-    if(sumTau(i)==0){
-      muTilde.row(i).setZero();
-    }else{
-      muTilde.row(i)/=sumTau(i);
-    }
-
-  }
-  if(!((muTilde.array() == muTilde.array())).all()){
-
-    std::cout<< "Nan values in MuTilde found"<<std::endl;
-  }
-
-  //now the weird shit happens
-  RowMatrixXd oldMu=this->mu_;
-  for(unsigned int i = 0; i<this->k_; i++ ){
-
-    for(unsigned int m = 0; m<this->p_; m++){
-      if(std::abs(muTilde(i,m))<regVec*this->sigma_(i,m)/sumTau(i)){
-        this->mu_(i,m)=0;
-      }else{
-        if(muTilde(i,m)>0){
-          this->mu_(i,m)=muTilde(i,m)-regVec*this->sigma_(i,m)/sumTau(i);
-        }else{
-          this->mu_(i,m)=muTilde(i,m)+regVec*this->sigma_(i,m)/sumTau(i);
-        }
-
-      }
-    }
-  }
+  // RowMatrixXd muTilde = RowMatrixXd::Zero(this->k_,this->p_);
+  // Eigen::VectorXd sumTau = Eigen::VectorXd::Zero(this->k_);
+  // for(unsigned int i = 0; i<this->k_; i++ ){
+  //   for(unsigned int l = 0; l< this->j_; l++ ){
+  //     muTilde.row(i)+=X.row(l)*this->tau_(i,l);
+  //     sumTau(i)+=this->tau_(i,l);
+  //   }
+  //   if(sumTau(i)==0){
+  //     muTilde.row(i).setZero();
+  //   }else{
+  //     muTilde.row(i)/=sumTau(i);
+  //   }
+  //
+  // }
+  // if(!((muTilde.array() == muTilde.array())).all()){
+  //
+  //   std::cout<< "Nan values in MuTilde found"<<std::endl;
+  // }
+  //
+  // //now the weird shit happens
+     RowMatrixXd oldMu=this->mu_;
+  // for(unsigned int i = 0; i<this->k_; i++ ){
+  //
+  //   for(unsigned int m = 0; m<this->p_; m++){
+  //     if(std::abs(muTilde(i,m))<regVec*this->sigma_(i,m)/sumTau(i)){
+  //       this->mu_(i,m)=0;
+  //     }else{
+  //       if(muTilde(i,m)>0){
+  //         this->mu_(i,m)=muTilde(i,m)-regVec*this->sigma_(i,m)/sumTau(i);
+  //       }else{
+  //         this->mu_(i,m)=muTilde(i,m)+regVec*this->sigma_(i,m)/sumTau(i);
+  //       }
+  //
+  //     }
+  //   }
+  // }
   //check for convergence
   double diffMu = (this->mu_-oldMu).squaredNorm();
   double diffSigma = (this->sigma_-oldSigma).squaredNorm();
@@ -445,7 +447,7 @@ int Clusterer::mStep(const RowMatrixXd& X, const double regVec){
 
   std::cout<< "The diff Values for Mu, Sigma and Pi are: "<< diffMu <<", " <<diffSigma<<", " << diffPi<< std::endl;
 
-  if (diffMu<0.001){
+  if (diffMu<0.001 && diffPi<0.001 && diffSigma<0.001){
     return 1;
   } else {
     return 0;
