@@ -1,18 +1,19 @@
 #' Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result
 #'
 #'
-#' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
+#' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.  
+#' @importFrom forecast BoxCox BoxCox.lambda 
+#' @importFrom mixOmics splsda
+#' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual scale_x_continuous theme element_blank element_rect ggsave
 #' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
-#' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
-#' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.
+#' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum statistic that is generated in the analysis.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -48,9 +49,9 @@
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Run the function
-#' dWilcoxPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
-#' @export dWilcoxPlot
-dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="dWilcoxPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcoxPlot", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+#' @export dsPLSDAPlot
+dsPLSDAPlot <- function(xYData, idsVector, groupVector, clusterVector, densContour, name="dsPLSDAPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dsPLSDAPlot", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -93,38 +94,48 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
     x <- clusterTable2[,i]/countTable2[i]
     clusterFractionsForAllIds2[,i] <- x
   }
-
-  #And here the statistical test is performed for each cluster individually
-  statisticList <- mapply(wilcox.test, as.data.frame.matrix(t(clusterFractionsForAllIds1)), as.data.frame.matrix(t(clusterFractionsForAllIds2)), MoreArgs=list(alternative="two.sided", paired=paired, exact=FALSE), SIMPLIFY=FALSE)
-
-  #Now, the statistics and the p-values are retrieved
-  statistic <- unlist(lapply(statisticList, `[[`, 1))
-  p_values <- unlist(lapply(statisticList, `[[`, 3))
-
-  #Here, adjustments for multiple comparisons are performed
-  p_adjusted <- p.adjust(p_values, method=multipleCorrMethod)
-
-  #Now the median for each group and cluster is calculated
-  median1 <- 100*apply(clusterFractionsForAllIds1, 1, median)
-  median2 <- 100*apply(clusterFractionsForAllIds2, 1, median)
   
-  #Combine the four
-  result <- data.frame(as.numeric(names(p_values)), median1, median2, statistic, p_values, p_adjusted)
-  row.names(result) <- c(1:nrow(result))
-  colnames(result) <- c("Cluster", paste("Median percentage for", groupName1, sep=" "), paste("Median percentage for", groupName2, sep=" "), "Wilcoxon_statistic", "p-value", paste(multipleCorrMethod, "corrected p-value", sep=" "))
+  #A group vector is created with the same length as the number of columns in the tables
+  groupId <- as.factor(c(rep(groupName1, ncol(clusterFractionsForAllIds1)), rep(groupName2, ncol(clusterFractionsForAllIds2))))
+  
+  #These two tables are combined to one
+  clusterFractionsForAllIds <- as.matrix(cbind(clusterFractionsForAllIds1, clusterFractionsForAllIds2))
+  
+  #A box-cox transformation with lambda tuning, followed by mean centering and unit variance scaling is performed. 
+  clusterFractionsForAllIdsCoxBox <- apply(clusterFractionsForAllIds, 1, function(x) BoxCox(x, BoxCox.lambda(x)))
+  
 
+  #And here the sPLS-DA is performed. Scaling is performed internally in the algorithm.
+  
+  sPLSDAObject <-  splsda(X=clusterFractionsForAllIdsCoxBox,Y=groupId,ncomp=1)
+  
+  #Retrieve the x variates for plotting
+  sPLSDAX <- data.frame(sPLSDAObject$variates$X)
+  densityHist <- cbind(sPLSDAX, groupId)
+  
+  colnames(densityHist) <- c("sPLSDA_vector","Group")
+  
+  # Density plots with semi-transparent fill
+  ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
+    theme (line = element_blank(),
+           panel.background = element_rect(fill = "white"))
+  ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
+  
+  #Retrieve the loadings
+  sPLSDALoadings <- sPLSDAObject$mat.c
+  
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   statisticVector <- clusterVector
-  for(i in 1:nrow(result)){
-    statisticVector[clusterVector==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
+  for(i in 1:nrow(sPLSDALoadings)){
+    statisticVector[clusterVector==rownames(sPLSDALoadings)[i]] <- sPLSDALoadings[i]
   }
 
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
   if(missing(maxAbsPlottingValues)){
-    maxAbsPlottingValues <- max(statistic)
+    maxAbsPlottingValues <- max(abs(sPLSDALoadings))
   }
 
-  #Here the data that will be used for plotting are scaled.
+  #Here the data that will be used for plotting is scaled.
   xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
@@ -132,7 +143,7 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   statistic.df <- as.data.frame(statisticVector)
 
   #make a breaks vector to define each bin for the colors
-  brks <- with(statistic.df, seq(0, maxAbsPlottingValues, length.out = 22))
+  brks <- with(statistic.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, length.out = 22))
 
   #assign each value to a bin
   grps <- with(statistic.df, cut(statistic.df[,1], breaks = brks, include.lowest = TRUE))
@@ -164,7 +175,7 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
 
 #Create a color legend with text
 
-	yname <- "Wilcoxon values"
+	yname <- "sPLS-DA values"
 	topText <- paste(groupName1, " is more abundant", sep="")
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
@@ -182,12 +193,18 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   box()
   dev.off()
 
-  write.csv(result, "dWilcoxPlotResult.csv", row.names=FALSE)
-
+  
+  #Return data from the sPLS-DA that was needed for the generation of the graphs
+  
+  
+  write.csv(sPLSDALoadings, "sPLSDALoadings.csv")
+  
+  write.csv(sPLSDAX, "sPLSDAVariatesX.csv")
+  
   if(createDirectory==TRUE){
     setwd(workingDirectory)
   }
 
-  return(result)
+  return(sPLSDAObject)
 
 }
