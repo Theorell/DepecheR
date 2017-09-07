@@ -101,13 +101,8 @@ dsPLSDAPlot <- function(xYData, idsVector, groupVector, clusterVector, densConto
   #These two tables are combined to one
   clusterFractionsForAllIds <- as.matrix(cbind(clusterFractionsForAllIds1, clusterFractionsForAllIds2))
   
-  #A box-cox transformation with lambda tuning, followed by mean centering and unit variance scaling is performed. 
-  clusterFractionsForAllIdsCoxBox <- apply(clusterFractionsForAllIds, 1, function(x) BoxCox(x, BoxCox.lambda(x)))
-  
-
   #And here the sPLS-DA is performed. Scaling is performed internally in the algorithm.
-  
-  sPLSDAObject <-  splsda(X=clusterFractionsForAllIdsCoxBox,Y=groupId,ncomp=1)
+  sPLSDAObject <-  splsda(X=t(clusterFractionsForAllIds),Y=groupId,ncomp=1)
   
   #Retrieve the x variates for plotting
   sPLSDAX <- data.frame(sPLSDAObject$variates$X)
