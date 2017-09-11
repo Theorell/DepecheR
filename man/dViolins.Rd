@@ -5,7 +5,7 @@
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
 dViolins(clusterCenters, clusterVector, order = unique(clusterVector),
-  inDataFrame)
+  inDataFrame, plotAll = FALSE)
 }
 \arguments{
 \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
@@ -15,6 +15,8 @@ dViolins(clusterCenters, clusterVector, order = unique(clusterVector),
 \item{order}{The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.}
 
 \item{inDataFrame}{A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.}
+
+\item{plotAll}{If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.}
 }
 \value{
 One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
@@ -39,8 +41,10 @@ x_optim <- dClustOpt(x_scaled, iterations=5, bootstrapObservations=1000)
 x_clustered <- dClust(x_scaled, regVec=x_optim[[1]][1,1], 
 withOrigoClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
 
-#And finally create all the clusters
+#Create the plots of the variables that contribute to creating each cluster
 dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
+#Now, finally, create plots of all clusters, regardless of if they contributed or not
+dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}

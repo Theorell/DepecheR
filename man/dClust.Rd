@@ -4,15 +4,17 @@
 \alias{dClust}
 \title{Function to run penalized K means}
 \usage{
-dClust(inDataFrameScaled, regVec, withOrigoClust, kVec = 30,
-  iterations = 10, ids)
+dClust(inDataFrameScaled, clustSize, penaltyOffset, withOrigoClust,
+  initCenters = 30, iterations = 10, ids)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.}
 
-\item{regVec}{The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.}
+\item{clustSize}{Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
 
-\item{kVec}{Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
+\item{penaltyOffset}{The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.}
+
+\item{initCenters}{Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
 
 \item{iterations}{As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dClustOpt has been performed before, this number should not need to be extensive. Default is 10.}
 
@@ -45,7 +47,7 @@ setwd("~/Desktop")
 x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
 
 #Then run the actual function
-x_dClust <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVec"]], 
+x_dClust <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 
 #And finally look at your great result

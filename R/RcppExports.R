@@ -2,14 +2,14 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 sparse_k_means <- function(X, k, reg, no_zero, seed_off_set = 0L) {
-    .Call('DepecheR_sparse_k_means', PACKAGE = 'DepecheR', X, k, reg, no_zero, seed_off_set)
+    .Call('_DepecheR_sparse_k_means', PACKAGE = 'DepecheR', X, k, reg, no_zero, seed_off_set)
 }
 
 grid_search <- function(X, k, reg, iterations, bootstrapSamples, seed_off_set = 0L) {
-    .Call('DepecheR_grid_search', PACKAGE = 'DepecheR', X, k, reg, iterations, bootstrapSamples, seed_off_set)
+    .Call('_DepecheR_grid_search', PACKAGE = 'DepecheR', X, k, reg, iterations, bootstrapSamples, seed_off_set)
 }
 
 allocate_points <- function(X, mu, no_zero) {
-    .Call('DepecheR_allocate_points', PACKAGE = 'DepecheR', X, mu, no_zero)
+    .Call('_DepecheR_allocate_points', PACKAGE = 'DepecheR', X, mu, no_zero)
 }
 

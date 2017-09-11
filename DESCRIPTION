@@ -5,10 +5,10 @@ Title: Determination of essential phenotypic elements of clusters in high-dimens
 Authors@R: c(person("Jakob", "Theorell", email = "jakob.theorell@ki.se",
                   role = c("aut", "cre")),
            person("Axel", "Theorell", email = "a.theorell@fz-juelich.de",
-                  role = "aut"))
+                  role = "aut", "cre"))
 Author: 
    Jakob Theorell [aut, cre],
-   Axel Theorell [aut]
+   Axel Theorell [aut, cre]
 Maintainer: Jakob Theorell <jakob.theorell@ki.se>
 Description: The purpose of this package is to identify traits in a dataset that can separate groups. This is done on two levels. First, clustering is performed, using an implementation of sparse K-means. Secondly, the generated clusters are used to predict outcomes of groups of individuals based on their distribution of observations in the different clusters. As certain clusters with separating information will be identified, and these clusters are defined by a sparse number of variables, this method can reduce the complexity of data, to only emphasize the data that actually matters.
 License: MIT

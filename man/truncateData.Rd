@@ -45,7 +45,6 @@ y_df <- truncateData(x_df, lowQuantile=0.01, highQuantile=0.99)
 
 #And the most extreme values have been reduced
 summary(y_df)
-
 }
 \seealso{
 \code{\link{quantileScale}}

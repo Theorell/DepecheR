@@ -40,7 +40,7 @@
 #' 
 #' #Create the optimized number of clusters for this dataset
 #' x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
-#' x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVec"]], 
+#' x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
 #' #Run Barnes Hut tSNE on this. 
@@ -119,11 +119,6 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
     statisticVector[clusterVector==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
   }
 
-  #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
-  if(missing(maxAbsPlottingValues)){
-    maxAbsPlottingValues <- max(statistic)
-  }
-
   #Here the data that will be used for plotting are scaled.
   xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
@@ -131,8 +126,23 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   #Make a color vector with the same length as the data
   statistic.df <- as.data.frame(statisticVector)
 
-  #make a breaks vector to define each bin for the colors
-  brks <- with(statistic.df, seq(0, maxAbsPlottingValues, length.out = 22))
+  #Make a breaks vector to define each bin for the colors. 
+  #To do this, the Wilcoxon statistic that corresponds to a p-value of 1 needs to be obtained. This is done by running a perfectly overlapping Wilcoxon.
+  
+  nullWilcox <- wilcox.test(rep(c(1,2), length=ncol(clusterFractionsForAllIds1)), rep(c(2,1), length=ncol(clusterFractionsForAllIds2)), paired=paired, exact=FALSE)
+
+  centerWilcoxStatistic <- nullWilcox$statistic
+  
+  #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
+  if(missing(maxAbsPlottingValues)){
+    maxValue <- max(statistic)-centerWilcoxStatistic
+    minValue <- centerWilcoxStatistic-min(statistic)
+    maxAbsPlottingValues <- max(c(maxValue, minValue))
+  }
+    
+  #And here, the lower border 
+  
+  brks <- with(statistic.df, seq(centerWilcoxStatistic-maxAbsPlottingValues, centerWilcoxStatistic+maxAbsPlottingValues, length.out = 22))
 
   #assign each value to a bin
   grps <- with(statistic.df, cut(statistic.df[,1], breaks = brks, include.lowest = TRUE))
@@ -173,11 +183,11 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   par(fig=c(0.35,0.65,0,1), xpd=NA)
   z=matrix(1:21,nrow=1)
   x=1
-  y=seq(0,maxAbsPlottingValues,len=21)
+  y=seq(centerWilcoxStatistic-maxAbsPlottingValues, centerWilcoxStatistic+maxAbsPlottingValues,len=21)
   image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
   axis(2)
-  text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
-  text(1,maxAbsPlottingValues-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
+  text(1,centerWilcoxStatistic+maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
+  text(1,centerWilcoxStatistic-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
 
   box()
   dev.off()

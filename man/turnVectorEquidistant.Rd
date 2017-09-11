@@ -33,4 +33,5 @@ sort(unique(y))
 #The first occurence of the lowest value still comes in the same place, 
 #so the structure of the original vector is retained.
 identical(grep(min(x),x), grep(min(y), y))
+
 }

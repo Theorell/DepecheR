@@ -34,7 +34,7 @@
 #' id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 #'
 #' #Then run the dClust function for the train set
-#' x_dClust_train <- dClust(x_scaled_train, regVec=x_optim[[1]][["bestRegVec"]], 
+#' x_dClust_train <- dClust(x_scaled_train, penalty=x_optim[[1]][["bestPenaltyOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=2, ids=id_vector_train)
 #'
 #' #This is followed by running the actual function in question

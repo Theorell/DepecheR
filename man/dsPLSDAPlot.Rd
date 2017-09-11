@@ -65,7 +65,7 @@ setwd("~/Desktop")
 
 #Create the optimized number of clusters for this dataset
 x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVec"]], 
+x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 
 #Run Barnes Hut tSNE on this. 
