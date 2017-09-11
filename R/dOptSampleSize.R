@@ -33,15 +33,30 @@
 #' @export dOptSampleSize
 dOptSampleSize <- function(inDataFrameScaled, sampleSize=1000*c(2^0, 2^1, 2^2, 2^3, 2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), initCenters=30, iterations=50, minimalImprovement=0.01, penaltyOptSampleSize=16000, penaltyOffset=c(0,2,4,8,16,32,64,128), makeOptimGraph=TRUE){
 	
+  #Here, it is checked  with a rule of thumb if it is worth running the function
+  if (nrow(inDataFrameScaled)<100000){
+    ANSWER <- readline("The number of rows in the total inDataFrame does not exceed 100000. It is not worth running this function. Do you want to continue anyway? Answer with yes or no.")
+    
+    if (substr(ANSWER, 1, 1) == "n"){
+      stop("Ok. Let us stop here then. This is not an error.")
+    } else {
+      cat("Ok. Let us go on anyway then.")
+    }
+    
+  }
+  
   #First, the optimal penaltyOffset is identified with a reasonable sample size
-  bestPenaltyOffset <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, bootstrapObservations=penaltyOptSampleSize, penaltyOffset=penaltyOffset, makeGraph=makeOptimGraph, graphName=paste("Distance over penalty values for sample size ", sampleSize[i], ".pdf", sep=""))[[1]][1,1]
+  bestPenaltyOffset <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, bootstrapObservations=penaltyOptSampleSize, penaltyOffset=penaltyOffset, makeGraph=makeOptimGraph)[[1]][1,1]
+  
+  print("Now, the pre-optimization of the penalty terms is done and the sample size optimization will start.")
   
 	lowestDist <- vector()
 	for(i in 1:length(sampleSize)){
 	  ptm <- proc.time()
-		dClustOptResult <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, sampleSize[i], penaltyOffset=bestPenaltyOffset, makeGraph=FALSE, disableWarnings=TRUE)
+		dClustOptResult <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, sampleSize[i], penaltyOffset=c(penaltyOffset[which(penaltyOffset==bestPenaltyOffset)], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)-1], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)+1]), makeGraph=FALSE, disableWarnings=TRUE)
+		#graphName=paste("Distance over penalty values for sample size ", sampleSize[i], ".pdf", sep="")
 		timing <- proc.time() - ptm
-		lowestDist[i] <- min(dClustOptResult[[2]][1:2])
+		lowestDist[i] <- min(dClustOptResult[[2]][,1:2])
 		
 		if(i<=3){
 			print(paste("Cycle", i, "completed. Jumping to next sample size."))
@@ -54,7 +69,7 @@ dOptSampleSize <- function(inDataFrameScaled, sampleSize=1000*c(2^0, 2^1, 2^2, 2
 			    ANSWER <- readline(paste("The improvement between the two latest cycles was ", lowestDist[i], " . ", "The next cycle will take approximately ",  timing[3]*2, " seconds. Do you wish to run it? Print no if you do not, and yes if you do.", sep=""))
 
 			    if (substr(ANSWER, 1, 1) == "n"){
-			      cat("Ok. Lets stop here then.\\n")
+			      cat("Ok. Lets stop here then.")
 			      break
 			    }
 			      
