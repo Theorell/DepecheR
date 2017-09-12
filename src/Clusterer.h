@@ -50,19 +50,19 @@ public:
         srand((unsigned int) time(0)+seed_off_set);;
     }
     virtual ~Clusterer();
-
+    const Eigen::VectorXi allocate_to_model_based(const RowMatrixXd& X, const RowMatrixXd& mu, const RowMatrixXd& sigma, const Eigen::VectorXd& pi);
     friend class Tester;
     friend Rcpp::List allocate_points(Rcpp::NumericMatrix X, Rcpp::NumericMatrix mu,const bool no_zero );
 
 
 private:
-    int mStep(const RowMatrixXd& X, const double regVec);
-    void eStep(const RowMatrixXd& X);
-    void initializeMembers(const RowMatrixXd& X, const RowMatrixXd& mu, const unsigned int k);
+    int m_step(const RowMatrixXd& X, const double regVec);
+    void e_step(const RowMatrixXd& X);
+    void initialize_members(const RowMatrixXd& X, const RowMatrixXd& mu);
     double cluster_norm(const RowMatrixXd& X, const double reg);
     RowMatrixXd m_rescale(const RowMatrixXd& Xin);
     const RowMatrixXd  reevaluate_centers(const RowMatrixXd& X, const Eigen::VectorXi inds, const unsigned int k, const double reg );
-    Eigen::VectorXi indexFromTau();
+    const Eigen::VectorXi index_from_tau(Eigen::MatrixXd& tau);
     RowMatrixXd initialize_mu(const RowMatrixXd& X, const unsigned int k);
     unsigned int element_from_vector(Eigen::VectorXd elements);
     const double cluster_distance(const Eigen::VectorXi c1, const Eigen::VectorXi c2, const unsigned int k);
