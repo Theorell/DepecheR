@@ -6,7 +6,7 @@
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
-#' @param clustSize Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
+#' @param sampleSize Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
 #' @param penaltyOffset The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.
 #' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClustOpt, again.
 #' @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
@@ -39,7 +39,7 @@
 #' #And finally look at your great result
 #' str(x_dClust)
 #' @export dClust
-dClust <- function(inDataFrameScaled, clustSize, penaltyOffset, withOrigoClust, initCenters=30, iterations=10, ids){
+dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust, initCenters=30, iterations=10, ids){
 
   if(missing(ids)){
     stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
@@ -49,17 +49,17 @@ dClust <- function(inDataFrameScaled, clustSize, penaltyOffset, withOrigoClust, 
     stop("Ids is a non-existent object. Save youself some time and put in an existing one before running again, as the function will otherwise throw an error at the end.")
   }
 
-  if(missing(clustSize)){
-    clustSize <- nrow(inDataFrameScaled)
+  if(missing(sampleSize)){
+    sampleSize <- nrow(inDataFrameScaled)
   }
   
-  if(clustSize==nrow(inDataFrameScaled)){
+  if(sampleSize==nrow(inDataFrameScaled)){
     inDataFrameUsed <- inDataFrameScaled
   } else {
-    inDataFrameUsed <- sample_n(inDataFrameScaled, clustSize, replace=TRUE)
+    inDataFrameUsed <- sample_n(inDataFrameScaled, sampleSize, replace=TRUE)
   }
 
-  k <- ((clustSize*sqrt(ncol(inDataFrameUsed)))/1450)
+  k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
   penalty <- penaltyOffset*k
   
   dataMat<-data.matrix(inDataFrameUsed, rownames.force = NA)
@@ -119,7 +119,7 @@ dClust <- function(inDataFrameScaled, clustSize, penaltyOffset, withOrigoClust, 
   
 	
 	#If the number of observations used for the clustering is not equal to the number of rows in the inDataFrameScaled, here a prediction is made for all the other events. 
-	if(clustSize!=nrow(inDataFrameScaled)){
+	if(sampleSize!=nrow(inDataFrameScaled)){
 	  myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	  
 	  if(withOrigoClust=="yes"){

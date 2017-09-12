@@ -2,13 +2,14 @@
 % Please edit documentation in R/dsPLSDAPlot.R
 \name{dsPLSDAPlot}
 \alias{dsPLSDAPlot}
-\title{Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result}
+\title{Sparse partial least squares discriminant analysis with paired and unpaired data}
 \usage{
-dsPLSDAPlot(xYData, idsVector, groupVector, clusterVector, densContour,
-  name = "dsPLSDAPlot", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
-  createDirectory = FALSE, directoryName = "dsPLSDAPlot",
-  bandColor = "black", dotSize = 400/sqrt(nrow(xYData)))
+dsPLSDAPlot(xYData, idsVector, groupVector, clusterVector,
+  pairingVector = NULL, densContour, name = "dsPLSDAPlot",
+  groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
+  title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
+  directoryName = "dsPLSDAPlot", bandColor = "black",
+  dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -18,6 +19,8 @@ dsPLSDAPlot(xYData, idsVector, groupVector, clusterVector, densContour,
 \item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
+
+\item{pairingVector}{If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 
@@ -40,7 +43,7 @@ dsPLSDAPlot(xYData, idsVector, groupVector, clusterVector, densContour,
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 }
 \value{
-This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
+This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 }
 \description{
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
@@ -65,15 +68,22 @@ setwd("~/Desktop")
 
 #Create the optimized number of clusters for this dataset
 x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
+x_pKM <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
-#Run the function
-dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+#Run the function. This time without pairing.
+sPLSDAObject <- dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+
+#Here, pairing is used
+#First, an artificial pairing vector, making the first donor amongst the first ten connected to the first donor among the second ten.
+pairingVector <- c(rep(1:20, each=500), rep(1:20, each=500))
+
+#Then the actual multilevel sPLS-DA is run. 
+sPLSDAObject <- dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

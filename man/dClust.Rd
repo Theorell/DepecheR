@@ -4,13 +4,13 @@
 \alias{dClust}
 \title{Function to run penalized K means}
 \usage{
-dClust(inDataFrameScaled, clustSize, penaltyOffset, withOrigoClust,
+dClust(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
   initCenters = 30, iterations = 10, ids)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.}
 
-\item{clustSize}{Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
+\item{sampleSize}{Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
 
 \item{penaltyOffset}{The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.}
 
