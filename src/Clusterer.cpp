@@ -411,63 +411,83 @@ int Clusterer::m_step(const RowMatrixXd& X, const double pen_term){
   //loop through k,p to get some important statistics
   RowMatrixXd no_x = RowMatrixXd::Zero(this->k_, this->p_);
   RowMatrixXd lin_x = RowMatrixXd::Zero(this->k_, this->p_);
-  RowMatrixXd square_x = RowMatrixXd::Zero(this->k_, this->p_);
+  //RowMatrixXd square_x = RowMatrixXd::Zero(this->k_, this->p_);
   for(unsigned int m = 0; m<this->p_; m++){
         for(unsigned int i = 0; i<this->k_; i++ ){
       
           no_x(i,m)=this->tau_.row(i).array().sum();
           lin_x(i,m)=(this->tau_.row(i).array().transpose()*X.col(m).array()).sum();
-          square_x(i,m)=(this->tau_.row(i).array().transpose()*X.col(m).array().square()).sum();        
+          //square_x(i,m)=(this->tau_.row(i).array().transpose()*X.col(m).array().square()).sum();        
       }     
   }
   //std::cout<<"X: "<<X<<"tau: "<<this->tau_<< "noX: "<<noX<<"linX: "<<linX<<"squareX: "<<squareX<<std::endl;
   RowMatrixXd old_mu=this->mu_;
   RowMatrixXd old_sigma=this->sigma_;
   //now calculate the mus
-  for(unsigned int m = 0; m<this->p_; m++){
-    for(unsigned int i = 0; i<this->k_; i++ ){
-        double mu = 0;
-        double sigma = 0.001;
-        if(no_x(i,m)>std::exp(-20)){
-            double a = lin_x(i,m)/pen_term;
-             
+    for(unsigned int m = 0; m<this->p_; m++){
+        for(unsigned int i = 0; i<this->k_; i++ ){
 
-            if(lin_x(i,m)>0){
-                double q_pos = square_x(i,m)/no_x(i,m)-a;
-                double b_pos = no_x(i,m)/pen_term;
-                double p_pos = b_pos-2*lin_x(i,m)/no_x(i,m);
-                mu = -p_pos/2+std::sqrt(std::pow(p_pos,2)/4-q_pos);
-                if(mu<0 || mu!=mu){
-                    mu=0;
-                    sigma = std::max(std::sqrt(square_x(i,m)/no_x(i,m)),0.001);
+            if(no_x(i,m)!=0){
+                double mu_pos = (lin_x(i,m)-pen_term)/no_x(i,m);
+                double mu_neg = (lin_x(i,m)+pen_term)/no_x(i,m);
+                if(mu_pos>0){
+                    this->mu_(i,m)=mu_pos;
+                }else if(mu_neg<0){
+                    this->mu_(i,m)=mu_neg;
                 }else{
-                    if(a-mu*b_pos>0){
-                        sigma = std::max(std::sqrt(a-mu*b_pos),0.001);  
-                    }
+                    this->mu_(i,m)=0;
                 }
-
-
-            } else if (lin_x(i,m)<0){
-                double q_neg = square_x(i,m)/no_x(i,m)+a;
-                double b_neg = -no_x(i,m)/pen_term;
-                double p_neg = b_neg-2*lin_x(i,m)/no_x(i,m);
-                mu = -p_neg/2-std::sqrt(std::pow(p_neg,2)/4-q_neg);
-                if(mu>0 || mu!=mu){
-                    mu=0;
-                    sigma = std::max(std::sqrt(square_x(i,m)/no_x(i,m)),0.001);
-                }else{
-                    if(-a-mu*b_neg>0){
-                        sigma = std::max(std::sqrt(-a-mu*b_neg),0.001); 
-                    }
-                }
-
+            }else{
+                this->mu_(i,m)=0;
             }
+            
+            
         }
-        this->mu_(i,m)=mu;
-        this->sigma_(i,m)=sigma;
-        
     }
-  }
+//  for(unsigned int m = 0; m<this->p_; m++){
+//    for(unsigned int i = 0; i<this->k_; i++ ){
+//        double mu = 0;
+//        double sigma = 0.001;
+//        if(no_x(i,m)>std::exp(-20)){
+//            double a = lin_x(i,m)/pen_term;
+//             
+//
+//            if(lin_x(i,m)>0){
+//                double q_pos = square_x(i,m)/no_x(i,m)-a;
+//                double b_pos = no_x(i,m)/pen_term;
+//                double p_pos = b_pos-2*lin_x(i,m)/no_x(i,m);
+//                mu = -p_pos/2+std::sqrt(std::pow(p_pos,2)/4-q_pos);
+//                if(mu<0 || mu!=mu){
+//                    mu=0;
+//                    sigma = std::max(std::sqrt(square_x(i,m)/no_x(i,m)),0.001);
+//                }else{
+//                    if(a-mu*b_pos>0){
+//                        sigma = std::max(std::sqrt(a-mu*b_pos),0.001);  
+//                    }
+//                }
+//
+//
+//            } else if (lin_x(i,m)<0){
+//                double q_neg = square_x(i,m)/no_x(i,m)+a;
+//                double b_neg = -no_x(i,m)/pen_term;
+//                double p_neg = b_neg-2*lin_x(i,m)/no_x(i,m);
+//                mu = -p_neg/2-std::sqrt(std::pow(p_neg,2)/4-q_neg);
+//                if(mu>0 || mu!=mu){
+//                    mu=0;
+//                    sigma = std::max(std::sqrt(square_x(i,m)/no_x(i,m)),0.001);
+//                }else{
+//                    if(-a-mu*b_neg>0){
+//                        sigma = std::max(std::sqrt(-a-mu*b_neg),0.001); 
+//                    }
+//                }
+//
+//            }
+//        }
+//        this->mu_(i,m)=mu;
+//        this->sigma_(i,m)=sigma;
+//        
+//    }
+//  }
   //check for convergence
   double diffMu = (this->mu_-old_mu).squaredNorm()/(this->mu_.squaredNorm()+0.001);
   double diffSigma = (this->sigma_-old_sigma).squaredNorm()/(this->sigma_.squaredNorm()+0.001);
