@@ -6,7 +6,7 @@
 \usage{
 quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
   robustVarScale = TRUE, center = "peak", truncate = FALSE,
-  multiplicationFactor = 1)
+  multiplicationFactor = 1, multiCore = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -21,14 +21,16 @@ quantileScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
 
 \item{center}{If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering.}
 
-\item{truncate}{If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:
+\item{truncate}{If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:}
+
+\item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.}
+
+\item{multiCore}{If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' \describe{
     \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
     \item{FALSE}{No truncation.}
     \item{A vector with two values, eg c(0.01, 0.99)}{Data outside of these quantiles will be truncated.}
 }}
-
-\item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.}
 }
 \value{
 A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.

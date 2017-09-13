@@ -52,7 +52,7 @@ colorVector <- function(x, order=unique(x), colorScale="dark_rainbow"){
     orderColors <- magma(length(order)) 
   }
   if(colorScale=="rich.colors"){
-    orderColors <- rich.colors(length(order)) 
+    orderColors <- rev(rich.colors(length(order))) 
   }
   if(colorScale=="rainbow"){
     orderColors <- rainbow(length(order)) 

@@ -81,7 +81,7 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
 	
   #Here, the best iteration is retrieved
   logDistance <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
-  minimumN <- min(abs(logDistance)) 
+  minimumN <- max(logDistance)
   returnLowest <- return_all[[which(abs(logDistance)==minimumN)[1]]]
 
 

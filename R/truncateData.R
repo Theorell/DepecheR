@@ -61,8 +61,8 @@ truncateData <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
 
 
 truncateDataCoFunction <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
-  high <- hdquantile(control, highQuantile)
-  low <- hdquantile(control, lowQuantile)
+  high <- Hmisc::hdquantile(control, highQuantile)
+  low <- Hmisc::hdquantile(control, lowQuantile)
 
   x[x > high] <- high
   x[x < low] <- low

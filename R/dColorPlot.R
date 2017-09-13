@@ -3,6 +3,9 @@
 #'
 #' Function to overlay one variable for a set of observations on a field created by two other variables known for the same observations. The plot is constructed primarily for displaying variables on 2D-stochastic neighbour embedding fields, but can be used for any sets of (two or) three variables known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become extremely big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 #' @importFrom gplots rich.colors
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW 
+#' @importFrom foreach foreach %dopar%
 #' @param colorData A vector or a dataframe of numeric observations that will be displayed as color on the plot.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.
 #' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
@@ -15,6 +18,7 @@
 #' @param directoryName The name of the created directory, if it should be created.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
+#' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is true, as it only affects datasets with more than one column.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{colorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
@@ -39,7 +43,7 @@
 #' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dColorPlot <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -71,26 +75,37 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour, addLege
     densContour <- densityContours(xYData)
   }
   
-  if(class(colorData)!="character" && drawColorPalette==TRUE){
+  if(drawColorPalette==TRUE){
     pdf("palette.pdf")
     palette(rev(rich.colors(100, plot=TRUE)))
     dev.off()
   }
 
-  if(class(colorData)!="character" && drawColorPalette==FALSE){
-    palette(rev(rich.colors(100, plot=FALSE)))
-  }
 
   xYDataFraction <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   
   if(class(colorData)=="numeric"){
-    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    colorDataTruncated <- truncateData(colorData)
+    colorDataPercent <- quantileScale(colorDataTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorVector <- colorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
+    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
   }
   if(class(colorData)=="data.frame"){
-    mapply(dColorPlotCoFunction, colorData, names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize))
+    colorDataTruncated <- apply(colorData, 2, truncateData)
+    colorDataPercent <- apply(colorDataTruncated, 2, quantileScale, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorVectors <- apply(round(colorDataPercent), 2, colorVector, colorScale="rich.colors", order=c(1:100))
+    if(multiCore==TRUE){
+      no_cores <- detectCores() - 1
+      cl = makeCluster(no_cores, type = "SOCK")
+      registerDoSNOW(cl)
+      foreach(i=1:ncol(colorVectors), .inorder=FALSE) %dopar% dColorPlotCoFunction(colorVariable=colorVectors[,i], name=names[i], xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+      stopCluster(cl)
+    } else {
+       mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, stringsAsFactors =FALSE), names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize))
+    }
   }
   if(class(colorData)=="character"){
-    dColorPlotCoFunctionSetCols(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
   }
 
   if(addLegend==TRUE){
@@ -113,31 +128,6 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour, addLege
 }
 
 dColorPlotCoFunction <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
-
-  colorVariableTruncated <- truncateData(colorVariable)
-  colorVariablePercent <- quantileScale(colorVariableTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-  
-  colnames(xYDataFraction) <- c("V1", "V2")
-    
-  png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  # Plot it
-  if(title==TRUE){
-    plot(V2~V1, data=xYDataFraction, main=name, pch=20, cex=dotSize, cex.main=5, col=(1 + 0.98*(102-colorVariablePercent)), xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(title==FALSE){
-    plot(V2~V1, data=xYDataFraction, main=NULL, pch=20, cex=dotSize, cex.main=5, col=(1 + 0.98*(102-colorVariablePercent)), xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  
-  
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  
-  dev.off()
-  
-}
-
-
-dColorPlotCoFunctionSetCols <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
 
   colnames(xYDataFraction) <- c("V1", "V2")
   
