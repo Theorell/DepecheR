@@ -59,6 +59,7 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
     inDataFrameUsed <- sample_n(inDataFrameScaled, sampleSize, replace=TRUE)
   }
 
+  #k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450) #This is for the old algorithm.
   k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
   penalty <- penaltyOffset*k
   
@@ -78,15 +79,11 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
 	  stopCluster(cl)
 	}
 	
-#Here, the best iteration is retrieved
+  #Here, the best iteration is retrieved
+  logDistance <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
+  minimumN <- min(abs(logDistance)) 
+  returnLowest <- return_all[[which(abs(logDistance)==minimumN)[1]]]
 
-	for(i in 1:length(return_all)){
-		minimumN <- min(do.call("rbind", lapply(return_all, "[[", 5)))
-		if(return_all[[i]][5]==minimumN){
-			returnLowest <- return_all[[i]]
-
-		}
-	}
 
 	if(withOrigoClust=="yes"){
 			clusterVector <- returnLowest$i
