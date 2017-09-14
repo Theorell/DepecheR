@@ -29,7 +29,7 @@
 #' 
 #' #Create the optimized number of clusters for this dataset
 #' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
-#' x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
+#' x_pKM <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
 #' #Run Barnes Hut tSNE on this. 
