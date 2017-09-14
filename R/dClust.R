@@ -59,7 +59,6 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
     inDataFrameUsed <- sample_n(inDataFrameScaled, sampleSize, replace=TRUE)
   }
 
-  #k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450) #This is for the old algorithm.
   k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
   penalty <- penaltyOffset*k
   
@@ -80,50 +79,59 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
 	}
 	
   #Here, the best iteration is retrieved
-  logDistance <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
-  minimumN <- max(logDistance)
-  returnLowest <- return_all[[which(abs(logDistance)==minimumN)[1]]]
+  logMaxLik <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
+  minimumN <- max(logMaxLik)
+  returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
 
 
 	if(withOrigoClust=="yes"){
 			clusterVector <- returnLowest$i
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
-			penalizedClusterCenters <- returnLowest$c			  
-			colnames(penalizedClusterCenters) <- colnames(inDataFrameUsed)
-			#Remove all rows that do not contain any information.
+			clusterCenters <- returnLowest$c			  
+			colnames(clusterCenters) <- colnames(inDataFrameUsed)
+			#Remove all columns and rows that do not contain any information.
+			reducedClusterCentersColRow <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
 			
-			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
+			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
+			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
 			
 			#Add the zero cluster back
-			reducedPenalizedClusterCentersOrigo <- penalizedClusterCenters[1,which(colSums(penalizedClusterCenters)!=0)]
-			reducedPenalizedClusterCenters <- rbind(reducedPenalizedClusterCentersOrigo, reducedPenalizedClusterCenters)
-	}
+			reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
+			reducedClusterCentersColRow <- rbind(reducedClusterCentersColRowOrigo, reducedClusterCentersColRow)
+	
+			reducedClusterCentersRow <- rbind(clusterCenters[1,], reducedClusterCentersRow)
+			
+			
+		}
 
 	if(withOrigoClust=="no"){
 			clusterVector <- returnLowest$o
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
-			penalizedClusterCenters <- returnLowest$v		
-			colnames(penalizedClusterCenters) <- colnames(inDataFrameUsed)
+			clusterCenters <- returnLowest$v		
+			colnames(clusterCenters) <- colnames(inDataFrameUsed)
 			#Remove all rows that do not contain any information
-			reducedPenalizedClusterCenters <- penalizedClusterCenters[which(rowSums(penalizedClusterCenters)!=0),which(colSums(penalizedClusterCenters)!=0)]
+			reducedClusterCentersColRow <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
 
+			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
+			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
+			
 	}
 
 	#Make the row names the same as the cluster names in the clusterVectorEquidistant
-  rownames(reducedPenalizedClusterCenters) <- sort(unique(clusterVectorEquidistant))
-  
+  rownames(reducedClusterCentersColRow) <- sort(unique(clusterVectorEquidistant))
+  rownames(reducedClusterCentersRow) <- sort(unique(clusterVectorEquidistant))
 	
 	#If the number of observations used for the clustering is not equal to the number of rows in the inDataFrameScaled, here a prediction is made for all the other events. 
 	if(sampleSize!=nrow(inDataFrameScaled)){
 	  myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	  
 	  if(withOrigoClust=="yes"){
-	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedPenalizedClusterCenters,0))
+	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedClusterCentersRow,0))
 	  }
 	  if(withOrigoClust=="no"){
-	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedPenalizedClusterCenters,1))
+	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedClusterCentersRow,1))
 	  }
 	}
 		
@@ -144,13 +152,13 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
   }
 
 
-  dClustResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedPenalizedClusterCenters), as.data.frame.matrix(t(clusterFractionsForAllIds)))
+  dClustResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedClusterCentersColRow), reducedClusterCentersRow, as.data.frame.matrix(t(clusterFractionsForAllIds)))
 
-  names(dClustResult) <- c("clusterVector", "clusterCenters", "idClusterFractions")
+  names(dClustResult) <- c("clusterVector", "clusterCenters", "clusterCentersWZeroVariables", "idClusterFractions")
 
   #Here, a heatmap over the cluster centers is saved
   pdf("Cluster centers.pdf")
-  heatmap.2(reducedPenalizedClusterCenters, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+  heatmap.2(reducedClusterCentersColRow, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
   dev.off()
 
 	return(dClustResult)

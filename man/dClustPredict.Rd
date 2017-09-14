@@ -47,12 +47,12 @@ id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
 id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 
 #Then run the dClust function for the train set
-x_dClust_train <- dClust(x_scaled_train, penalty=x_optim[[1]][["bestPenaltyOffset"]], 
+x_dClust_train <- dClust(x_scaled_train, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=2, ids=id_vector_train)
 
 #This is followed by running the actual function in question
 x_dClust_test <- dClustPredict(x_scaled_test, 
-clusterCenters=x_dClust_train$clusterCenters, 
+clusterCenters=x_dClust_train$clusterCentersWZeroVariables, 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
