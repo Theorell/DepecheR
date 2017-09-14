@@ -7,13 +7,13 @@
 dClustPredict(inDataFrameScaled, clusterCenters, withOrigoClust, ids)
 }
 \arguments{
-\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function. It should naturally be scaled together with the data used to genreate the cluster centers.}
+\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function. It should naturally be scaled together with the data used to genreate the cluster centers.}
 
 \item{clusterCenters}{This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.}
 
 \item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
 
-\item{withOrWithoutZeroClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClustOpt, again.}
+\item{withOrWithoutZeroClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.}
 }
 \value{
 A list with two components:
@@ -27,10 +27,10 @@ Here, observations of a dataset are allocated to a set of preestablished cluster
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateFlowCytometryData()
+x <- generateBimodalData()
 
 #Scale this datamframe
-x_scaled <- quantileScale(x[,2:ncol(x)])
+x_scaled <- dScale(x[,2:ncol(x)])
 
 #Divide this scaled dataframe in two parts
 x_scaled_train <- x_scaled[1:5000,]
@@ -39,8 +39,8 @@ x_scaled_test <- x_scaled[5001:10000,]
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Run the dClustOpt function to get good starting points
-x_optim <- dClustOpt(x_scaled_train, iterations=5, bootstrapObservations=1000)
+#Run the dOptPenalty function to get good starting points
+x_optim <- dOptPenalty(x_scaled_train, iterations=5, bootstrapObservations=1000)
 
 #Create two completely meaningless ids vectors
 id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
@@ -65,5 +65,5 @@ title(xlab = "Clusters")
 title(ylab = "Percentage")
 }
 \seealso{
-\code{\link{dClustOpt}}, \code{\link{dClust}}
+\code{\link{dOptPenalty}}, \code{\link{dClust}}
 }

@@ -19,16 +19,16 @@
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-#' x <- generateFlowCytometryData(samplings=2, ncols=7)
+#' x <- generateBimodalData(samplings=2, ncols=7)
 #'
 #' #Scale the data 
-#' x_scaled <- quantileScale(x=x[2:ncol(x)])
+#' x_scaled <- dScale(x=x[2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Create the optimized number of clusters for this dataset
-#' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
+#' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
 #' x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
@@ -87,7 +87,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour, name=
   }
 
   #Here the data that will be used for plotting is scaled.
-  xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=1)
+  xYDataScaled <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=1)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
@@ -103,7 +103,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour, name=
 
   #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
   if(missing("densContour")){
-    densContour <- densityContours(xYData)
+    densContour <- dContours(xYData)
   }
 
   if(title==TRUE){

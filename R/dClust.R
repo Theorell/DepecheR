@@ -5,14 +5,14 @@
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
-#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
+#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 #' @param sampleSize Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
-#' @param penaltyOffset The parameter that controls the level of penalization. Preferrably, it should be inherited from a dClustOpt run, as the algorithm will then generate the most stable result.
-#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClustOpt, again.
+#' @param penaltyOffset The parameter that controls the level of penalization. Preferrably, it should be inherited from a dOptPenalty run, as the algorithm will then generate the most stable result.
+#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.
 #' @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
-#' @param iterations As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dClustOpt has been performed before, this number should not need to be extensive. Default is 10.
+#' @param iterations As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dOptPenalty has been performed before, this number should not need to be extensive. Default is 10.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @seealso \code{\link{dClustOpt}}, \code{\link{dClustPredict}}
+#' @seealso \code{\link{dOptPenalty}}, \code{\link{dClustPredict}}
 #' @return A list with three components:
 #' \describe{
 #'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -21,16 +21,16 @@
 #' }
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateFlowCytometryData(samplings=2)
+#' x <- generateBimodalData(samplings=2)
 #'
 #' #Scale this datamframe
-#' x_scaled <- quantileScale(x[,2:ncol(x)])
+#' x_scaled <- dScale(x[,2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
-#' #Run the dClustOpt function to get good starting points
-#' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
+#' #Run the dOptPenalty function to get good starting points
+#' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
 #'
 #' #Then run the actual function
 #' x_dClust <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 

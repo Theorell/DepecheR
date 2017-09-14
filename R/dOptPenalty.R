@@ -5,7 +5,7 @@
 #' @importFrom parallel detectCores makeCluster parLapply stopCluster
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
-#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
+#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 #' @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 #' @param iterations As it sounds, the number of bootstrap reiterations that are performed.
 #' @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
@@ -21,19 +21,19 @@
 #' }
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateFlowCytometryData()
+#' x <- generateBimodalData()
 #'
 #' #Scale this datamframe
-#' x_scaled <- quantileScale(x[,2:ncol(x)])
+#' x_scaled <- dScale(x[,2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
 #' #Run the function
-#' x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
-#' @export dClustOpt
+#' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
+#' @export dOptPenalty
 #' @useDynLib DepecheR
-dClustOpt <- function(inDataFrameScaled, initCenters=30, iterations=50, bootstrapObservations=10000, penaltyOffset=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+dOptPenalty <- function(inDataFrameScaled, initCenters=30, iterations=50, bootstrapObservations=10000, penaltyOffset=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
 
 #The constant k is empirically identified by running a large number of penalty values for a few datasets.
 k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)

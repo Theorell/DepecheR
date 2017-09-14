@@ -19,14 +19,14 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is true, as it only affects datasets with more than one column.
-#' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{colorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateFlowCytometryData(samplings=3, observations=3000)
+#' x <- generateBimodalData(samplings=3, observations=3000)
 #'
 #' #Scale the data 
-#' x_scaled <- quantileScale(x=x[2:ncol(x)])
+#' x_scaled <- dScale(x=x[2:ncol(x)])
 #' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
@@ -39,7 +39,7 @@
 #' dColorPlot(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 #'
 #' #Create a color vector and display it on the SNE field.
-#' xColor <- colorVector(x[,1], colorScale="plasma")
+#' xColor <- dColorVector(x[,1], colorScale="plasma")
 #' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
@@ -72,7 +72,7 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour, addLege
 
   #If there is no matrix present to construct the contour lines, create the density matrix for all_data to make them.
   if(missing("densContour")){
-    densContour <- densityContours(xYData)
+    densContour <- dContours(xYData)
   }
   
   if(drawColorPalette==TRUE){
@@ -82,18 +82,18 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour, addLege
   }
 
 
-  xYDataFraction <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+  xYDataFraction <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   
   if(class(colorData)=="numeric"){
     colorDataTruncated <- truncateData(colorData)
-    colorDataPercent <- quantileScale(colorDataTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-    colorVector <- colorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
+    colorDataPercent <- dScale(colorDataTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorVector <- dColorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
     dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
   }
   if(class(colorData)=="data.frame"){
     colorDataTruncated <- apply(colorData, 2, truncateData)
-    colorDataPercent <- apply(colorDataTruncated, 2, quantileScale, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
-    colorVectors <- apply(round(colorDataPercent), 2, colorVector, colorScale="rich.colors", order=c(1:100))
+    colorDataPercent <- apply(colorDataTruncated, 2, dScale, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich.colors", order=c(1:100))
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1
       cl = makeCluster(no_cores, type = "SOCK")

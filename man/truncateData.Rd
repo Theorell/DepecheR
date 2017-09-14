@@ -47,5 +47,5 @@ y_df <- truncateData(x_df, lowQuantile=0.01, highQuantile=0.99)
 summary(y_df)
 }
 \seealso{
-\code{\link{quantileScale}}
+\code{\link{dScale}}
 }

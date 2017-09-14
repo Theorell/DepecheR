@@ -45,10 +45,10 @@ Function to overlay one variable for a set of observations on a field created by
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateFlowCytometryData(samplings=3, observations=3000)
+x <- generateBimodalData(samplings=3, observations=3000)
 
 #Scale the data 
-x_scaled <- quantileScale(x=x[2:ncol(x)])
+x_scaled <- dScale(x=x[2:ncol(x)])
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
@@ -61,10 +61,10 @@ setwd("~/Desktop")
 dColorPlot(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
 
 #Create a color vector and display it on the SNE field.
-xColor <- colorVector(x[,1], colorScale="plasma")
+xColor <- dColorVector(x[,1], colorScale="plasma")
 dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{colorVector}}
+\code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{dColorVector}}
 }

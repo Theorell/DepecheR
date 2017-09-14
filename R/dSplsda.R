@@ -23,11 +23,11 @@
 #' @return This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-#' xindividuals <- generateFlowCytometryData(samplings=40, ncols=7, observations=500)
+#' xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
 #'
 #' #Now add three columns that will separate the first ten from 
 #' #the second ten individuals and merge the datasets
-#' xgroups <- generateFlowCytometryData(samplings=2, ncols=3, observations=10000)
+#' xgroups <- generateBimodalData(samplings=2, ncols=3, observations=10000)
 #' colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 #' x <- cbind(xindividuals[,1], xgroups[,1], 
 #' xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -35,12 +35,12 @@
 #' colnames(x)[1:2] <- c("ids", "group")
 #'
 #' #Scale the data
-#' x_scaled <- quantileScale(x[3:ncol(x)])
+#' x_scaled <- dScale(x[3:ncol(x)])
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Create the optimized number of clusters for this dataset
-#' x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
+#' x_optim <- dOptPenalty(x_scaled, iterations=50, bootstrapObservations=1000)
 #' x_pKM <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
@@ -49,16 +49,16 @@
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Run the function. This time without pairing.
-#' sPLSDAObject <- dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+#' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
 #' 
 #' #Here, pairing is used
 #' #First, an artificial pairing vector, making the first donor amongst the first ten connected to the first donor among the second ten.
 #' pairingVector <- c(rep(1:20, each=500), rep(1:20, each=500))
 #' 
 #' #Then the actual multilevel sPLS-DA is run. 
-#' sPLSDAObject <- dsPLSDAPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
-#' @export dsPLSDAPlot
-dsPLSDAPlot <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, densContour, name="dsPLSDAPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dsPLSDAPlot", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
+#' @export dSplsda
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, densContour, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -227,7 +227,7 @@ dsPLSDAPlot <- function(xYData, idsVector, groupVector, clusterVector, pairingVe
   }
 
   #Here the data that will be used for plotting is scaled.
-  xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+  xYDataScaled <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
@@ -243,7 +243,7 @@ dsPLSDAPlot <- function(xYData, idsVector, groupVector, clusterVector, pairingVe
 
   #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
   if(missing("densContour")){
-    densContour <- densityContours(xYData)
+    densContour <- dContours(xYData)
   }
 
   if(title==TRUE){

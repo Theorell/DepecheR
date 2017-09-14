@@ -24,7 +24,7 @@
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateFlowCytometryData()
+#' x <- generateBimodalData()
 #'
 #' #Retrieve the first column
 #' x2 <- x[,2]
@@ -34,7 +34,7 @@
 #' min(x2)
 #'
 #' #Run the function without mean centering and with the quantiles set to 0 and 1.
-#' y2 <- quantileScale(x2, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+#' y2 <- dScale(x2, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 #'
 #' #And the data has been scaled to the range between 0 and 1.
 #' max(y2)
@@ -43,14 +43,14 @@
 #' #Now run the default function for a dataframe
 #' summary(x[,2:ncol(x)])
 #'
-#' y_df <- quantileScale(x[,2:ncol(x)])
+#' y_df <- dScale(x[,2:ncol(x)])
 #'
 #' #Here, the data has first been truncated to the default percentiles, then scaled 
 #' #to the standard deviation in the remaining interval and finally the center has been
 #' #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
-#' @export quantileScale 
-quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
+#' @export dScale 
+dScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -65,23 +65,23 @@ quantileScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, rob
   }
 
     if(class(x)!="data.frame"){
-    result <- quantileScaleCoFunction(x, control=control, robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
+    result <- dScaleCoFunction(x, control=control, robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
   }
   if(class(x)=="data.frame"){
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1
       cl = parallel::makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
-      result <- foreach(i=1:ncol(x), .inorder=TRUE) %dopar% quantileScaleCoFunction(x[,i], control=control[,i], robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
+      result <- foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
       parallel::stopCluster(cl)
     } else {
-      result <- as.data.frame(mapply(quantileScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
+      result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
     }
       }
  return(result)
 }
 
-quantileScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robustVarScale, truncate, center, multiplicationFactor){
+dScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robustVarScale, truncate, center, multiplicationFactor){
 
     #Define quartiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
     top <- Hmisc::hdquantile(control, probs = highQuantile, se=FALSE, na.rm=TRUE)

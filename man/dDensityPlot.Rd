@@ -52,10 +52,10 @@ Function to show density for a set of observations on a field created by two var
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-x <- generateFlowCytometryData(samplings=5, observations=2000)
+x <- generateBimodalData(samplings=5, observations=2000)
 
 #Scale the data 
-x_scaled <- quantileScale(x=x[2:ncol(x)])
+x_scaled <- dScale(x=x[2:ncol(x)])
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
@@ -69,7 +69,7 @@ dDensityPlot(xYData=as.data.frame(xSNE$Y), commonName="All_samplings",
 color="blue", createDirectory=FALSE)
 
 #Now plot each id separately using a predefined colorscale separating each cluster
-xColor <- colorVector(x[,1], colorScale="plasma")
+xColor <- dColorVector(x[,1], colorScale="plasma")
 dDensityPlot(xYData=as.data.frame(xSNE$Y), color=xColor, plotEachIdSeparately=TRUE, 
 idsVector=x[,1], commonName="sampling")
 

@@ -26,16 +26,16 @@ Here, violin plots of a specific cluster and the total population are created fo
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateFlowCytometryData(samplings=2, ncols=8)
+x <- generateBimodalData(samplings=2, ncols=8)
 
 #Scale this dataframe
-x_scaled <- quantileScale(x[2:ncol(x)])
+x_scaled <- dScale(x[2:ncol(x)])
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Run the Optim function to get good starting points
-x_optim <- dClustOpt(x_scaled, iterations=5, bootstrapObservations=1000)
+x_optim <- dOptPenalty(x_scaled, iterations=5, bootstrapObservations=1000)
 
 #Then run the clustering function
 x_clustered <- dClust(x_scaled, regVec=x_optim[[1]][1,1], 

@@ -45,16 +45,16 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-x <- generateFlowCytometryData(samplings=2, ncols=7)
+x <- generateBimodalData(samplings=2, ncols=7)
 
 #Scale the data 
-x_scaled <- quantileScale(x=x[2:ncol(x)])
+x_scaled <- dScale(x=x[2:ncol(x)])
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Create the optimized number of clusters for this dataset
-x_optim <- dClustOpt(x_scaled, iterations=10, bootstrapObservations=1000)
+x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
 x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
 withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 

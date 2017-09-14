@@ -10,7 +10,7 @@ dOptSampleSize(inDataFrameScaled, sampleSize = 1000 * c(2^0, 2^1, 2^2, 2^3,
   penaltyOffset = c(0, 2, 4, 8, 16, 32, 64, 128), makeOptimGraph = TRUE)
 }
 \arguments{
-\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.}
+\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
 \item{sampleSize}{The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.}
 
@@ -39,10 +39,10 @@ This function is used before the dClust function to identify the smallest sample
 }
 \examples{
 #Generate a dataframe with bimodally distributed data with a million rows.
-x <- generateFlowCytometryData(observations=1000000)
+x <- generateBimodalData(observations=1000000)
 
 #Scale this datamframe
-x_scaled <- quantileScale(x[,2:ncol(x)])
+x_scaled <- dScale(x[,2:ncol(x)])
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")

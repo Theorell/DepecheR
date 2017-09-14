@@ -14,22 +14,25 @@
 #'
 #' @examples
 #' #Generate a dataframe with two numeric, normally distributed vectors.
-#' x_df <- data.frame(cbind(rnorm(1000, 55, 10), rnorm(1000, 2, 90)))
-
+#' #Generate a default size dataframe with bimodally distributed data
+#' x <- generateBimodalData(samplings=2)
+#'
+#' #Scale this datamframe
+#' x_scaled <- dScale(x[,2:ncol(x)], center=FALSE)
 #' #Run the function
-#' contour_result <- densityContours(x_df)
+#' contour_result <- dContours(x_scaled[,1:2])
 #'
 #' #Plot the result
 #' contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, 
-#' xlim=c(-0.05, 1.05), 
-#' ylim=c(-0.05, 1.05), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
+#' xlim=c(-0.2, 1.2), 
+#' ylim=c(-0.2, 1.2), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
 #' xaxs="i", yaxs="i")
 #'
-#' @export densityContours
+#' @export dContours
 
-densityContours <- function(sneData, n=100){
+dContours <- function(sneData, n=100){
 
-	sneDataNorm <- quantileScale(x=sneData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+	sneDataNorm <- dScale(x=sneData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 
 	V1 <- sneDataNorm[,1]
 	V2 <- sneDataNorm[,2]

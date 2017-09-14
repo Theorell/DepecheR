@@ -12,18 +12,18 @@
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-#' x <- generateFlowCytometryData(samplings=5, observations=2000)
+#' x <- generateBimodalData(samplings=5, observations=2000)
 #'
 #' #Scale the data (not actually necessary in this artificial 
 #' #example due to the nature of the generated data)
-#' x_scaled <- quantileScale(x=x[2:ncol(x)])
+#' x_scaled <- dScale(x=x[2:ncol(x)])
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Now use our function
-#' xColors <- colorVector(x[,1])
+#' xColors <- dColorVector(x[,1])
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
@@ -32,8 +32,8 @@
 #' dDensityPlot(xYData=as.data.frame(xSNE$Y), idsVector=x[,1], commonName="All_samplings", 
 #' color=xColors, createDirectory=FALSE)
 #'
-#' @export colorVector
-colorVector <- function(x, order=unique(x), colorScale="dark_rainbow"){
+#' @export dColorVector
+dColorVector <- function(x, order=unique(x), colorScale="dark_rainbow"){
 	if(class(x)=="factor"){
 	  x <- as.character(x)
 	  order <- as.character(order)
@@ -62,12 +62,12 @@ colorVector <- function(x, order=unique(x), colorScale="dark_rainbow"){
   }
 
   	#Here, a vector with the same length as the x vector is generated, but where the x info has been substituted with a color.
-  	colorVector <- x
+  	dColorVector <- x
   		for(i in 1:length(order)){
-    	colorVector[x==order[i]] <- 	orderColors[i]
+    	dColorVector[x==order[i]] <- 	orderColors[i]
   	}
 
-  return(colorVector)
+  return(dColorVector)
   	
 }
 

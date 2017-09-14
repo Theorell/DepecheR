@@ -22,11 +22,11 @@
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-#' xindividuals <- generateFlowCytometryData(samplings=40, ncols=7, observations=500)
+#' xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
 #'
 #' #Now add three columns that will separate the first ten from 
 #' #the second ten individuals and merge the datasets
-#' xgroups <- generateFlowCytometryData(samplings=2, ncols=3, observations=10000)
+#' xgroups <- generateBimodalData(samplings=2, ncols=3, observations=10000)
 #' colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 #' x <- cbind(xindividuals[,1], xgroups[,1], 
 #' xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -34,12 +34,12 @@
 #' colnames(x)[1:2] <- c("ids", "group")
 #'
 #' #Scale the data
-#' x_scaled <- quantileScale(x[3:ncol(x)])
+#' x_scaled <- dScale(x[3:ncol(x)])
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Create the optimized number of clusters for this dataset
-#' x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
+#' x_optim <- dOptPenalty(x_scaled, iterations=50, bootstrapObservations=1000)
 #' x_pKM <- dClust(x_scaled, regVec=x_optim[[1]][["bestRegVecOffset"]], 
 #' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
 #'
@@ -48,9 +48,9 @@
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #Run the function
-#' dWilcoxPlot(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
-#' @export dWilcoxPlot
-dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="dWilcoxPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcoxPlot", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+#' dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+#' @export dWilcox
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -120,7 +120,7 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   }
 
   #Here the data that will be used for plotting are scaled.
-  xYDataScaled <- quantileScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+  xYDataScaled <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
@@ -151,7 +151,7 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
 
   #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
   if(missing("densContour")){
-    densContour <- densityContours(xYData)
+    densContour <- dContours(xYData)
   }
 
   if(title==TRUE){
@@ -192,7 +192,7 @@ dWilcoxPlot <- function(xYData, idsVector, groupVector, clusterVector, paired=FA
   box()
   dev.off()
 
-  write.csv(result, "dWilcoxPlotResult.csv", row.names=FALSE)
+  write.csv(result, "dWilcoxResult.csv", row.names=FALSE)
 
   if(createDirectory==TRUE){
     setwd(workingDirectory)

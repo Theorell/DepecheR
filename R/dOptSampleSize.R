@@ -3,7 +3,7 @@
 #'
 #' This function is used before the dClust function to identify the smallest sample size that gives rise to the most stable clustering. It is primarily used when datasets are very large (i.e. >100 000 observations), where there is a computational gain in clustering based on a subset of the cells and then assigning all other cells to the correct cluster center.
 #' @importFrom graphics box
-#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the quantileScale function.
+#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 #' @param sampleSize The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.
 #' @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 #' @param iterations As it sounds, the number of bootstrap reiterations that are performed.
@@ -20,10 +20,10 @@
 #'}
 #' @examples
 #' #Generate a dataframe with bimodally distributed data with a million rows.
-#' x <- generateFlowCytometryData(observations=1000000)
+#' x <- generateBimodalData(observations=1000000)
 #'
 #' #Scale this datamframe
-#' x_scaled <- quantileScale(x[,2:ncol(x)])
+#' x_scaled <- dScale(x[,2:ncol(x)])
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
@@ -46,17 +46,17 @@ dOptSampleSize <- function(inDataFrameScaled, sampleSize=1000*c(2^0, 2^1, 2^2, 2
   }
   
   #First, the optimal penaltyOffset is identified with a reasonable sample size
-  bestPenaltyOffset <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, bootstrapObservations=penaltyOptSampleSize, penaltyOffset=penaltyOffset, makeGraph=makeOptimGraph)[[1]][1,1]
+  bestPenaltyOffset <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, iterations=iterations, bootstrapObservations=penaltyOptSampleSize, penaltyOffset=penaltyOffset, makeGraph=makeOptimGraph)[[1]][1,1]
   
   print("Now, the pre-optimization of the penalty terms is done and the sample size optimization will start.")
   
 	lowestDist <- vector()
 	for(i in 1:length(sampleSize)){
 	  ptm <- proc.time()
-		dClustOptResult <- dClustOpt(inDataFrameScaled, initCenters=initCenters, iterations=iterations, sampleSize[i], penaltyOffset=c(penaltyOffset[which(penaltyOffset==bestPenaltyOffset)], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)-1], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)+1]), makeGraph=FALSE, disableWarnings=TRUE)
+		dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, iterations=iterations, sampleSize[i], penaltyOffset=c(penaltyOffset[which(penaltyOffset==bestPenaltyOffset)], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)-1], penaltyOffset[which(penaltyOffset==bestPenaltyOffset)+1]), makeGraph=FALSE, disableWarnings=TRUE)
 		#graphName=paste("Distance over penalty values for sample size ", sampleSize[i], ".pdf", sep="")
 		timing <- proc.time() - ptm
-		lowestDist[i] <- min(dClustOptResult[[2]][,1:2])
+		lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 		
 		if(i<=3){
 			print(paste("Cycle", i, "completed. Jumping to next sample size."))
