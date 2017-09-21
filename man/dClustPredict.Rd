@@ -40,20 +40,19 @@ x_scaled_test <- x_scaled[5001:10000,]
 setwd("~/Desktop")
 
 #Run the dOptPenalty function to get good starting points
-x_optim <- dOptPenalty(x_scaled_train, iterations=5, bootstrapObservations=1000)
+x_optim <- dClustOpt(x_scaled_train)
 
 #Create two completely meaningless ids vectors
 id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
 id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 
 #Then run the dClust function for the train set
-x_dClust_train <- dClust(x_scaled_train, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
-withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=2, ids=id_vector_train)
+x_dClust_train <- dClust(x_scaled_train, dClustOptObject=x_optim, ids=id_vector_train)
 
 #This is followed by running the actual function in question
 x_dClust_test <- dClustPredict(x_scaled_test, 
 clusterCenters=x_dClust_train$clusterCentersWZeroVariables, 
-withOrigoClust=x_optim[[1]][["withOrigoClust"]], ids=id_vector_test)
+withOrigoClust=x_optim[[4]][1,2], ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
 xmatrix <- as.matrix(rbind(x_dClust_train$clusterPercentagesForAllIds, 

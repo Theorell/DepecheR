@@ -4,23 +4,25 @@
 \alias{dClust}
 \title{Function to run penalized K means}
 \usage{
-dClust(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
-  initCenters = 30, iterations = 10, ids)
+dClust(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyOffset,
+  withOrigoClust, initCenters = 30, iterations = 10)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{sampleSize}{Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
-
-\item{penaltyOffset}{The parameter that controls the level of penalization. Preferrably, it should be inherited from a dOptPenalty run, as the algorithm will then generate the most stable result.}
-
-\item{initCenters}{Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
-
-\item{iterations}{As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dOptPenalty has been performed before, this number should not need to be extensive. Default is 10.}
+\item{dClustOptObject}{This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.}
 
 \item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
 
-\item{withOrWithoutZeroClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.}
+\item{sampleSize}{By default inherited from dClustOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
+
+\item{penaltyOffset}{By default inherited from dClustOptObject. The parameter that controls the level of penalization.}
+
+\item{withOrigoClust}{By default inherited from dClustOptObject. This parameter controls if the generated result should contain a cluster in origo or not.}
+
+\item{initCenters}{By default inherited from dClustOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
+
+\item{iterations}{By default inherited from dClustOptObject. As it sounds, this controls how many iterations that are performed, among which the most stable is chosen.}
 }
 \value{
 A list with three components:
@@ -44,15 +46,14 @@ x_scaled <- dScale(x[,2:ncol(x)])
 setwd("~/Desktop")
 
 #Run the dOptPenalty function to get good starting points
-x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
+x_optim <- dClustOpt(x_scaled)
 
 #Then run the actual function
-x_dClust <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
-withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
+x_dClust <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
 
 #And finally look at your great result
 str(x_dClust)
 }
 \seealso{
-\code{\link{dOptPenalty}}, \code{\link{dClustPredict}}
+\code{\link{dClustPredict}}, \code{\link{dClustOpt}}
 }

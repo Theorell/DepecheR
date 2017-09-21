@@ -1,0 +1,12 @@
+?std
+d <- list(1,3,5)
+d
+e <- list(3,7,1)
+test <- c(d, e)
+test
+?which
+df <- data.frame(rnorm(10), rnorm(10))
+which(df[,1:2]==min(df[,1:2]), arr.ind=TRUE)
+df
+test <- which(df[,1:2]==min(df[,1:2]), arr.ind=TRUE)
+df[test]

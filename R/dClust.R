@@ -6,13 +6,14 @@
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param sampleSize Number of observations that shoult be included in the initial clustering step. Defaults to all rows in inDataFrameScaled. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
-#' @param penaltyOffset The parameter that controls the level of penalization. Preferrably, it should be inherited from a dOptPenalty run, as the algorithm will then generate the most stable result.
-#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.
-#' @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
-#' @param iterations As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. If dOptPenalty has been performed before, this number should not need to be extensive. Default is 10.
+#' @param dClustOptObject This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @seealso \code{\link{dOptPenalty}}, \code{\link{dClustPredict}}
+#' @param sampleSize By default inherited from dClustOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
+#' @param penaltyOffset By default inherited from dClustOptObject. The parameter that controls the level of penalization. 
+#' @param withOrigoClust By default inherited from dClustOptObject. This parameter controls if the generated result should contain a cluster in origo or not. 
+#' @param initCenters By default inherited from dClustOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
+#' @param iterations By default inherited from dClustOptObject. As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. 
+#' @seealso \code{\link{dClustPredict}}, \code{\link{dClustOpt}}
 #' @return A list with three components:
 #' \describe{
 #'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -30,16 +31,15 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the dOptPenalty function to get good starting points
-#' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
+#' x_optim <- dClustOpt(x_scaled)
 #'
 #' #Then run the actual function
-#' x_dClust <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
-#' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
+#' x_dClust <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
 #'
 #' #And finally look at your great result
 #' str(x_dClust)
 #' @export dClust
-dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust, initCenters=30, iterations=10, ids){
+dClust <- function(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyOffset, withOrigoClust, initCenters=30, iterations=10){
 
   if(missing(ids)){
     stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
@@ -49,13 +49,19 @@ dClust <- function(inDataFrameScaled, sampleSize, penaltyOffset, withOrigoClust,
     stop("Ids is a non-existent object. Save youself some time and put in an existing one before running again, as the function will otherwise throw an error at the end.")
   }
 
-  if(missing(sampleSize)){
-    sampleSize <- nrow(inDataFrameScaled)
+  if(missing(dClustOptObject)==FALSE){
+    if(missing(sampleSize)==TRUE){
+      sampleSize <- dClustOptObject[[1]][length(dClustOptObject[[1]])]
+    } else if(sampleSize!="All"){
+      sampleSize <- nrow(inDataFrameScaled)
+      inDataFrameUsed <- inDataFrameScaled
+    }
+    penaltyOffset <- dClustOptObject[[4]][1,1]
+    withOrigoClust <- dClustOptObject[[4]][1,2]
+    initCenters <- dClustOptObject[[4]][1,3]
   }
   
-  if(sampleSize==nrow(inDataFrameScaled)){
-    inDataFrameUsed <- inDataFrameScaled
-  } else {
+  if(sampleSize!=nrow(inDataFrameScaled)){
     inDataFrameUsed <- sample_n(inDataFrameScaled, sampleSize, replace=TRUE)
   }
 

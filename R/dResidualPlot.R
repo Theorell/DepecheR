@@ -28,9 +28,8 @@
 #' setwd("~/Desktop")
 #' 
 #' #Create the optimized number of clusters for this dataset
-#' x_optim <- dOptPenalty(x_scaled, iterations=10, bootstrapObservations=1000)
-#' x_pKM <- dClust(x_scaled, penaltyOffset=x_optim[[1]][["bestPenaltyOffset"]], 
-#' withOrigoClust=x_optim[[1]][["withOrigoClust"]], iterations=1, ids=x[,1])
+#' x_optim <- dCLustOpt(x_scaled)
+#' x_pKM <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)

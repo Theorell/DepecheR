@@ -72,8 +72,9 @@ dScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarS
       no_cores <- detectCores() - 1
       cl = parallel::makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
-      result <- foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
+      result <- as.data.frame(foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor))
       parallel::stopCluster(cl)
+      colnames(result) <- colnames(x)
     } else {
       result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
     }

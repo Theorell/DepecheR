@@ -21,11 +21,10 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the Optim function to get good starting points
-#' x_optim <- dOptPenalty(x_scaled, iterations=5, bootstrapObservations=1000)
+#' x_optim <- dClustOpt(x_scaled)
 #'
 #' #Then run the clustering function
-#' x_clustered <- dClust(x_scaled, regVec=x_optim[[1]][1,1], 
-#' withOrigoClust=x_optim[[1]][1,2], iterations=2, ids=x[,1])
+#' x_clustered <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
 #'
 #' #Create the plots of the variables that contribute to creating each cluster
 #' dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
