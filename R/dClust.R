@@ -66,8 +66,9 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
   }
 
   k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
-  penaltyForRightSize <- penalty*k
-  
+
+  penaltyForRightSize <- penalty*k 
+
   dataMat<-data.matrix(inDataFrameUsed, rownames.force = NA)
 
   #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
@@ -99,27 +100,28 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
   minimumN <- max(logMaxLik)
   returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
 
-
 	if(withOrigoClust=="yes"){
 			clusterVector <- returnLowest$i
+
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
 			clusterCenters <- returnLowest$c			  
 			colnames(clusterCenters) <- colnames(inDataFrameUsed)
+
 			#Remove all columns and rows that do not contain any information.
 			reducedClusterCentersColRow <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
 			
 			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
 			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
 			
-			#Add the zero cluster back
-			reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
-			reducedClusterCentersColRow <- rbind(reducedClusterCentersColRowOrigo, reducedClusterCentersColRow)
-	
-			reducedClusterCentersRow <- rbind(clusterCenters[1,], reducedClusterCentersRow)
-			
-			
-		}
+			#Add the zero cluster back. This is not done when there is an origo cluster.
+			if(nrow(clusterCenters)>nrow(reducedClusterCentersRow)){
+			  reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
+			  reducedClusterCentersColRow <- rbind(reducedClusterCentersColRowOrigo, reducedClusterCentersColRow)
+			  reducedClusterCentersRow <- rbind(clusterCenters[1,], reducedClusterCentersRow)
+			  }
+
+	}
 
 	if(withOrigoClust=="no"){
 			clusterVector <- returnLowest$o

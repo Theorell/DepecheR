@@ -43,10 +43,10 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 
   
   #First, the optimal penalties is identified with a reasonable sample size
   if(penaltyOptOnly==TRUE){
-    if(length(sampleSizes>1)){
+    if(length(sampleSizes)>1){
       warning(paste("penaltyOptOnly is set to true, which means that no sample size optimization is performed. Still, multiple sample sizes have been added. Thus, only the first sample size will be used, in this case ", sampleSizes[1], ". If you do not like this, change the sampleSize to a number of your preference.", sep=""))
     }
-    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=sampleSizes[1], penalties=penalties, makeGraph=TRUE, graphName="Pre-optimization of penalty term.pdf")
+    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=sampleSizes[1], penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
     return(penaltyOptOnly)
   } else {
     
@@ -114,7 +114,7 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 
 	  
 	  ggplot(data=plottingObject,
 	         aes(x=sqrt(Penalties), y=Distances, colour=SampleSizes)) +
-	    geom_line() + ylim(c(0,1))
+	    geom_line() + ylim(c(0,1)) +
 	    ggtitle("Distance as a function of penalties for different sample sizes") +
 	    xlab("Square root of the penalties") + ylab("Distance  between bootstrap subsamplings, [0 to 1]")
 	    ggsave("Distance as a function of penalties for different sample sizes.pdf")
