@@ -100,7 +100,7 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
   minimumN <- max(logMaxLik)
   returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
 
-	if(withOrigoClust=="yes"){
+	if(withOrigoClust=="yes" && length(unique(returnLowest$i))<initCenters){
 			clusterVector <- returnLowest$i
 
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
@@ -113,17 +113,18 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 			
 			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
 			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
-			
-			#Add the zero cluster back. This is not done when there is an origo cluster.
-			if(nrow(clusterCenters)>nrow(reducedClusterCentersRow)){
+
+			#Add the origo cluster back. This is not done when there is no sparsity.
+
 			  reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
 			  reducedClusterCentersColRow <- rbind(reducedClusterCentersColRowOrigo, reducedClusterCentersColRow)
 			  reducedClusterCentersRow <- rbind(clusterCenters[1,], reducedClusterCentersRow)
-			  }
 
-	}
-
-	if(withOrigoClust=="no"){
+			  #Make the row names the same as the cluster names in the clusterVectorEquidistant
+			  rownames(reducedClusterCentersColRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
+			  rownames(reducedClusterCentersRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
+			  
+	} else {
 			clusterVector <- returnLowest$o
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
@@ -135,12 +136,12 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
 			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
 			
+			#Make the row names the same as the cluster names in the clusterVectorEquidistant
+			rownames(reducedClusterCentersColRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
+			rownames(reducedClusterCentersRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
+			
 	}
 
-	#Make the row names the same as the cluster names in the clusterVectorEquidistant
-  rownames(reducedClusterCentersColRow) <- sort(unique(clusterVectorEquidistant))
-  rownames(reducedClusterCentersRow) <- sort(unique(clusterVectorEquidistant))
-	
 	#If the number of observations used for the clustering is not equal to the number of rows in the inDataFrameScaled, here a prediction is made for all the other events. 
 	if(sampleSize!=nrow(inDataFrameScaled)){
 	  myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)

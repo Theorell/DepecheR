@@ -5,7 +5,7 @@
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param sampleSizes The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.
+#' @param sampleSizeIncrement The number of observations that added in each cycle of optimization. It starts with this value in the first cycle. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
 #' @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
 #' @param minImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, or the larger the samples are, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
@@ -38,7 +38,7 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size
@@ -52,41 +52,22 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 
     
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
-	  for(i in 1:length(sampleSizes)){
-	    ptm <- proc.time()
+	  i <- 1
+	  sampleSizes <- sampleSizeIncrement
+	  while(i<=3 || (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement)|| (abs(lowestDist[i-3]-lowestDist[i-1])>minImprovement)){
+
 	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=FALSE, disableWarnings=TRUE)
-	    timing <- proc.time() - ptm
+
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 		
-	    if(i<2){
-	      print(paste("Cycle", i, "completed. Jumping to next sample size."))
-	    } else {
-	      if(abs(lowestDist[i-1]-lowestDist[i])<=minImprovement){
-	        print(paste("Cycle", i, "optimal."))
-	        break
-	      } 
-	      #else if(timing[3]>30){
-	        #ANSWER <- readline(paste("The improvement between the two latest cycles was ", lowestDist[i], " . ", "The next cycle could take",  timing[3]*2, " seconds. Do you wish to run it? Print no if you do not, and yes if you do.", sep=""))
-
-	        #if (substr(ANSWER, 1, 1) == "n"){
-	       #   cat("Ok. Lets stop here then.")
-	       #   break
-	       # }
-			      
-			   # else if (substr(ANSWER, 1, 1) == "y"){
-			   #   cat("Ok. Lets go on.")
-			   # }
-			      
-  		#	} 
-	    else{
-				print(paste("Cycle ", i, " completed. Jumping to next sample size.", sep=""))
-  			}
-	
-      }
-		
+	    print(paste("Cycle", i, "completed. Jumping to next sample size."))
+    
+	    i <- i+1
+	    sampleSizes[i] <- sampleSize+sampleSizeIncrement
 	  }
 	  
+	 print(paste("Cycle", i, "optimal."))
 	  #Now, the curve of distances with different penalties and different sample sizes are plotted together. 
 	  #First, the optimal solution is retrieved from the last cycle.
 	  dOptPenaltyOptSampleSize <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]]
@@ -107,7 +88,7 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 
 	  Penalties <- rep(penalties, times=length(dOptPenaltyResultList))
 	  
 	  #Here, a vector of sample sizes is created instead
-	  SampleSizes <- as.factor(rep(sampleSizes[1:length(dOptPenaltyResultList)], each=length(penalties)))
+	  SampleSizes <- as.factor(rep(sampleSizes, each=length(penalties)))
 	  
 	  #Now combine these three
 	  plottingObject <- data.frame("Sample_sizes"=SampleSizes, Penalties, Distances)

@@ -4,15 +4,14 @@
 \alias{dOpt}
 \title{Find the smallest optimal sampe size and the best penalty offset for a certain dataset}
 \usage{
-dOpt(inDataFrameScaled, sampleSizes = 1000 * c(2^1, 2^2, 2^3, 2^4, 2^5, 2^6,
-  2^7, 2^8, 2^9, 2^10), initCenters = 30, maxIter = 100,
-  minImprovement = 0.01, penaltyOptOnly = FALSE, penalties = c(0, 2, 4, 8,
-  16, 32, 64, 128))
+dOpt(inDataFrameScaled, sampleSizeIncrement = 5000, initCenters = 30,
+  maxIter = 100, minImprovement = 0.01, penaltyOptOnly = FALSE,
+  penalties = c(0, 2, 4, 8, 16, 32, 64, 128))
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{sampleSizes}{The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.}
+\item{sampleSizeIncrement}{The number of observations that added in each cycle of optimization. It starts with this value in the first cycle. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.}
 
 \item{initCenters}{Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.}
 
