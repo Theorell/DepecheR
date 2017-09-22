@@ -73,23 +73,23 @@ x_scaled <- dScale(x[3:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Create the optimized number of clusters for this dataset
-x_optim <- dClustOpt(x_scaled, iterations=50, bootstrapObservations=1000)
-x_pKM <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+#Optimize and run the clustering function.
+xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
+xClustObject <- xOptAndClustObject[[2]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #Run the function. This time without pairing.
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=xClustObject$clusterVector)
 
 #Here, pairing is used
 #First, an artificial pairing vector, making the first donor amongst the first ten connected to the first donor among the second ten.
 pairingVector <- c(rep(1:20, each=500), rep(1:20, each=500))
 
 #Then the actual multilevel sPLS-DA is run. 
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
+sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=xClustObject$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

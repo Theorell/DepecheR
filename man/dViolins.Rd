@@ -34,16 +34,15 @@ x_scaled <- dScale(x[2:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Run the Optim function to get good starting points
-x_optim <- dClustOpt(x_scaled)
-
-#Then run the clustering function
-x_clustered <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+#Optimize and run the clustering function.
+xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
+xClustObject <- xOptAndClustObject[[2]]
 
 #Create the plots of the variables that contribute to creating each cluster
-dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)])
+dViolins(clusterCenters=xClustObject$clusterCenters, clusterVector=as.numeric(xClustObject$clusterVector), inDataFrame=x[,2:ncol(x)])
+
 #Now, finally, create plots of all clusters, regardless of if they contributed or not
-dViolins(clusterCenters=x_clustered$clusterCenters, clusterVector=as.numeric(x_clustered$clusterVector), inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
+dViolins(clusterCenters=xClustObject$clusterCenters, clusterVector=as.numeric(xClustObject$clusterVector), inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}

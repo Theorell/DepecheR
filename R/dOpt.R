@@ -3,7 +3,7 @@
 #'
 #' This function is used before the dClust function to identify the smallest sample size that gives rise to the most stable clustering. It is primarily used when datasets are very large (i.e. >100 000 observations), where there is a computational gain in clustering based on a subset of the cells and then assigning all other cells to the correct cluster center. It can however be generally useful when it is not entirely clear which sample size that is needed to perform the optimization of the penalty term, something that this function also works as a wrapper for.
 #' @importFrom graphics box
-#' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ggsave
+#' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 #' @param sampleSizes The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
@@ -38,7 +38,7 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^2, 2^3, 2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^1, 2^2, 2^3, 2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size
@@ -65,19 +65,21 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^2, 2^3, 2^4, 2^5, 2^6, 
 	      if(abs(lowestDist[i-1]-lowestDist[i])<=minImprovement){
 	        print(paste("Cycle", i, "optimal."))
 	        break
-	      } else if(timing[3]>30){
-	        ANSWER <- readline(paste("The improvement between the two latest cycles was ", lowestDist[i], " . ", "The next cycle could take",  timing[3]*2, " seconds. Do you wish to run it? Print no if you do not, and yes if you do.", sep=""))
+	      } 
+	      #else if(timing[3]>30){
+	        #ANSWER <- readline(paste("The improvement between the two latest cycles was ", lowestDist[i], " . ", "The next cycle could take",  timing[3]*2, " seconds. Do you wish to run it? Print no if you do not, and yes if you do.", sep=""))
 
-	        if (substr(ANSWER, 1, 1) == "n"){
-	          cat("Ok. Lets stop here then.")
-	          break
-	        }
+	        #if (substr(ANSWER, 1, 1) == "n"){
+	       #   cat("Ok. Lets stop here then.")
+	       #   break
+	       # }
 			      
-			    else if (substr(ANSWER, 1, 1) == "y"){
-			      cat("Ok. Lets go on.")
-			    }
+			   # else if (substr(ANSWER, 1, 1) == "y"){
+			   #   cat("Ok. Lets go on.")
+			   # }
 			      
-  			} else{
+  		#	} 
+	    else{
 				print(paste("Cycle ", i, " completed. Jumping to next sample size.", sep=""))
   			}
 	
@@ -112,7 +114,7 @@ dOpt <- function(inDataFrameScaled, sampleSizes=1000*c(2^2, 2^3, 2^4, 2^5, 2^6, 
 	  
 	  ggplot(data=plottingObject,
 	         aes(x=sqrt(Penalties), y=Distances, colour=SampleSizes)) +
-	    geom_line() +
+	    geom_line() + ylim(c(0,1))
 	    ggtitle("Distance as a function of penalties for different sample sizes") +
 	    xlab("Square root of the penalties") + ylab("Distance  between bootstrap subsamplings, [0 to 1]")
 	    ggsave("Distance as a function of penalties for different sample sizes.pdf")

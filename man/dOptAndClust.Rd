@@ -4,9 +4,9 @@
 \alias{dOptAndClust}
 \title{Wrapper function for dOpt and dClust}
 \usage{
-dOptAndClust(inDataFrameScaled, ids, sampleSizes = 1000 * c(2^2, 2^3, 2^4,
-  2^5, 2^6, 2^7, 2^8, 2^9, 2^10), penalties = c(0, 2, 4, 8, 16, 32, 64, 128),
-  initCenters = 30, maxIter = 100, minImprovement = 0.01)
+dOptAndClust(inDataFrameScaled, ids, sampleSizes = 1000 * c(2^1, 2^2, 2^3,
+  2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), penalties = c(0, 2, 4, 8, 16, 32, 64,
+  128), initCenters = 30, maxIter = 100, minImprovement = 0.01)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}

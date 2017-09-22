@@ -73,16 +73,16 @@ x_scaled <- dScale(x[3:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Create the optimized number of clusters for this dataset
-x_optim <- dClustOpt(x_scaled)
-x_pKM <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+#Optimize and run the clustering function.
+xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
+xClustObject <- xOptAndClustObject[[2]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #Run the function
-dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
+dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=xClustObject$clusterVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
