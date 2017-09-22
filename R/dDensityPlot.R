@@ -17,7 +17,12 @@
 #'     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
 #' }
 
-#' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
+#' @param densContour An object to create the density contours for the plot. Three possible values: 
+#' \describe{
+#'               \item{densContour}{A densContour object generated previously with dContours}
+#'               \item{TRUE}{a densContour object will be generated internally}
+#'               \item{FALSE}{No density contours will be displayed.}
+#'              }
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -55,7 +60,7 @@
 #' commonName="all samplings")
 #'
 #' @export dDensityPlot
-dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour=TRUE, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -69,8 +74,8 @@ dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector")
 
   xYDataScaled <- dScale(xYData, scalingControl, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
 
-  #If there is no matrix present to construct the contour lines, create the density matrix for all_data to make them.
-  if(missing("densContour")){
+  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
 
@@ -137,55 +142,56 @@ dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector")
 
 dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title){
 
-if(multipleColors==FALSE){
+  if(multipleColors==FALSE){
 
-x1 <- xYDataScaled[,1]
-x2 <- xYDataScaled[,2]
-df <- data.frame(x1,x2)
+  x1 <- xYDataScaled[,1]
+  x2 <- xYDataScaled[,2]
+  df <- data.frame(x1,x2)
 
-## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
-x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
-df$dens <- col2rgb(x)[1,] + 1L
-df$col <- cols[df$dens]
+  ## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
+  x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
+  df$dens <- col2rgb(x)[1,] + 1L
+  df$col <- cols[df$dens]
 
-}
+  }
 
-if(multipleColors==TRUE){
+  if(multipleColors==TRUE){
 
-	#Divide the dataframe according to which color annotation the event has
-	colors <- colorList[[length(colorList)-1]]
-	color <- colorList[[length(colorList)]]
-	dfList <- list()
-	for(i in 1:length(colors)){
+  	#Divide the dataframe according to which color annotation the event has
+  	colors <- colorList[[length(colorList)-1]]
+  	color <- colorList[[length(colorList)]]
+  	dfList <- list()
+  	for(i in 1:length(colors)){
 
-		x1 <- xYDataScaled[color==colors[i],1]
-		x2 <- xYDataScaled[color==colors[i],2]
-		df <- data.frame(x1,x2)
-		cols <- colorList[[i]]
-		## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
-		x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
-		df$dens <- col2rgb(x)[1,] + 1L
-		df$col <- cols[df$dens]
-		dfList[[i]] <- df
-	}
+  		x1 <- xYDataScaled[color==colors[i],1]
+  		x2 <- xYDataScaled[color==colors[i],2]
+  		df <- data.frame(x1,x2)
+  		cols <- colorList[[i]]
+  		## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
+  		x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
+  		df$dens <- col2rgb(x)[1,] + 1L
+  		df$col <- cols[df$dens]
+  		dfList[[i]] <- df
+  	}
 
-   df <- do.call("rbind", dfList)
-}
+     df <- do.call("rbind", dfList)
+  }
 
-png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-# Plot it, reordering rows so that densest points are plotted on top
+  png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  # Plot it, reordering rows so that densest points are plotted on top
   if(title==TRUE){
     plot(x2~x1, data=df[order(df$dens),], main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
   }
-if(title==FALSE){
-  plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-}
+  if(title==FALSE){
+    plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+  }
 
 
-par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-dev.off()
+  if(length(densContour)>1){
+    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  } 
+  dev.off()
 
 }
 

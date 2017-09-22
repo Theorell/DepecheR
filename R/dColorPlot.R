@@ -9,7 +9,13 @@
 #' @param colorData A vector or a dataframe of numeric observations that will be displayed as color on the plot.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.
 #' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
-#' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
+#' @param densContour An object to create the density contours for the plot. Three possible values: 
+#' \describe{
+#'               \item{densContour}{A densContour object generated previously with dContours}
+#'               \item{TRUE}{a densContour object will be generated internally}
+#'               \item{FALSE}{No density contours will be displayed.}
+#'              }
+#' If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param addLegend If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.
 #' @param idsVector If a legend is added, this argument controls the naming in the legend.
 #' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
@@ -43,7 +49,7 @@
 #' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, xYData,  names="default", densContour, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
+dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -70,8 +76,8 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour, addLege
     names <- colnames(colorData)
   }
 
-  #If there is no matrix present to construct the contour lines, create the density matrix for all_data to make them.
-  if(missing("densContour")){
+  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
   
@@ -139,10 +145,9 @@ dColorPlotCoFunction <- function(colorVariable, name, xYDataFraction, title=FALS
   if(title==FALSE){
     plot(V2~V1, data=xYDataFraction, main=NULL, pch=20, cex=dotSize, cex.main=5, col=colorVariable, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
   }
-  
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  
+  if(length(densContour)>1){
+    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  } 
   dev.off()
-  
-  }
+}

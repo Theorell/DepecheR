@@ -4,7 +4,7 @@
 \alias{dColorPlot}
 \title{Display third variable as color on 2D plot}
 \usage{
-dColorPlot(colorData, xYData, names = "default", densContour,
+dColorPlot(colorData, xYData, names = "default", densContour = TRUE,
   addLegend = FALSE, idsVector, drawColorPalette = FALSE, title = FALSE,
   createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
@@ -17,7 +17,13 @@ dColorPlot(colorData, xYData, names = "default", densContour,
 
 \item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
-\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }
+If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 
 \item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.}
 

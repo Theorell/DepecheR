@@ -23,21 +23,22 @@
 #' x_scaled_train <- x_scaled[1:5000,]
 #' x_scaled_test <- x_scaled[5001:10000,]
 #'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
-#'
-#' #Run the dOptPenalty function to get good starting points
-#' x_optim <- dClustOpt(x_scaled_train)
-#'
 #' #Create two completely meaningless ids vectors
 #' id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
 #' id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
+#' 
+#' #Set a reasonable working directory, e.g.
+#' setwd("~/Desktop")
 #'
-#' #Then run the dClust function for the train set
-#' x_dClust_train <- dClust(x_scaled_train, dClustOptObject=x_optim, ids=id_vector_train)
+#' #Run the dOptAndClust function for the train set
+#' x_dOptAndClust_train <- dOptAndClust(x_scaled_train, ids=id_vector_train)
 #'
+#' #Separate the info from the dOpt and dClust functions
+#' x_optim <- x_dOptAndClust_train[[1]]
+#' x_dClust_train <- x_dOptAndClust_train[[2]]
+#' 
 #' #This is followed by running the actual function in question
-#' x_dClust_test <- dClustPredict(x_scaled_test, 
+#' x_dClust_test <- dAllocate(x_scaled_test, 
 #' clusterCenters=x_dClust_train$clusterCentersWZeroVariables, 
 #' withOrigoClust=x_optim[[4]][1,2], ids=id_vector_test)
 #'
@@ -49,8 +50,8 @@
 #' title(main = "Difference between train and test set")
 #' title(xlab = "Clusters")
 #' title(ylab = "Percentage")
-#' @export dClustPredict
-dClustPredict <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
+#' @export dAllocate
+dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
 
 myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 

@@ -5,7 +5,7 @@
 \title{Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result}
 \usage{
 dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
-  multipleCorrMethod = "hochberg", densContour, name = "dWilcox",
+  multipleCorrMethod = "hochberg", densContour = TRUE, name = "dWilcox",
   groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
   title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
   directoryName = "dWilcox", bandColor = "black",
@@ -24,7 +24,12 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.}
 
-\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }}
 
 \item{name}{The main name for the graph and the analysis.}
 

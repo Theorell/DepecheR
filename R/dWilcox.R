@@ -8,7 +8,12 @@
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
-#' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
+#' @param densContour An object to create the density contours for the plot. Three possible values: 
+#' \describe{
+#'               \item{densContour}{A densContour object generated previously with dContours}
+#'               \item{TRUE}{a densContour object will be generated internally}
+#'               \item{FALSE}{No density contours will be displayed.}
+#'              }
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -49,7 +54,7 @@
 #' #Run the function
 #' dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector)
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -148,29 +153,25 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE,
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
-  if(missing("densContour")){
+  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
 
   if(title==TRUE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-  dev.off()
   }
 
   if(title==FALSE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-  dev.off()
   }
-
+  if(length(densContour)>1){
+    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  } 
+  dev.off()
 #Create a color legend with text
 
 	yname <- "Wilcoxon values"

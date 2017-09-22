@@ -5,7 +5,12 @@
 #' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
+#' @param densContour An object to create the density contours for the plot. Three possible values: 
+#' \describe{
+#'               \item{densContour}{A densContour object generated previously with dContours}
+#'               \item{TRUE}{a densContour object will be generated internally}
+#'               \item{FALSE}{No density contours will be displayed.}
+#'              }
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -27,18 +32,18 @@
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
-#' #Create the optimized number of clusters for this dataset
-#' x_optim <- dCLustOpt(x_scaled)
-#' x_pKM <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
-#'
+#' #Optimize and run the clustering function.
+#' xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
+#' xClustObject <- xOptAndClustObject[[2]]
+#' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #And finally run the function
-#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
+#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=xClustObject$clusterVector)
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, clusterVector, densContour, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
+dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -100,29 +105,26 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour, name=
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
-  if(missing("densContour")){
+  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
 
   if(title==TRUE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+    plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
 
-  dev.off()
   }
 
   if(title==FALSE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-  dev.off()
+    plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
   }
-
+  if(length(densContour)>1){
+    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  } 
+  dev.off()
 #Create a color legend with text
 
 	yname <- "Residual values"

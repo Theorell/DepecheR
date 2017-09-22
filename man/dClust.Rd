@@ -4,25 +4,23 @@
 \alias{dClust}
 \title{Function to run penalized K means}
 \usage{
-dClust(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyOffset,
-  withOrigoClust, initCenters = 30, iterations = 10)
+dClust(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, withOrigoClust,
+  initCenters = 30)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{dClustOptObject}{This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.}
+\item{dOptObject}{This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.}
 
 \item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
 
-\item{sampleSize}{By default inherited from dClustOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
+\item{sampleSize}{By default inherited from dOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
 
-\item{penaltyOffset}{By default inherited from dClustOptObject. The parameter that controls the level of penalization.}
+\item{penalty}{By default inherited from dOptObject. The parameter that controls the level of penalization.}
 
-\item{withOrigoClust}{By default inherited from dClustOptObject. This parameter controls if the generated result should contain a cluster in origo or not.}
+\item{withOrigoClust}{By default inherited from dOptObject. This parameter controls if the generated result should contain a cluster in origo or not.}
 
-\item{initCenters}{By default inherited from dClustOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
-
-\item{iterations}{By default inherited from dClustOptObject. As it sounds, this controls how many iterations that are performed, among which the most stable is chosen.}
+\item{initCenters}{By default inherited from dOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
 }
 \value{
 A list with three components:
@@ -46,14 +44,14 @@ x_scaled <- dScale(x[,2:ncol(x)])
 setwd("~/Desktop")
 
 #Run the dOptPenalty function to get good starting points
-x_optim <- dClustOpt(x_scaled)
+x_optim <- dOpt(x_scaled)
 
 #Then run the actual function
-x_dClust <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+x_dClust <- dClust(x_scaled, dOptObject=x_optim, ids=x[,1])
 
 #And finally look at your great result
 str(x_dClust)
 }
 \seealso{
-\code{\link{dClustPredict}}, \code{\link{dClustOpt}}
+\code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dOptAndClust}}
 }

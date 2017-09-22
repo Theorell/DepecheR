@@ -10,7 +10,7 @@
 # @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
 # @param minImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
 # @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
-# @param penaltyOffset These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
+# @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
 # @param makeGraph If a graph should be created showing the distance between bootstraps under different penalties.
 # @param graphName The name of the graph. 
 # @param disableWarnings If the lowest or highest penalty is the most optimal, the function gives a warning. This is suppressed with this command. Mostly to simplify use within other functions, such as dOptSampleSize.
@@ -34,11 +34,11 @@
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
 # @export dOptPenalty
 #' @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.01, bootstrapObservations=10000, penaltyOffset=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
-  penalty <- penaltyOffset*k
+  penalty <- penalties*k
 
   chunkSize <- detectCores() - 1
 
@@ -50,7 +50,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   distanceBetweenMinAndMinMinusOne=-1
   iterTimesChunkSize <- 1
   
-  while(iterTimesChunkSize<=14 || (iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndMinMinusOne<0)){
+  while((iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndMinMinusOne<0) || iterTimesChunkSize<=14){
 
 	if(Sys.info()['sysname']!="Windows"){
     cl <- makeCluster(chunkSize, type="FORK")
@@ -118,12 +118,12 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   
   #Here, the penalty values for the real dataset, not the bootstrap subsamples, is used.
   realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
-  rownames(meanOptimDf) <- penaltyOffset
+  rownames(meanOptimDf) <- penalties
   colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
 
   penaltyOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
 
-  colnames(penaltyOpt.df)[1] <- "bestPenaltyOffset"
+  colnames(penaltyOpt.df)[1] <- "bestPenalty"
 
   #Export if the solution with or without zero clusters give the optimal result
   penaltyOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
@@ -145,10 +145,10 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
 
   if(disableWarnings==FALSE){
   
-    if(penaltyOpt.df$bestPenaltyOffset==lowestPenalty){
+    if(penaltyOpt.df$bestPenalty==lowestPenalty){
       print("Warning: the lowest penalty was the most optimal in the range. It is suggested to run with a few lower penalty values to make sure that the most optimal has been found")
     }
-    if(penaltyOpt.df$bestPenaltyOffset==highestPenalty){
+    if(penaltyOpt.df$bestPenalty==highestPenalty){
       print("Warning: the highest penalty was the most optimal in the range. It is suggested to run with a few higher penalty values to make sure that the most optimal has been found")
     }
   
@@ -162,14 +162,14 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     pdf(graphName)
     par(mar=c(5, 4, 4, 6) + 0.1)
     #Plot the data
-    plot(row.names(meanOptimDf), meanOptimDf[[penaltyOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penaltyOffset values")
+    plot(row.names(meanOptimDf), meanOptimDf[[penaltyOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
     axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
     mtext("Distance between bootstraps",side=2,line=2.5)
     box()
     
     # Draw the penalty axis
     axis(1,pretty(range(as.numeric(row.names(meanOptimDf))), n=10))
-    mtext("penaltyOffset values",side=1,col="black",line=2.5)
+    mtext("Penalty values",side=1,col="black",line=2.5)
     
     # Add Legend
     legend("topleft",legend="Distance (low is good)",

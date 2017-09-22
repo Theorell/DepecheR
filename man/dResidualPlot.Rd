@@ -4,7 +4,7 @@
 \alias{dResidualPlot}
 \title{Showing the residuals when subtracting the values from one group from another on a sne plot}
 \usage{
-dResidualPlot(xYData, groupVector, clusterVector, densContour,
+dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   name = "dResidualPlot", groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
   bandColor = "black", createDirectory = FALSE,
@@ -17,7 +17,12 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour,
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
-\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -53,16 +58,16 @@ x_scaled <- dScale(x=x[2:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Create the optimized number of clusters for this dataset
-x_optim <- dCLustOpt(x_scaled)
-x_pKM <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+#Optimize and run the clustering function.
+xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
+xClustObject <- xOptAndClustObject[[2]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #And finally run the function
-dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=x_pKM$clusterVector)
+dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=xClustObject$clusterVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcoxPlot}}

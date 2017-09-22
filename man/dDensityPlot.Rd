@@ -5,7 +5,7 @@
 \title{Display density on 2D plot}
 \usage{
 dDensityPlot(xYData, color = c("blue", "rainbowCols", "a colorVector"),
-  commonName, plotEachIdSeparately = FALSE, idsVector, densContour,
+  commonName, plotEachIdSeparately = FALSE, idsVector, densContour = TRUE,
   title = FALSE, createDirectory = TRUE,
   directoryName = paste("Density plots for ", commonName, "s", sep = ""),
   scalingControl, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)))
@@ -30,7 +30,12 @@ dDensityPlot(xYData, color = c("blue", "rainbowCols", "a colorVector"),
     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
 }}
 
-\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 

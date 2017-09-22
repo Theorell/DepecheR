@@ -11,6 +11,12 @@
 #' @param pairingVector If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
+#' @param densContour An object to create the density contours for the plot. Three possible values: 
+#' \describe{
+#'               \item{densContour}{A densContour object generated previously with dContours}
+#'               \item{TRUE}{a densContour object will be generated internally}
+#'               \item{FALSE}{No density contours will be displayed.}
+#'              }
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
 #' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum statistic that is generated in the analysis.
@@ -57,7 +63,7 @@
 #' #Then the actual multilevel sPLS-DA is run. 
 #' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=x_pKM$clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, densContour, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -67,7 +73,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   }
 
   if(length(unique(groupVector))!=2){
-    stop("More or less than two groups are present. Please correct this.")
+    stop("More or less than two groups are present. This is currently not supported.")
   }
 
   if(length(unique(idsVector))<8){
@@ -240,30 +246,25 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #If there is no matrix present to construct the contour lines, create the density matrix from xYData to make them.
-  if(missing("densContour")){
+  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
 
   if(title==TRUE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-  dev.off()
-  
   }
 
   if(title==FALSE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-  contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-
-  dev.off()
   }
-
+  if(length(densContour)>1){
+    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  }
+  dev.off()
 #Create a color legend with text
 
 	yname <- "sPLS-DA values"

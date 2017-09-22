@@ -5,9 +5,10 @@
 \title{Sparse partial least squares discriminant analysis with paired and unpaired data}
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector = NULL,
-  densContour, name = "dSplsda", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
-  createDirectory = FALSE, directoryName = "dSplsda", bandColor = "black",
+  densContour = TRUE, name = "dSplsda",
+  groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
+  title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
+  directoryName = "dSplsda", bandColor = "black",
   dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
@@ -40,6 +41,13 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector = NULL,
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }}
 }
 \value{
 This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.

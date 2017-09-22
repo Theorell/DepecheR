@@ -6,14 +6,13 @@
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param dClustOptObject This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.
+#' @param dOptObject This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @param sampleSize By default inherited from dClustOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
-#' @param penaltyOffset By default inherited from dClustOptObject. The parameter that controls the level of penalization. 
-#' @param withOrigoClust By default inherited from dClustOptObject. This parameter controls if the generated result should contain a cluster in origo or not. 
-#' @param initCenters By default inherited from dClustOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
-#' @param iterations By default inherited from dClustOptObject. As it sounds, this controls how many iterations that are performed, among which the most stable is chosen. 
-#' @seealso \code{\link{dClustPredict}}, \code{\link{dClustOpt}}
+#' @param sampleSize By default inherited from dOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
+#' @param penalty By default inherited from dOptObject. The parameter that controls the level of penalization. 
+#' @param withOrigoClust By default inherited from dOptObject. This parameter controls if the generated result should contain a cluster in origo or not. 
+#' @param initCenters By default inherited from dOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
+#' @seealso \code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dOptAndClust}}
 #' @return A list with three components:
 #' \describe{
 #'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -31,16 +30,17 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the dOptPenalty function to get good starting points
-#' x_optim <- dClustOpt(x_scaled)
+#' x_optim <- dOpt(x_scaled)
 #'
 #' #Then run the actual function
-#' x_dClust <- dClust(x_scaled, dClustOptObject=x_optim, ids=x[,1])
+#' x_dClust <- dClust(x_scaled, dOptObject=x_optim, ids=x[,1])
 #'
 #' #And finally look at your great result
 #' str(x_dClust)
 #' @export dClust
-dClust <- function(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyOffset, withOrigoClust, initCenters=30, iterations=10){
+dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, withOrigoClust, initCenters=30){
 
+  
   if(missing(ids)){
     stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
   }
@@ -49,16 +49,16 @@ dClust <- function(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyO
     stop("Ids is a non-existent object. Save youself some time and put in an existing one before running again, as the function will otherwise throw an error at the end.")
   }
 
-  if(missing(dClustOptObject)==FALSE){
+  if(missing(dOptObject)==FALSE){
     if(missing(sampleSize)==TRUE){
-      sampleSize <- dClustOptObject[[1]][length(dClustOptObject[[1]])]
+      sampleSize <- dOptObject[[1]][length(dOptObject[[1]])]
     } else if(sampleSize!="All"){
       sampleSize <- nrow(inDataFrameScaled)
       inDataFrameUsed <- inDataFrameScaled
     }
-    penaltyOffset <- dClustOptObject[[4]][1,1]
-    withOrigoClust <- dClustOptObject[[4]][1,2]
-    initCenters <- dClustOptObject[[4]][1,3]
+    penalty <- dOptObject[[4]][1,1]
+    withOrigoClust <- dOptObject[[4]][1,2]
+    initCenters <- dOptObject[[4]][1,3]
   }
   
   if(sampleSize!=nrow(inDataFrameScaled)){
@@ -66,21 +66,31 @@ dClust <- function(inDataFrameScaled, dClustOptObject, ids, sampleSize, penaltyO
   }
 
   k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
-  penalty <- penaltyOffset*k
+  penaltyForRightSize <- penalty*k
   
   dataMat<-data.matrix(inDataFrameUsed, rownames.force = NA)
-  
+
+  #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
+  n_cores <- detectCores() - 1
+  if(n_cores>=7){
+    if(n_cores<=21){
+      iterations <- n_cores
+    } else {
+      iterations <- 21
+    }
+  } else {
+    iterations <- 7
+  }
+    
 #This is the most central function of the whole package.
 	
 	if(Sys.info()['sysname']!="Windows"){
-	  no_cores <- detectCores() - 1
-	  cl <- makeCluster(no_cores, type="FORK")
-	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penalty,1,x))
+	  cl <- makeCluster(n_cores, type="FORK")
+	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
 	  stopCluster(cl)
 	} else {
-	  no_cores <- detectCores() - 1
-	  cl <- makeCluster(no_cores, type="PSOCK")
-	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penalty,1,x))
+	  cl <- makeCluster(n_cores, type="PSOCK")
+	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
 	  stopCluster(cl)
 	}
 	
