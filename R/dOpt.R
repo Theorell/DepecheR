@@ -54,20 +54,22 @@ dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, ma
 	  lowestDist <- vector()
 	  i <- 1
 	  sampleSizes <- sampleSizeIncrement
-	  while(i<=3 || (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement)|| (abs(lowestDist[i-3]-lowestDist[i-1])>minImprovement)){
-
+	  #This loop continues to run until two runs produce the lowest distance at the same penalty, and these distances diverge less than 0.01.
+	  while(i<=3 || ((dOptPenaltyResultList[[i-1]][[1]][1,1]==dOptPenaltyResultList[[i-2]][[1]][1,1]) && (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement))){
+	    if(i>1){
+	      print(paste("Cycle", i-1, "completed. Jumping to next sample size."))
+	    }
+	    
 	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=FALSE, disableWarnings=TRUE)
 
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
-		
-	    print(paste("Cycle", i, "completed. Jumping to next sample size."))
-    
+
 	    i <- i+1
-	    sampleSizes[i] <- sampleSize+sampleSizeIncrement
+	    sampleSizes[i] <- sampleSizes[i-1]+sampleSizeIncrement
 	  }
 	  
-	 print(paste("Cycle", i, "optimal."))
+	 print(paste("Cycle", i-1, "optimal."))
 	  #Now, the curve of distances with different penalties and different sample sizes are plotted together. 
 	  #First, the optimal solution is retrieved from the last cycle.
 	  dOptPenaltyOptSampleSize <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]]
@@ -88,7 +90,7 @@ dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, ma
 	  Penalties <- rep(penalties, times=length(dOptPenaltyResultList))
 	  
 	  #Here, a vector of sample sizes is created instead
-	  SampleSizes <- as.factor(rep(sampleSizes, each=length(penalties)))
+	  SampleSizes <- as.factor(rep(sampleSizes[1:length(dOptPenaltyResultList)], each=length(penalties)))
 	  
 	  #Now combine these three
 	  plottingObject <- data.frame("Sample_sizes"=SampleSizes, Penalties, Distances)
@@ -108,7 +110,7 @@ dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, ma
       improvement[i] <- lowestDist[i-1]-lowestDist[i]
     }
     
-    sampleSizeOpt <- data.frame("SampleSize"=sampleSizes[1:length(lowestDist)], "Lowest distance"=lowestDist, "Improvement"=improvement)
+    sampleSizeOpt <- data.frame("SampleSize"=sampleSizes[1:(length(sampleSizes)-1)], "Lowest distance"=lowestDist, "Improvement"=improvement)
     
     #Now, as a final step, an optimiation is performed with the optimal sample size
     optPenalty <- dOptPenaltyOptSampleSize
