@@ -36,7 +36,7 @@
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
 # @export dOptPenalty
 #' @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.001, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -52,7 +52,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   
-  while((iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndBestPrevious<0) || iterTimesChunkSize<=14){
+  while((iterTimesChunkSize<=maxIter && std>=minImprovement) || iterTimesChunkSize<=14){
 
     cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
     registerDoSNOW(cl)
@@ -105,19 +105,19 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     minPos <- which(meanOptimVector==min(meanOptimVector))
 	  
     #Add the standard deviation of this position to its mean
-    meanPlusStdMin <- meanOptimVector[minPos]+stdOptimVector[minPos]
+    #meanPlus3StdMin <- meanOptimVector[minPos]+(3*stdOptimVector[minPos])
     
 	  #Return the positions of all values that are not minimum
-	  allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
+	  #allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
 	  
 	  #Now subtract the standard deviation of each of these values from the mean
-	  meanMinusStdAllNonMin <- meanOptimVector[allNonMinPos]-stdOptimVector[allNonMinPos]
+	  #meanMinus3StdAllNonMin <- meanOptimVector[allNonMinPos]-(3*stdOptimVector[allNonMinPos])
 
 	  #Identify the lowest value among these
-	  minMeanMinusStdAllNonMin <- min(meanMinusStdAllNonMin)
+	  #minMeanMinus3StdAllNonMin <- min(meanMinus3StdAllNonMin)
 	  
 	  #Now, the distance between minMeanMinusSdAllNonMin and . If they overlap, the iteration has not made it totally clear which point is optimal. 
-	  distanceBetweenMinAndBestPrevious <- minMeanMinusStdAllNonMin-meanPlusStdMin
+	  #distanceBetweenMinAndBestPrevious <- minMeanMinus3StdAllNonMin-meanPlus3StdMin
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
 	  std <- stdOptimVector[minPos]

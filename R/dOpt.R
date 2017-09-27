@@ -5,7 +5,7 @@
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param initSampleSize The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. 
+#' @param initSampleSize The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. Defaults to 4000.
 #' @param sampleSizePowerIncrement With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 0.5 translates to a start value of x*2^0, and the following value of 2^(0.5), and so on. x 
 #' @param maxSampleSize At what value the algorithm stops. Defaults to 100 000. 
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
@@ -40,7 +40,7 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.001, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size

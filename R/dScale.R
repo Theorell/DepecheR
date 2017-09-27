@@ -118,7 +118,7 @@ dScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robustVarSca
   
   if(center=="peak"){
     #The peak of the data is defined
-    histdata <- hist(responseVector, breaks=x/50, plot=FALSE)
+    histdata <- hist(responseVector, breaks=length(x)/50, plot=FALSE)
     zeroPosition <- histdata$mids[match(max(histdata$counts), histdata$counts)]
     
     #And the position for this this peak is subtracted from all points
