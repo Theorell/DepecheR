@@ -4,14 +4,19 @@
 \alias{dOpt}
 \title{Find the smallest optimal sampe size and the best penalty offset for a certain dataset}
 \usage{
-dOpt(inDataFrameScaled, sampleSizeIncrement = 5000, initCenters = 30,
+dOpt(inDataFrameScaled, initSampleSize = 2000,
+  sampleSizePowerIncrement = 0.5, maxSampleSize = 1e+05, initCenters = 30,
   maxIter = 100, minImprovement = 0.01, penaltyOptOnly = FALSE,
   penalties = c(0, 2, 4, 8, 16, 32, 64, 128))
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{sampleSizeIncrement}{The number of observations that added in each cycle of optimization. It starts with this value in the first cycle. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.}
+\item{initSampleSize}{The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization.}
+
+\item{sampleSizePowerIncrement}{With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 0.5 translates to a start value of x*2^0, and the following value of 2^(0.5), and so on. x}
+
+\item{maxSampleSize}{At what value the algorithm stops. Defaults to 100 000.}
 
 \item{initCenters}{Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.}
 
@@ -19,7 +24,7 @@ dOpt(inDataFrameScaled, sampleSizeIncrement = 5000, initCenters = 30,
 
 \item{minImprovement}{This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, or the larger the samples are, the smaller will the improvement be, and this sets the threshold when the iterations stop.}
 
-\item{penaltyOptOnly}{If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, only one sample size should be specified in the sampleSizes argument.}
+\item{penaltyOptOnly}{If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, the sample size will be the value specified in the sampleSizeIncrement argument.}
 
 \item{penalties}{These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 }

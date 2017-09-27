@@ -5,11 +5,13 @@
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param sampleSizeIncrement The number of observations that added in each cycle of optimization. It starts with this value in the first cycle. NB! The algorithm uses resampling, so the same event can be used twice. This is the central argument to this function, that it optimizes over.
+#' @param initSampleSize The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. 
+#' @param sampleSizePowerIncrement With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 0.5 translates to a start value of x*2^0, and the following value of 2^(0.5), and so on. x 
+#' @param maxSampleSize At what value the algorithm stops. Defaults to 100 000. 
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
 #' @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
 #' @param minImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, or the larger the samples are, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
-#' @param penaltyOptOnly If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, only one sample size should be specified in the sampleSizes argument.
+#' @param penaltyOptOnly If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, the sample size will be the value specified in the sampleSizeIncrement argument.
 #' @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
 #' @seealso \code{\link{dClust}}, \code{\link{dAllocate}}, \code{\link{dOptAndClust}}
 #' @return If penaltyOptOnly is set to FALSE, which is default, one graph showing the stability of the models with different sample sizes, one showing the distance with different penalties before the optimization of the sample size, and a third showing the same, but after the sample size has been optimized. In addition, a list is returned with the following content:
@@ -38,24 +40,21 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size
   if(penaltyOptOnly==TRUE){
-    if(length(sampleSizes)>1){
-      warning(paste("penaltyOptOnly is set to true, which means that no sample size optimization is performed. Still, multiple sample sizes have been added. Thus, only the first sample size will be used, in this case ", sampleSizes[1], ". If you do not like this, change the sampleSize to a number of your preference.", sep=""))
-    }
-    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=sampleSizes[1], penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
+    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=sampleSizeIncrement, penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
     return(penaltyOptOnly)
   } else {
     
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
 	  i <- 1
-	  sampleSizes <- sampleSizeIncrement
+	  sampleSizes <- initSampleSize*2^0
 	  #This loop continues to run until two runs produce the lowest distance at the same penalty, and these distances diverge less than 0.01.
-	  while(i<=3 || ((dOptPenaltyResultList[[i-1]][[1]][1,1]==dOptPenaltyResultList[[i-2]][[1]][1,1]) && (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement))){
+	  while(i<=3 && sampleSizes[i]<=maxSampleSize || (dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1]) || (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement)){
 	    if(i>1){
 	      print(paste("Cycle", i-1, "completed. Jumping to next sample size."))
 	    }
@@ -65,8 +64,10 @@ dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, ma
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 
+	    
 	    i <- i+1
-	    sampleSizes[i] <- sampleSizes[i-1]+sampleSizeIncrement
+	    sampleSizes[i] <- initSampleSize*2^(sampleSizePowerIncrement*(i-1))
+	    
 	  }
 	  
 	 print(paste("Cycle", i-1, "optimal."))
@@ -90,7 +91,7 @@ dOpt <- function(inDataFrameScaled, sampleSizeIncrement=5000, initCenters=30, ma
 	  Penalties <- rep(penalties, times=length(dOptPenaltyResultList))
 	  
 	  #Here, a vector of sample sizes is created instead
-	  SampleSizes <- as.factor(rep(sampleSizes[1:length(dOptPenaltyResultList)], each=length(penalties)))
+	  SampleSizes <- as.factor(rep(round(sampleSizes[1:length(sampleSizes)-1]), each=length(penalties)))
 	  
 	  #Now combine these three
 	  plottingObject <- data.frame("Sample_sizes"=SampleSizes, Penalties, Distances)

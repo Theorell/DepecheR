@@ -47,17 +47,17 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   #This command is reiterated the number of times that is needed to reach a minimal improvement of the distance. 
   iter <- 1
   std=1
-  distanceBetweenMinAndMinMinusOne=-1
+  distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   
-  while((iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndMinMinusOne<0) || iterTimesChunkSize<=14){
+  while((iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndBestPrevious<0) || iterTimesChunkSize<=14){
 
-	if(Sys.info()['sysname']!="Windows"){
-    cl <- makeCluster(chunkSize, type="FORK")
-    } else {
-    cl <- makeCluster(spec="PSOCK", names=chunkSize)
-    }
-	optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
+	  if(Sys.info()['sysname']!="Windows"){
+      cl <- makeCluster(chunkSize, type="FORK")
+      } else {
+      cl <- makeCluster(spec="PSOCK", names=chunkSize)
+      }
+	  optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
     stopCluster(cl)	
   
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
@@ -90,21 +90,29 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     }
     meanOptimDf <- as.data.frame(meanOptimList)
 
-	  #Return the location of the minmum and the second lowest value
-	  minPos <- which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE)
-	  meanOptimVector <- as.vector(t(meanOptimDf[,1:2]))
-	  n <- length(meanOptimVector)
-	  minMinusOneValue <- sort(meanOptimVector,partial=n-1)[n-1]
+    #Turn these into vectors
+    meanOptimVector <- as.vector(t(meanOptimDf[,1:2]))
+    stdOptimVector <- as.vector(t(stdOptimDf[,1:2]))
+	  #Return the position of the minmum value
+    minPos <- which(meanOptimVector==min(meanOptimVector))
 	  
-	  #Now retrieve the standard deviation and the value for this point
-	  stdevMinusOne <- stdOptimDf[which(meanOptimDf[,1:2]==minMinusOneValue, arr.ind=TRUE)]
-	  meanMinusOne <- meanOptimDf[which(meanOptimDf[,1:2]==minMinusOneValue, arr.ind=TRUE)]
+    #Add the standard deviation of this position to its mean
+    meanPlusStdMin <- meanOptimVector[minPos]+stdOptimVector[minPos]
+    
+	  #Return the positions of all values that are not minimum
+	  allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
 	  
-	  #Now, the distance between mean+standard deviation of min value and the mean-standar deviation of the second value is calculated. If they overlap, the iteration has not made it totally clear which point is optimal. 
-	  distanceBetweenMinAndMinMinusOne <- (meanMinusOne-stdevMinusOne)-(meanOptimDf[minPos]+stdOptimDf[minPos])
+	  #Now subtract the standard deviation of each of these values from the mean
+	  meanMinusStdAllNonMin <- meanOptimVector[allNonMinPos]-stdOptimVector[allNonMinPos]
+
+	  #Identify the lowest value among these
+	  minMeanMinusStdAllNonMin <- min(meanMinusStdAllNonMin)
+	  
+	  #Now, the distance between minMeanMinusSdAllNonMin and . If they overlap, the iteration has not made it totally clear which point is optimal. 
+	  distanceBetweenMinAndBestPrevious <- minMeanMinusStdAllNonMin-meanPlusStdMin
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
-	  std <- stdOptimDf[minPos]/sqrt(iter*chunkSize)
+	  std <- stdOptimVector[minPos]/sqrt(iter*chunkSize)
 	  iterTimesChunkSize <- iter*chunkSize
 
 	  iter <- iter+1

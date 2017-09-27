@@ -114,17 +114,27 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
 			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
 
+			#In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
+			if(class(reducedClusterCentersColRow)=="numeric"){
+			  reducedClusterCentersColRow <- t(reducedClusterCentersColRow)
+			}
+			if(class(reducedClusterCentersRow)=="numeric"){
+			  reducedClusterCentersRow <- t(reducedClusterCentersRow)
+			}
+			
 			#Add the origo cluster back. This is not done when there is no sparsity.
 
 			  reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
-			  reducedClusterCentersColRow <- rbind(reducedClusterCentersColRowOrigo, reducedClusterCentersColRow)
-			  reducedClusterCentersRow <- rbind(clusterCenters[1,], reducedClusterCentersRow)
+			  reducedClusterCentersColRow <- rbind(rep(0, times=ncol(reducedClusterCentersColRow)), reducedClusterCentersColRow)
+			  reducedClusterCentersRow <- rbind(rep(0, times=ncol(reducedClusterCentersRow)), reducedClusterCentersRow)
 
 			  #Make the row names the same as the cluster names in the clusterVectorEquidistant
-			  rownames(reducedClusterCentersColRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
-			  rownames(reducedClusterCentersRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
-			  
-	} else {
+
+			  	rownames(reducedClusterCentersColRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
+			    rownames(reducedClusterCentersRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
+			    
+	} 
+  if(withOrigoClust=="no" || (withOrigoClust=="yes" && length(unique(returnLowest$i))==initCenters)){
 			clusterVector <- returnLowest$o
 			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
 			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
@@ -136,9 +146,19 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
 			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
 			
+			#In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
+			if(class(reducedClusterCentersColRow)=="numeric"){
+			  reducedClusterCentersColRow <- t(reducedClusterCentersColRow)
+			}
+			if(class(reducedClusterCentersRow)=="numeric"){
+			  reducedClusterCentersRow <- t(reducedClusterCentersRow)
+			}
+			
 			#Make the row names the same as the cluster names in the clusterVectorEquidistant
-			rownames(reducedClusterCentersColRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
-			rownames(reducedClusterCentersRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
+
+			  rownames(reducedClusterCentersColRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
+			  rownames(reducedClusterCentersRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
+
 			
 	}
 
@@ -146,11 +166,10 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 	if(sampleSize!=nrow(inDataFrameScaled)){
 	  myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
 	  
-	  if(withOrigoClust=="yes"){
+	  if(withOrigoClust=="yes" && length(unique(returnLowest$i))<initCenters){
 	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedClusterCentersRow,0))
-	  }
-	  if(withOrigoClust=="no"){
-	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedClusterCentersRow,1))
+	  } else {
+	    clusterVectorEquidistant <- turnVectorEquidistant(unlist(allocate_points(myMat,reducedClusterCentersRow,1)))
 	  }
 	}
 		
@@ -175,10 +194,13 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
 
   names(dClustResult) <- c("clusterVector", "clusterCenters", "clusterCentersWZeroVariables", "idClusterFractions")
 
-  #Here, a heatmap over the cluster centers is saved
-  pdf("Cluster centers.pdf")
-  heatmap.2(reducedClusterCentersColRow, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
-  dev.off()
+  #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
+  if(nrow(reducedClusterCentersColRow)>1){
+    pdf("Cluster centers.pdf")
+    heatmap.2(reducedClusterCentersColRow, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+    dev.off()    
+  }
+
 
 	return(dClustResult)
 

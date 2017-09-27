@@ -4,16 +4,21 @@
 \alias{dOptAndClust}
 \title{Wrapper function for dOpt and dClust}
 \usage{
-dOptAndClust(inDataFrameScaled, ids, sampleSizes = 1000 * c(2^1, 2^2, 2^3,
-  2^4, 2^5, 2^6, 2^7, 2^8, 2^9, 2^10), penalties = c(0, 2, 4, 8, 16, 32, 64,
-  128), initCenters = 30, maxIter = 100, minImprovement = 0.01)
+dOptAndClust(inDataFrameScaled, ids, initSampleSize = 2000,
+  sampleSizePowerIncrement = 0.5, maxSampleSize = 1e+05, penalties = c(0,
+  2, 4, 8, 16, 32, 64, 128), initCenters = 30, maxIter = 100,
+  minImprovement = 0.01)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
 \item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
 
-\item{sampleSizes}{The number of observations that are included in each bootstrap subsampling of the data in the optimization function. NB! The algorithm uses resampling, so the same event can be used twice.}
+\item{initSampleSize}{The initial sample size.}
+
+\item{sampleSizePowerIncrement}{With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 0.5 translates to a start value of initSampleSize*2^0, and the following value of initSampleSize*2^(0.5), and so on.}
+
+\item{maxSampleSize}{At what value the algorithm stops. Defaults to 100 000.}
 
 \item{penalties}{These values are evaluated in dOpt. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 
