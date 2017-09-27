@@ -40,7 +40,7 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.001, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size

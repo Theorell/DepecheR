@@ -6,7 +6,7 @@
 \usage{
 dOpt(inDataFrameScaled, initSampleSize = 4000,
   sampleSizePowerIncrement = 0.5, maxSampleSize = 1e+05, initCenters = 30,
-  maxIter = 100, minImprovement = 0.001, penaltyOptOnly = FALSE,
+  maxIter = 100, minImprovement = 0.01, penaltyOptOnly = FALSE,
   penalties = c(0, 2, 4, 8, 16, 32, 64, 128))
 }
 \arguments{

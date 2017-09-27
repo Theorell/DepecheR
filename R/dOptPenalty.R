@@ -36,7 +36,7 @@
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
 # @export dOptPenalty
 #' @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.001, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -52,7 +52,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   
-  while((iterTimesChunkSize<=maxIter && std>=minImprovement) || iterTimesChunkSize<=14){
+  while(iterTimesChunkSize<=14 || (std>=minImprovement && iterTimesChunkSize<=maxIter)){
 
     cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
     registerDoSNOW(cl)
@@ -126,7 +126,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
 	  iter <- iter+1
   }
 	
-  print(paste("The optimization was iterated ", iter*chunkSize, " times.", sep=""))
+  print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
   
   if(iter>maxIter && std>minImprovement){
     warning("The improvement was still larger than minImprovement when maxIter was reached")
