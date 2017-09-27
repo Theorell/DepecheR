@@ -2,9 +2,11 @@
 #
 #
 # This function is used before the dClust function to identify the optimal penalty value for the specific dataset. This value decides the penalization and consequently also the number of clusters that are identified.
-# @importFrom parallel detectCores makeCluster parLapply stopCluster
-# @importFrom Rcpp evalCpp
-# @importFrom graphics box
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW 
+#' @importFrom foreach foreach %dopar%
+#' @importFrom Rcpp evalCpp
+#' @importFrom graphics box
 # @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 # @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 # @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
@@ -52,14 +54,20 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   
   while((iterTimesChunkSize<=maxIter && std>=minImprovement && distanceBetweenMinAndBestPrevious<0) || iterTimesChunkSize<=14){
 
-	  if(Sys.info()['sysname']!="Windows"){
-      cl <- makeCluster(chunkSize, type="FORK")
-      } else {
-      cl <- makeCluster(spec="PSOCK", names=chunkSize)
-      }
-	  optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
-    stopCluster(cl)	
-  
+    cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
+    registerDoSNOW(cl)
+    optimList <- foreach(i=1:chunkSize) %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations)
+    parallel::stopCluster(cl)	
+
+    #Alternative deprecated parallelization. 
+    #if(Sys.info()['sysname']!="Windows"){
+    #  cl <- makeCluster(chunkSize, type="FORK")
+    #  } else {
+    #  cl <- makeCluster(spec="PSOCK", names=chunkSize)
+    #  }
+    #optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
+    
+      
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
@@ -74,13 +82,13 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     	optimListFull <- c(optimListFull, optimListNonTrivial)
     }
  
-    #Here, the standard deviation is instead retrieved
+    #Here, the standard deviation of the error of the mean (or something like that) is instead retrieved
     stdOptimList <- list()	
     for(i in 1:length(optimListFull[[1]])){
       x <- do.call("rbind", lapply(optimListFull, "[[", i))
       stdOptimList[[i]] <- apply(x, 2, sd)
     }
-    stdOptimDf <- as.data.frame(stdOptimList)  
+    stdOptimDf <- (as.data.frame(stdOptimList))/sqrt(iter*chunkSize) 
 
     #Now average these runs, to retrieve the best penalty value between the runs. 
     meanOptimList <- list()	
@@ -112,7 +120,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
 	  distanceBetweenMinAndBestPrevious <- minMeanMinusStdAllNonMin-meanPlusStdMin
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
-	  std <- stdOptimVector[minPos]/sqrt(iter*chunkSize)
+	  std <- stdOptimVector[minPos]
 	  iterTimesChunkSize <- iter*chunkSize
 
 	  iter <- iter+1

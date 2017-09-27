@@ -2,7 +2,9 @@
 #'
 #'
 #' This function is the core user function of the Depeche package. It clusters the data with a penalized version of K-means.
-#' @importFrom parallel detectCores makeCluster parLapply stopCluster
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW 
+#' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
@@ -83,17 +85,23 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
     iterations <- 7
   }
     
-#This is the most central function of the whole package.
+#This is the central function of the whole package.
 	
-	if(Sys.info()['sysname']!="Windows"){
-	  cl <- makeCluster(n_cores, type="FORK")
-	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	  stopCluster(cl)
-	} else {
-	  cl <- makeCluster(n_cores, type="PSOCK")
-	  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	  stopCluster(cl)
-	}
+  cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
+  registerDoSNOW(cl)
+  return_all <- foreach(i=1:iterations) %dopar% sparse_k_means(dataMat,initCenters,penaltyForRightSize,1)
+  parallel::stopCluster(cl)	
+  
+  #Alternative deprecated parallelization.
+	#if(Sys.info()['sysname']!="Windows"){
+	 # cl <- makeCluster(n_cores, type="FORK")
+	 # return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
+	 # stopCluster(cl)
+	#} else {
+	 # cl <- makeCluster(n_cores, type="PSOCK")
+	 # return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
+	 # stopCluster(cl)
+	#}
 	
   #Here, the best iteration is retrieved
   logMaxLik <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
