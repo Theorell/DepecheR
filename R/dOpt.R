@@ -45,7 +45,7 @@ dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncremen
   
   #First, the optimal penalties is identified with a reasonable sample size
   if(penaltyOptOnly==TRUE){
-    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=sampleSizeIncrement, penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
+    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=initSampleSize, penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
     return(penaltyOptOnly)
   } else {
     
