@@ -5,8 +5,8 @@
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param initSampleSize The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. Defaults to 4000.
-#' @param sampleSizePowerIncrement With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 0.5 translates to a start value of x*2^0, and the following value of 2^(0.5), and so on. x 
+#' @param initSampleSize The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. Defaults to 2000.
+#' @param sampleSizePowerIncrement With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 1 translates to a start value of x*2^0, and the following value of 2^(0+1), and so on.  
 #' @param maxSampleSize At what value the algorithm stops. Defaults to 100 000. 
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
 #' @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
@@ -40,7 +40,7 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncrement=0.5, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncrement=1, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size
@@ -54,7 +54,7 @@ dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncremen
 	  i <- 1
 	  sampleSizes <- initSampleSize*2^0
 	  #This loop continues to run until two runs produce the lowest distance at the same penalty, and these distances diverge less than 0.01.
-	  while(i<=3 && sampleSizes[i]<=maxSampleSize || (dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1]) || (abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement)){
+	  while(i<=3 || sampleSizes[i]<=maxSampleSize || dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1] || abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement){
 	    if(i>1){
 	      print(paste("Cycle", i-1, "completed. Jumping to next sample size."))
 	    }
@@ -64,6 +64,8 @@ dOpt <- function(inDataFrameScaled, initSampleSize=4000, sampleSizePowerIncremen
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 
+	    print(dOptPenaltyResult)
+	    print(lowestDist[i])
 	    
 	    i <- i+1
 	    sampleSizes[i] <- initSampleSize*2^(sampleSizePowerIncrement*(i-1))

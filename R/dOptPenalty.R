@@ -52,11 +52,11 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   
-  while(iterTimesChunkSize<=14 || (std>=minImprovement && iterTimesChunkSize<=maxIter)){
+  while(iterTimesChunkSize<=14 || (std>=minImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
 
     cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
     registerDoSNOW(cl)
-    optimList <- foreach(i=1:chunkSize) %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations)
+    optimList <- foreach(i=1:chunkSize) %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations, i)
     parallel::stopCluster(cl)	
 
     #Alternative deprecated parallelization. 
@@ -66,7 +66,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     #  cl <- makeCluster(spec="PSOCK", names=chunkSize)
     #  }
     #optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
-    
+    #stopCluster(cl)
       
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
     optimListNonTrivial <- optimList
@@ -82,19 +82,26 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     	optimListFull <- c(optimListFull, optimListNonTrivial)
     }
  
-    #Here, the standard deviation of the error of the mean (or something like that) is instead retrieved
+    #Here, the  average and standard deviation of the error of the mean (or something like that) is retrieved
+    meanOptimList <- list()	
     stdOptimList <- list()	
     for(i in 1:length(optimListFull[[1]])){
       x <- do.call("rbind", lapply(optimListFull, "[[", i))
+      meanOptimList[[i]] <- apply(x, 2, mean)
       stdOptimList[[i]] <- apply(x, 2, sd)
     }
-    stdOptimDf <- (as.data.frame(stdOptimList))/sqrt(iter*chunkSize) 
+    #stdOptimDfTest <- as.data.frame(stdOptimList)
+    stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter*chunkSize))
 
-    #Now average these runs, to retrieve the best penalty value between the runs. 
-    meanOptimList <- list()	
+    #colnames(stdOptimDfTest) <- c(1:ncol(stdOptimDfTest))
+    #colnames(stdOptimDf) <- c(1:ncol(stdOptimDf))
+    #print(stdOptimDfTest)
+    #print(stdOptimDf)
+     
+    
     for(i in 1:length(optimListFull[[1]])){
       x <- do.call("rbind", lapply(optimListFull, "[[", i))
-      meanOptimList[[i]] <- apply(x, 2, mean)
+      
     }
     meanOptimDf <- as.data.frame(meanOptimList)
 
@@ -105,31 +112,35 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
     minPos <- which(meanOptimVector==min(meanOptimVector))
 	  
     #Add the standard deviation of this position to its mean
-    #meanPlus3StdMin <- meanOptimVector[minPos]+(3*stdOptimVector[minPos])
+    meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
     
 	  #Return the positions of all values that are not minimum
-	  #allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
+	  allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
 	  
 	  #Now subtract the standard deviation of each of these values from the mean
-	  #meanMinus3StdAllNonMin <- meanOptimVector[allNonMinPos]-(3*stdOptimVector[allNonMinPos])
+	  meanMinus2StdAllNonMin <- meanOptimVector[allNonMinPos]-(2*stdOptimVector[allNonMinPos])
 
 	  #Identify the lowest value among these
-	  #minMeanMinus3StdAllNonMin <- min(meanMinus3StdAllNonMin)
+	  minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
 	  
 	  #Now, the distance between minMeanMinusSdAllNonMin and . If they overlap, the iteration has not made it totally clear which point is optimal. 
-	  #distanceBetweenMinAndBestPrevious <- minMeanMinus3StdAllNonMin-meanPlus3StdMin
+	  distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
 	  std <- stdOptimVector[minPos]
 	  iterTimesChunkSize <- iter*chunkSize
+	  
+	  #print(std)
+	  #print(iterTimesChunkSize)
+	  #print(distanceBetweenMinAndBestPrevious)
 
 	  iter <- iter+1
   }
 	
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
   
-  if(iter>maxIter && std>minImprovement){
-    warning("The improvement was still larger than minImprovement when maxIter was reached")
+  if(iter>=maxIter && (std>minImprovement || distanceBetweenMinAndBestPrevious<0)){
+    warning("An optimal value was not identified before maxIter was reached")
   }
   
   #Here, the penalty values for the real dataset, not the bootstrap subsamples, is used.

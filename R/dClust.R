@@ -87,20 +87,20 @@ dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, with
     
 #This is the central function of the whole package.
 	
-  cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
+  cl <-  parallel::makeCluster(iterations, type = "SOCK")
   registerDoSNOW(cl)
-  return_all <- foreach(i=1:iterations) %dopar% sparse_k_means(dataMat,initCenters,penaltyForRightSize,1)
+  return_all <- foreach(i=1:iterations) %dopar% sparse_k_means(dataMat,initCenters,penaltyForRightSize,1, i)
   parallel::stopCluster(cl)	
   
   #Alternative deprecated parallelization.
 	#if(Sys.info()['sysname']!="Windows"){
-	 # cl <- makeCluster(n_cores, type="FORK")
-	 # return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	 # stopCluster(cl)
+	#  cl <- makeCluster(n_cores, type="FORK")
+	#  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
+	#  stopCluster(cl)
 	#} else {
-	 # cl <- makeCluster(n_cores, type="PSOCK")
-	 # return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	 # stopCluster(cl)
+	#  cl <- makeCluster(n_cores, type="PSOCK")
+	#  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
+	#  stopCluster(cl)
 	#}
 	
   #Here, the best iteration is retrieved
