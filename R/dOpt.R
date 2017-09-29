@@ -9,9 +9,10 @@
 #' @param sampleSizePowerIncrement With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 1 translates to a start value of x*2^0, and the following value of 2^(0+1), and so on.  
 #' @param maxSampleSize At what value the algorithm stops. Defaults to 100 000. 
 #' @param initCenters Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.
-#' @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
-#' @param minImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, or the larger the samples are, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
-#' @param penaltyOptOnly If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, the sample size will be the value specified in the sampleSizeIncrement argument.
+#' @param maxIter The maximal number of iterations that are performed. 
+#' @param maxEER This is the stop criterion for the iterative optimization of the sample size: the maximum estimated error rate that is acceptable. Defaults to 0.01, or 1 percent.
+#' @param minEERImprovement This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the estimated error rate be, and this sets the threshold when the inner iterations stop. 
+#' @param penaltyOptOnly If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small or when the information density is known to be very high, i e that the full dataset is needed to get accurate clustering. If penaltyOptOnly=TRUE, the sample size will be the value specified in the sampleSizeIncrement argument.
 #' @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
 #' @seealso \code{\link{dClust}}, \code{\link{dAllocate}}, \code{\link{dOptAndClust}}
 #' @return If penaltyOptOnly is set to FALSE, which is default, one graph showing the stability of the models with different sample sizes, one showing the distance with different penalties before the optimization of the sample size, and a third showing the same, but after the sample size has been optimized. In addition, a list is returned with the following content:
@@ -20,7 +21,7 @@
 #'     \describe{
 #'               \item{SampleSize}{This column shows the sample size of each boot strap subsampling in the optimization procedure.}
 #'               \item{Lowest distance}{This vector shows the optimal stability, expressed as the lowest distance between the bootstrap subsampling runs at each of the boot strap subsamling sizes.}
-#'               \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minImprovement, the algorithm automatically stops.}
+#'               \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minEERImprovement, the algorithm automatically stops.}
 #'              } 
 #'     }
 #'     \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering with the optimal sample size. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
@@ -40,12 +41,12 @@
 #' #Run the function to identify at what sample size the cluster stability plateaus
 #' x_optim <- dOpt(x_scaled)
 #' @export dOpt
-dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncrement=1, maxSampleSize=100000, initCenters=30, maxIter=100, minImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
+dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncrement=1, maxSampleSize=100000, initCenters=30, maxIter=100, maxEER=0.01, minEERImprovement=0.01, penaltyOptOnly=FALSE, penalties=c(0,2,4,8,16,32,64,128)){
 
   
   #First, the optimal penalties is identified with a reasonable sample size
   if(penaltyOptOnly==TRUE){
-    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minImprovement=minImprovement, bootstrapObservations=initSampleSize, penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
+    penaltyOptOnly <- dOptPenalty(inDataFrameScaled, initCenters=initCenters, maxIter=maxIter, minEERImprovement=minEERImprovement, bootstrapObservations=initSampleSize, penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalty term.pdf")
     return(penaltyOptOnly)
   } else {
     
@@ -54,7 +55,7 @@ dOpt <- function(inDataFrameScaled, initSampleSize=2000, sampleSizePowerIncremen
 	  i <- 1
 	  sampleSizes <- initSampleSize*2^0
 	  #This loop continues to run until two runs produce the lowest distance at the same penalty, and these distances diverge less than 0.01.
-	  while(i<=3 || sampleSizes[i]<=maxSampleSize || dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1] || abs(lowestDist[i-2]-lowestDist[i-1])>minImprovement){
+	  while(i<=3 || sampleSizes[i]<=maxSampleSize || dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1] || lowestDist[i-1]>maxEER){
 	    if(i>1){
 	      print(paste("Cycle", i-1, "completed. Jumping to next sample size."))
 	    }

@@ -10,7 +10,7 @@
 # @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
 # @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 # @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
-# @param minImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
+# @param minEERImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
 # @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
 # @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
 # @param makeGraph If a graph should be created showing the distance between bootstraps under different penalties.
@@ -34,9 +34,9 @@
 #
 # #Run the function
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
-# @export dOptPenalty
+#' @export dOptPenalty
 #' @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -52,11 +52,11 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   
-  while(iterTimesChunkSize<=14 || (std>=minImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
+  while(iterTimesChunkSize<=14 || (std>=minEERImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
 
     cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
     registerDoSNOW(cl)
-    optimList <- foreach(i=1:chunkSize) %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations, i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations, i)
     parallel::stopCluster(cl)	
 
     #Alternative deprecated parallelization. 
@@ -139,7 +139,9 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minImpro
 	
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
   
-  if(iter>=maxIter && (std>minImprovement || distanceBetweenMinAndBestPrevious<0)){
+  print(str(meanOptimDf))
+  
+  if(iter>=maxIter && (std>minEERImprovement || distanceBetweenMinAndBestPrevious<0)){
     warning("An optimal value was not identified before maxIter was reached")
   }
   

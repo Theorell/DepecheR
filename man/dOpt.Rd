@@ -5,9 +5,9 @@
 \title{Find the smallest optimal sampe size and the best penalty offset for a certain dataset}
 \usage{
 dOpt(inDataFrameScaled, initSampleSize = 2000, sampleSizePowerIncrement = 1,
-  maxSampleSize = 1e+05, initCenters = 30, maxIter = 100,
-  minImprovement = 0.01, penaltyOptOnly = FALSE, penalties = c(0, 2, 4, 8,
-  16, 32, 64, 128))
+  maxSampleSize = 1e+05, initCenters = 30, maxIter = 100, maxEER = 0.01,
+  minEERImprovement = 0.01, penaltyOptOnly = FALSE, penalties = c(0, 2, 4,
+  8, 16, 32, 64, 128))
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
@@ -20,11 +20,13 @@ dOpt(inDataFrameScaled, initSampleSize = 2000, sampleSizePowerIncrement = 1,
 
 \item{initCenters}{Number of starting points for clusters. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30.}
 
-\item{maxIter}{The maximal number of iterations that are performed to reach the minimal improvement.}
+\item{maxIter}{The maximal number of iterations that are performed.}
 
-\item{minImprovement}{This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, or the larger the samples are, the smaller will the improvement be, and this sets the threshold when the iterations stop.}
+\item{maxEER}{This is the stop criterion for the iterative optimization of the sample size: the maximum estimated error rate that is acceptable. Defaults to 0.01, or 1 percent.}
 
-\item{penaltyOptOnly}{If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small, or when the number of variables is very large (>100), so that increasing the sample size too far might lead to computational overload. If this is set to true, the sample size will be the value specified in the sampleSizeIncrement argument.}
+\item{minEERImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the estimated error rate be, and this sets the threshold when the inner iterations stop.}
+
+\item{penaltyOptOnly}{If this is set to true, no optimization on the sample size is performed. This might be useful in situations when the whole dataset will be used for clustering, such as when the dataset is small or when the information density is known to be very high, i e that the full dataset is needed to get accurate clustering. If penaltyOptOnly=TRUE, the sample size will be the value specified in the sampleSizeIncrement argument.}
 
 \item{penalties}{These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 }
@@ -35,7 +37,7 @@ If penaltyOptOnly is set to FALSE, which is default, one graph showing the stabi
     \describe{
               \item{SampleSize}{This column shows the sample size of each boot strap subsampling in the optimization procedure.}
               \item{Lowest distance}{This vector shows the optimal stability, expressed as the lowest distance between the bootstrap subsampling runs at each of the boot strap subsamling sizes.}
-              \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minImprovement, the algorithm automatically stops.}
+              \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minEERImprovement, the algorithm automatically stops.}
              } 
     }
     \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering with the optimal sample size. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
