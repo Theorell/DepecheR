@@ -163,7 +163,7 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
         }
     }
     if(active_indices.size()<2){
-        std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
+        //std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
         return Eigen::VectorXi::Zero(X_rows);
     }
     //allocate all points to the first active cluster.
@@ -346,7 +346,7 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     Eigen::VectorXi mu_ind_old =  Eigen::VectorXi::Zero(rows);
     unsigned int count_limit = 1000;
     for(unsigned int i = 0; i<count_limit; i++){
-        std::cout << "Iteration: " <<i<< std::endl;
+        //std::cout << "Iteration: " <<i<< std::endl;
         mu_ind=allocate_clusters(X,mu);
         if((mu_ind_old-mu_ind).isZero(0)){
             break;
@@ -362,9 +362,9 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     ret.norm = cluster_norm(X,mu,mu_ind, reg);
     //if no zero is true, continue to deallocate all points from the zero clusters.
     if(no_zero){
-        std::cout << "Removing zero clusters"<< std::endl;
+        //std::cout << "Removing zero clusters"<< std::endl;
         for(unsigned int i = 0; i<count_limit; i++){
-            std::cout << "Iteration: " <<i<< std::endl;
+            //std::cout << "Iteration: " <<i<< std::endl;
             mu_ind=allocate_clusters(X,mu, no_zero);
             if((mu_ind_old-mu_ind).isZero(0)){
                 break;
@@ -460,7 +460,7 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     RowMatrixXd found_cluster_no_zero = RowMatrixXd::Zero(k_size,reg_size);
     
     for(unsigned int i = 0; i<iterations; i++){
-        std::cout<<"Overall iteration: "<< i << std::endl;
+        //std::cout<<"Overall iteration: "<< i << std::endl;
         for(unsigned int j = 0; j<k_size; j++){
             for(unsigned int l = 0; l<reg_size; l++){
                 //create three bootstrap samples
