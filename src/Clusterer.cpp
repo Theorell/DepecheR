@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-/*
+/* 
  * File:   Clusterer.cpp
  * Author: theorell
- *
+ * 
  * Created on May 3, 2017, 8:40 AM
  */
 
@@ -15,7 +15,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <iostream>
-#include <Eigen/src/Core/util/Constants.h>
+#include <eigen3/Eigen/src/Core/util/Constants.h>
 #include <cmath>
 #include <Rcpp.h>
 
@@ -34,7 +34,7 @@ RowMatrixXd numeric_to_eigen(NumericMatrix X){
             data(i,j)=X(i,j);
         }
     }
-    return data;
+    return data;   
 }
 
 Eigen::VectorXd numericVector_to_eigen(NumericVector X){
@@ -43,7 +43,7 @@ Eigen::VectorXd numericVector_to_eigen(NumericVector X){
     for(unsigned int i = 0; i<rows; i++){
             data(i)=X(i);
     }
-    return data;
+    return data;   
 }
 
 Eigen::Matrix<unsigned int, -1,1>  integer_to_eigen(IntegerVector X){
@@ -52,7 +52,7 @@ Eigen::Matrix<unsigned int, -1,1>  integer_to_eigen(IntegerVector X){
     for(unsigned int i = 0; i<rows; i++){
             data(i)=X(i);
     }
-    return data;
+    return data;   
 }
 
 NumericMatrix eigen_to_numeric(RowMatrixXd X){
@@ -79,7 +79,7 @@ List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, con
     const Return_values partitioning =c.find_centers(data, k, reg, no_zero);
     IntegerVector ints(rows);
     IntegerVector ints_no_zero(rows);
-
+    
     for(unsigned int i = 0; i<rows; i++){
         ints(i) = partitioning.indexes(i);
         ints_no_zero(i) = partitioning.indexes_no_zero(i);
@@ -94,7 +94,7 @@ List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, con
     ret["v"]=centers_no_zero;
     ret["n"]=partitioning.norm;
     ret["m"]=partitioning.norm_no_zero;
-    //Rcout<<"the norm is: "<< partitioning.norm<<std::endl;
+    //std::cout<<"the norm is: "<< partitioning.norm<<std::endl;
   return ret;
 }
 
@@ -111,18 +111,18 @@ List grid_search(NumericMatrix X, IntegerVector k, NumericVector reg, const unsi
     NumericMatrix found_cluster = eigen_to_numeric(vals.found_cluster);
     NumericMatrix found_cluster_no_zero = eigen_to_numeric(vals.found_cluster_no_zero);
     List ret;
-
+    
     ret["d"] = distances;
     ret["z"] = distances_no_zero;
     ret["n"] = found_cluster;
     ret["m"] = found_cluster_no_zero;
     return ret;
-
+    
 }
 
 // [[Rcpp::export]]
 List allocate_points(NumericMatrix X, NumericMatrix mu,const bool no_zero ) {
-
+    
     Clusterer c = Clusterer();
     RowMatrixXd data = numeric_to_eigen(X);//c.m_rescale(numeric_to_eigen(X));
     RowMatrixXd eigen_mu = numeric_to_eigen(mu);
@@ -149,13 +149,13 @@ Clusterer::Clusterer(const Clusterer& orig) {
 const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const RowMatrixXd& mu, const bool no_zero ){
     const unsigned int mu_rows = mu.rows();
     const unsigned int X_rows = X.rows();
-
+    
     //make a vector to iterate over
     std::vector<unsigned int> active_indices;
     for(unsigned int i = 0; i< mu_rows; i++){
         if(no_zero){
             if(!mu.row(i).isZero(0)){
-                //Rcout<<"muRow: "<< mu.row(i)<< " and I:"<<i<<std::endl;
+                //std::cout<<"muRow: "<< mu.row(i)<< " and I:"<<i<<std::endl;
                 active_indices.push_back(i);
             }
         }else{
@@ -163,7 +163,7 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
         }
     }
     if(active_indices.size()<2){
-        Rcout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
+        std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
         return Eigen::VectorXi::Zero(X_rows);
     }
     //allocate all points to the first active cluster.
@@ -181,12 +181,12 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
             }
         }
     }
-    //Rcout<<"mu ind: "<< mu_ind<<std::endl;
+    //std::cout<<"mu ind: "<< mu_ind<<std::endl;
     return mu_ind;
 }
 
 const RowMatrixXd Clusterer::reevaluate_centers(const RowMatrixXd& X, const Eigen::VectorXi inds, const unsigned int k, const double reg ){
-
+    
     const unsigned int X_rows = X.rows();
     const unsigned int X_cols = X.cols();
     RowMatrixXd mu_p = RowMatrixXd::Zero(k,X_cols);
@@ -197,7 +197,7 @@ const RowMatrixXd Clusterer::reevaluate_centers(const RowMatrixXd& X, const Eige
 
     for(unsigned int i = 0; i<X_rows; i++){
         centers.row(inds(i))+=X.row(i);
-        nums(inds(i))+=1;
+        nums(inds(i))+=1;        
     }
     for(unsigned int i = 0; i< k; i++){
         mu_p.row(i)= ((centers.row(i).array()-reg/2)/nums(i)).matrix();
@@ -238,9 +238,9 @@ unsigned int Clusterer::element_from_vector(Eigen::VectorXd elements){
     } else{
         ret = map[x];
     }
-
-
-
+    
+    
+    
     return ret;
 }
 
@@ -248,16 +248,16 @@ RowMatrixXd Clusterer::initialize_mu(const RowMatrixXd& X, const unsigned int k)
     const unsigned int X_cols = X.cols();
     const unsigned int X_rows = X.rows();
     RowMatrixXd mu =  RowMatrixXd::Zero(k,X_cols);
-
+    
     //pick a random starting point
     int randi = std::rand() % X_rows;
     mu.row(0)=X.row(randi);
     //compute distances
     Eigen::VectorXd dists =  ((-X).rowwise()+mu.row(0)).rowwise().squaredNorm();
-    //Rcout<<"element from vector 1: dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
+    //std::cout<<"element from vector 1: dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
     unsigned int element_index = element_from_vector(dists);
     mu.row(1)=X.row(element_index);
-    for(unsigned int i = 2; i<k; i++){
+    for(unsigned int i = 2; i<k; i++){     
         //get the new minimal distances
         Eigen::VectorXd temp_dists =  ((-X).rowwise()+mu.row(i-1)).rowwise().squaredNorm();
         for(unsigned int j = 0; j<X_rows; j++){
@@ -265,7 +265,7 @@ RowMatrixXd Clusterer::initialize_mu(const RowMatrixXd& X, const unsigned int k)
                 dists(j)=temp_dists(j);
             }
         }
-        //Rcout<<"element from vector "<<i<<": dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
+        //std::cout<<"element from vector "<<i<<": dists"<<dists <<"X"<<X<<"mu"<<mu.row(0)<<std::endl;
         element_index = element_from_vector(dists);
         mu.row(i)=X.row(element_index);
     }
@@ -288,7 +288,7 @@ RowMatrixXd Clusterer::m_rescale(const RowMatrixXd& Xin){
             scaling = tempCol(upper)-tempCol(lower);
         }
         X.col(i)=(X.col(i).array()/scaling).matrix();
-    }
+    } 
     X = X.rowwise()-X.colwise().mean();
     //get the mean absolute deviation
 //    Eigen::RowVectorXd abs_dev = X.cwiseAbs().colwise().sum();
@@ -302,14 +302,14 @@ RowMatrixXd Clusterer::m_rescale(const RowMatrixXd& Xin){
 //    }
 //    // get rid of the mean abs_dev
 //    X = X.array().rowwise()/abs_dev.array();
-
+    
 //    if((st_dev.array()==0.0).any()){
-//        Rcout<<"Input matrix contains degenrate dimensions with no variance: Aborting"<<std::endl;
+//        std::cout<<"Input matrix contains degenrate dimensions with no variance: Aborting"<<std::endl;
 //        RowMatrixXd ret;
 //        return ret;
 //    }
     //RowMatrixXd X = (Xin.rowwise() - mean).array().rowwise() / st_dev.array();
-
+    
     //subtract the median
     //unsigned int x_cols = X.cols();
 
@@ -326,7 +326,7 @@ double Clusterer::cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers,
             ssq+=centers(j,i)*reg;
         }
     }
-    //Rcout<<"The ssq is: "<<ssq<<std::endl;
+    //std::cout<<"The ssq is: "<<ssq<<std::endl; 
     return ssq;
 }
 
@@ -336,25 +336,25 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     //const unsigned int cols = X.cols();
     //scale the matrix to be central
     RowMatrixXd X = Xin;//m_rescale(Xin);
-
+    
     //initialize mu
-
+    
     RowMatrixXd mu = initialize_mu(X, k);
-
-
+    
+    
     Eigen::VectorXi mu_ind =  Eigen::VectorXi::Ones(rows);
     Eigen::VectorXi mu_ind_old =  Eigen::VectorXi::Zero(rows);
     unsigned int count_limit = 1000;
     for(unsigned int i = 0; i<count_limit; i++){
-        Rcout << "Iteration: " <<i<< std::endl;
+        std::cout << "Iteration: " <<i<< std::endl;
         mu_ind=allocate_clusters(X,mu);
         if((mu_ind_old-mu_ind).isZero(0)){
             break;
         }
         mu_ind_old=mu_ind;
         mu = reevaluate_centers(X,mu_ind,k,reg);
-
-
+        
+        
     }
     Return_values ret;
     ret.indexes = mu_ind;
@@ -362,9 +362,9 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     ret.norm = cluster_norm(X,mu,mu_ind, reg);
     //if no zero is true, continue to deallocate all points from the zero clusters.
     if(no_zero){
-        Rcout << "Removing zero clusters"<< std::endl;
+        std::cout << "Removing zero clusters"<< std::endl;
         for(unsigned int i = 0; i<count_limit; i++){
-            Rcout << "Iteration: " <<i<< std::endl;
+            std::cout << "Iteration: " <<i<< std::endl;
             mu_ind=allocate_clusters(X,mu, no_zero);
             if((mu_ind_old-mu_ind).isZero(0)){
                 break;
@@ -376,9 +376,9 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     ret.indexes_no_zero = mu_ind;
     ret.centers_no_zero = mu;
     ret.norm_no_zero = cluster_norm(X,mu,mu_ind,reg);
-
+    
     //std::tuple<Eigen::VectorXi,RowMatrixXd> tuple;
-
+    
     return ret;
 }
 
@@ -389,20 +389,20 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
     Eigen::VectorXd population1 = Eigen::VectorXd::Zero(k);
     Eigen::VectorXd population2 = Eigen::VectorXd::Zero(k);
     //unsigned int non_zero = 0;
-
+    
     for(unsigned int i = 0; i < intSize; i ++){
         population1(c1(i))+=1.0/size;
         population2(c2(i))+=1.0/size;
     }
     //now calculate the false positives
-    //Rcout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
+    //std::cout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
     const double false1 = (population1.array()*(population1.array()-1.0/size)*(size/(size-1))).sum()*(population2.array()*(population2.array()-1.0/size)*(size/(size-1))).sum();
     const double false2 = (population1.array()*(1-(population1.array()-1.0/size)*(size/(size-1)))).sum()*(population2.array()*(1-(population2.array()-1.0/size)*(size/(size-1)))).sum();
-
+    
     double stability = 0;
     //always test 10000 indices!
     const unsigned int indice_num = 10000;
-
+    
     for(unsigned int num = 0; num<indice_num; num++){
         unsigned int i = 0;
         unsigned int j = 0;
@@ -412,14 +412,14 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
             j = rand_inds(1)%intSize;
         }
         if(c1(i)==c1(j)&& c2(i)==c2(j)){
-            stability+= 1;
+            stability+= 1 - false1;
         } else if((c1(i)!=c1(j)&& c2(i)!=c2(j))){
-            stability+=1;
+            stability+=1 - false2;
         }
-
+            
     }
-
-    return 1-((stability/indice_num)-(false1+false2))/(1-(false1+false2));
+    
+    return 1-std::sqrt((stability/indice_num));
 }
 
 //generates bootstrapped data sets by resampling an old data set
@@ -428,7 +428,7 @@ const RowMatrixXd Clusterer::bootstrap_data(const RowMatrixXd& X, const unsigned
     const unsigned int brows = bootstrapSize;
     const unsigned int xrows = X.rows();
     RowMatrixXd b_sample = RowMatrixXd::Zero(brows,X.cols());
-
+    
     const Eigen::Matrix<unsigned int, -1,1> rand_inds = Eigen::Matrix<unsigned int, -1,1>::Random(brows);
     for(unsigned int i = 0; i<brows; i++){
         unsigned int rand_num = rand_inds(i)%xrows;
@@ -442,7 +442,7 @@ unsigned int Clusterer::n_used_clusters(const unsigned int k, const Eigen::Vecto
     Eigen::VectorXi population = Eigen::VectorXi::Zero(k);
     //unsigned int non_zero = 0;
     unsigned int len = inds.size();
-
+    
     for(unsigned int i = 0; i < len; i ++){
         population(inds(i))=1;
     }
@@ -458,31 +458,31 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     RowMatrixXd distances_no_zero = RowMatrixXd::Zero(k_size,reg_size);
     RowMatrixXd found_cluster = RowMatrixXd::Zero(k_size,reg_size);
     RowMatrixXd found_cluster_no_zero = RowMatrixXd::Zero(k_size,reg_size);
-
+    
     for(unsigned int i = 0; i<iterations; i++){
-        Rcout<<"Overall iteration: "<< i << std::endl;
+        std::cout<<"Overall iteration: "<< i << std::endl;
         for(unsigned int j = 0; j<k_size; j++){
             for(unsigned int l = 0; l<reg_size; l++){
                 //create three bootstrap samples
                 const RowMatrixXd b1 = bootstrap_data(X,bootstrapSamples);
                 const RowMatrixXd b2 = bootstrap_data(X,bootstrapSamples);
-                const RowMatrixXd b3 = bootstrap_data(X,bootstrapSamples);
+                //const RowMatrixXd b3 = bootstrap_data(X,bootstrapSamples);
                 //create two partitionings
-                //Rcout<<"Finding centers: "<< std::endl;
+                //std::cout<<"Finding centers: "<< std::endl;
                 //try to remove zeros by default
                 bool remove_zeros = true;
                 const Return_values ret1 = find_centers(b1,k(j), reg(l),remove_zeros);
                 const Return_values ret2 = find_centers(b2,k(j), reg(l),remove_zeros);
-                //allocate b3 using the new mus
-                const Eigen::VectorXi ind1 = allocate_clusters(b3, ret1.centers );
-                const Eigen::VectorXi ind2 = allocate_clusters(b3, ret2.centers );
+                //allocate X using the new mus
+                const Eigen::VectorXi ind1 = allocate_clusters(X, ret1.centers );
+                const Eigen::VectorXi ind2 = allocate_clusters(X, ret2.centers );
                 //allocate with no_zero
-                const Eigen::VectorXi ind1_no_zero = allocate_clusters(b3, ret1.centers_no_zero, true);
-                const Eigen::VectorXi ind2_no_zero = allocate_clusters(b3, ret2.centers_no_zero, true);
-                //Rcout<<"calculating distances: "<< std::endl;
+                const Eigen::VectorXi ind1_no_zero = allocate_clusters(X, ret1.centers_no_zero, true);
+                const Eigen::VectorXi ind2_no_zero = allocate_clusters(X, ret2.centers_no_zero, true);
+                //std::cout<<"calculating distances: "<< std::endl;
                 distances(j,l)+=cluster_distance(ind1,ind2,k(j));
                 distances_no_zero(j,l)+=cluster_distance(ind1_no_zero,ind2_no_zero,k(j));
-                //Rcout<<"countng non-zero: "<< std::endl;
+                //std::cout<<"countng non-zero: "<< std::endl;
                 found_cluster(j,l)+=n_used_clusters(k(j),ret1.indexes);
                 found_cluster(j,l)+=n_used_clusters(k(j),ret2.indexes);
                 found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret1.indexes_no_zero);
@@ -496,7 +496,7 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     ret.found_cluster = found_cluster/(iterations*2);
     ret.found_cluster_no_zero = found_cluster_no_zero/(iterations*2);
     return ret;
-
+    
 }
 
 Clusterer::~Clusterer() {
