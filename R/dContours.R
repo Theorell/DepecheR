@@ -32,7 +32,7 @@
 
 dContours <- function(sneData, n=100){
 
-	sneDataNorm <- dScale(x=sneData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+	sneDataNorm <- dScale(x=sneData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
 	V1 <- sneDataNorm[,1]
 	V2 <- sneDataNorm[,2]

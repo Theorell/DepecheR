@@ -52,10 +52,11 @@ dOpt <- function(inDataFrameScaled, initSampleSize=10000, sampleSizePowerIncreme
     
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
-	  i <- 1
+	  i <- 0
 	  sampleSizes <- initSampleSize*2^0
 	  #This loop continues to run until two runs produce the lowest distance at the same penalty, and these distances diverge less than 0.01.
-	  while(sampleSizes[i]<=maxSampleSize || dOptPenaltyResultList[[i-1]][[1]][1,1]!=dOptPenaltyResultList[[i-2]][[1]][1,1] || lowestDist[i-1]>maxEER){
+	  while(sampleSizes[i]<=maxSampleSize && lowestDist[i]>maxEER){
+	    
 	    if(i>1){
 	      print(paste("Cycle", i-1, "completed. Jumping to next sample size."))
 	    }

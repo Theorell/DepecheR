@@ -124,7 +124,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE,
   }
 
   #Here the data that will be used for plotting are scaled.
-  xYDataScaled <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+  xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data

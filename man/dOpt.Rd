@@ -4,15 +4,15 @@
 \alias{dOpt}
 \title{Find the smallest optimal sampe size and the best penalty offset for a certain dataset}
 \usage{
-dOpt(inDataFrameScaled, initSampleSize = 2000, sampleSizePowerIncrement = 1,
-  maxSampleSize = 1e+05, initCenters = 30, maxIter = 100, maxEER = 0.01,
-  minEERImprovement = 0.01, penaltyOptOnly = FALSE, penalties = c(0, 2, 4,
-  8, 16, 32, 64, 128))
+dOpt(inDataFrameScaled, initSampleSize = 10000,
+  sampleSizePowerIncrement = 1, maxSampleSize = 1e+05, initCenters = 30,
+  maxIter = 100, maxEER = 0.01, minEERImprovement = 0.01,
+  penaltyOptOnly = FALSE, penalties = c(0, 2, 4, 8, 16, 32, 64, 128))
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{initSampleSize}{The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. Defaults to 2000.}
+\item{initSampleSize}{The initial sample size. If penaltyOptOnly==TRUE, this value will define the sample size for the penalty optimization. Defaults to 10000.}
 
 \item{sampleSizePowerIncrement}{With what value the sample size will increase. The value is taken to the power of two, i e, the standard value of 1 translates to a start value of x*2^0, and the following value of 2^(0+1), and so on.}
 

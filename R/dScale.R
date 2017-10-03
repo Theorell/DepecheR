@@ -8,18 +8,12 @@
 #' @importFrom foreach foreach %dopar%
 #' @param x A numeric/integer vector or dataframe
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
-#' @param lowQuantile The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
-#' @param highQuantile The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).
-#' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.
+#' @param scale If scaling should be performed. Two possible values: FALSE or a vector with two values indicating the low and high threshold quantiles for the scaling. "c(0.001, 0.999)" is default
+#' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.
 #' @param center If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering. 
-#' @param truncate If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:
+#' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
-#' #' \describe{
-#'     \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
-#'     \item{FALSE}{No truncation.}
-#'     \item{A vector with two values, eg c(0.01, 0.99)}{Data outside of these quantiles will be truncated.}
-#' }   
-#' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.
+#' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
 #' @seealso \code{\link{truncateData}} 
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
 #' @examples
@@ -34,7 +28,7 @@
 #' min(x2)
 #'
 #' #Run the function without mean centering and with the quantiles set to 0 and 1.
-#' y2 <- dScale(x2, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+#' y2 <- dScale(x2, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 #'
 #' #And the data has been scaled to the range between 0 and 1.
 #' max(y2)
@@ -50,7 +44,7 @@
 #' #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export dScale 
-dScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
+dScale <- function(x, control, scale=c(0.001, 0.999), robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -65,48 +59,54 @@ dScale <- function(x, control, lowQuantile=0.001, highQuantile=0.999, robustVarS
   }
 
     if(class(x)!="data.frame"){
-    result <- dScaleCoFunction(x, control=control, robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
+    result <- dScaleCoFunction(x, control=control, scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
   }
   if(class(x)=="data.frame"){
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1
       cl = parallel::makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
-      result <- as.data.frame(foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor))
+      result <- as.data.frame(foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor))
       parallel::stopCluster(cl)
       colnames(result) <- colnames(x)
     } else {
-      result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(robustVarScale=robustVarScale, lowQuantile=lowQuantile, highQuantile=highQuantile, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
+      result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
     }
       }
  return(result)
 }
 
-dScaleCoFunction <- function(x, control, lowQuantile, highQuantile, robustVarScale, truncate, center, multiplicationFactor){
+dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center, multiplicationFactor){
 
-    #Define quartiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
-    top <- Hmisc::hdquantile(control, probs = highQuantile, se=FALSE, na.rm=TRUE)
-    bottom <- Hmisc::hdquantile(control, probs = lowQuantile, se=FALSE, na.rm=TRUE)
 
-  if(robustVarScale==FALSE){
-  responseVector <- multiplicationFactor*((x-bottom)/(top-bottom))
+
+  if(length(scale)==2){
+    #Define quantiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
+    bottom <- Hmisc::hdquantile(control, probs = scale[1], se=FALSE, na.rm=TRUE)
+    top <- Hmisc::hdquantile(control, probs = scale[2], se=FALSE, na.rm=TRUE)
+
+    
+    if(robustVarScale==FALSE){
+      responseVector <- multiplicationFactor*((x-bottom)/(top-bottom))
+    }
+    
+    if(robustVarScale==TRUE){
+      #First truncate the data to the quantiles defined by the quantiles
+      xTruncated <- truncateData(x, lowQuantile=scale[1], highQuantile=scale[2])
+      
+      sdxTruncated <- sd(xTruncated)
+      
+      #Now the data is scaled
+      responseVector <- multiplicationFactor*x/sdxTruncated
+      
+    }
   }
-  
-  if(robustVarScale==TRUE){
-    #First truncate the data to the quantiles defined by the quantiles
-    xTruncated <- truncateData(x, lowQuantile=lowQuantile, highQuantile=highQuantile)
-    
-    sdxTruncated <- sd(xTruncated)
-    
-    #Now the data is scaled
-    responseVector <- multiplicationFactor*x/sdxTruncated
-    
-  }
+
   
   if(truncate==TRUE){
-    responseVector <- truncateData(responseVector, lowQuantile=lowQuantile, highQuantile=highQuantile)
+    responseVector <- truncateData(responseVector, lowQuantile=scale[1], highQuantile=scale[2])
   }
-  
+
   if(length(truncate)==2){
       responseVector <- truncateData(responseVector, lowQuantile=truncate[1], highQuantile=truncate[2])
   }

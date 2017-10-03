@@ -32,7 +32,7 @@
 #' @export dViolins
 dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), inDataFrame, plotAll=FALSE){
 
-  percentClusterVector <- dScale(clusterVector, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+  percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 
   paletteColors <- inferno(length(order))
 

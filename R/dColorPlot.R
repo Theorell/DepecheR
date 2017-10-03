@@ -88,17 +88,17 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, ad
   }
 
 
-  xYDataFraction <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+  xYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   
   if(class(colorData)=="numeric"){
     colorDataTruncated <- truncateData(colorData)
-    colorDataPercent <- dScale(colorDataTruncated, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorDataPercent <- dScale(colorDataTruncated, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
     colorVector <- dColorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
     dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
   }
   if(class(colorData)=="data.frame"){
     colorDataTruncated <- apply(colorData, 2, truncateData)
-    colorDataPercent <- apply(colorDataTruncated, 2, dScale, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=100)
+    colorDataPercent <- apply(colorDataTruncated, 2, dScale, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
     colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich.colors", order=c(1:100))
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1

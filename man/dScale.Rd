@@ -4,33 +4,26 @@
 \alias{dScale}
 \title{Scaling of a vector or a dataframe.}
 \usage{
-dScale(x, control, lowQuantile = 0.001, highQuantile = 0.999,
-  robustVarScale = TRUE, center = "peak", truncate = FALSE,
-  multiplicationFactor = 1, multiCore = FALSE)
+dScale(x, control, scale = c(0.001, 0.999), robustVarScale = TRUE,
+  center = "peak", truncate = FALSE, multiplicationFactor = 1,
+  multiCore = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
 
 \item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
 
-\item{lowQuantile}{The lower border below which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).}
+\item{scale}{If scaling should be performed. Two possible values: FALSE or a vector with two values indicating the low and high threshold quantiles for the scaling. "c(0.001, 0.999)" is default}
 
-\item{highQuantile}{The higher border above which the values are treated as outliers and will be outside of the defined scaling range (0-1*multiplicationFactor).}
-
-\item{robustVarScale}{If the data should be scaled to its standard deviation within the quantiles defined by the high and low quantile below. If TRUE (the default), the data is first truncated with truncateData to the quantiles and then the standard deviation scaling is performed.}
+\item{robustVarScale}{If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.}
 
 \item{center}{If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering.}
 
-\item{truncate}{If truncation of the most extreme values should be performed. Three possible values, where default is FALSE:}
+\item{truncate}{If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation.}
 
-\item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent.}
+\item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.}
 
-\item{multiCore}{If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
-#' \describe{
-    \item{TRUE}{The same quantiles are used as for the low and high quantiles.}
-    \item{FALSE}{No truncation.}
-    \item{A vector with two values, eg c(0.01, 0.99)}{Data outside of these quantiles will be truncated.}
-}}
+\item{multiCore}{If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 }
 \value{
 A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
@@ -50,7 +43,7 @@ max(x2)
 min(x2)
 
 #Run the function without mean centering and with the quantiles set to 0 and 1.
-y2 <- dScale(x2, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE)
+y2 <- dScale(x2, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
 #And the data has been scaled to the range between 0 and 1.
 max(y2)

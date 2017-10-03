@@ -91,7 +91,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   }
 
   #Here the data that will be used for plotting is scaled.
-  xYDataScaled <- dScale(xYData, robustVarScale=FALSE, lowQuantile=0, highQuantile=1, center=FALSE, multiplicationFactor=1)
+  xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=1)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
