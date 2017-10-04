@@ -100,6 +100,8 @@ List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, con
 
 // [[Rcpp::export]]
 List grid_search(NumericMatrix X, IntegerVector k, NumericVector reg, const unsigned int iterations, const unsigned int bootstrapSamples, const unsigned long seed_off_set = 0) {
+    const unsigned int rows = X.nrow();
+    
     RowMatrixXd data = numeric_to_eigen(X);
     Eigen::Matrix<unsigned int, -1,1>  k_vector = integer_to_eigen(k);
     Eigen::VectorXd reg_vector = numericVector_to_eigen(reg);
@@ -111,11 +113,27 @@ List grid_search(NumericMatrix X, IntegerVector k, NumericVector reg, const unsi
     NumericMatrix found_cluster = eigen_to_numeric(vals.found_cluster);
     NumericMatrix found_cluster_no_zero = eigen_to_numeric(vals.found_cluster_no_zero);
     List ret;
+    IntegerVector inds1(rows);
+    IntegerVector inds2(rows);
+    IntegerVector inds1_no_zero(rows);
+    IntegerVector inds2_no_zero(rows);
+    
+    for(unsigned int i = 0; i<rows; i++){
+        inds1 = vals.indexes1(i);
+        inds2 = vals.indexes2(i);
+        inds1_no_zero = vals.indexes1_no_zero(i);
+        inds2_no_zero = vals.indexes2_no_zero(i);
+    }
+    
     
     ret["d"] = distances;
     ret["z"] = distances_no_zero;
     ret["n"] = found_cluster;
     ret["m"] = found_cluster_no_zero;
+    ret["e"] = inds1;
+    ret["r"] = inds2;
+    ret["t"] = inds1_no_zero;
+    ret["y"] = inds2_no_zero;
     return ret;
     
 }
@@ -166,22 +184,38 @@ const Eigen::VectorXi Clusterer::allocate_clusters(const RowMatrixXd& X, const R
         //std::cout<<"Less than 2 clusters produced, resulting in trivial clustering"<<std::endl;
         return Eigen::VectorXi::Zero(X_rows);
     }
-    //allocate all points to the first active cluster.
-    Eigen::VectorXi mu_ind =  Eigen::VectorXi::Ones(X_rows)*active_indices[0];
+    //make a matrix containing all distances
     unsigned int non_zero_size = active_indices.size();
-    //dists starts as the distances to the first cluster
-    Eigen::VectorXd dists =  ((-X).rowwise()+mu.row(active_indices[0])).rowwise().norm();
-    for(unsigned int i = 1; i <non_zero_size; i++ ){
-        //temp_dists is the distance to the next cluster
-        Eigen::VectorXd temp_dists =  ((-X).rowwise()+mu.row(active_indices[i])).rowwise().norm();
-        for(unsigned int j = 0; j<X_rows; j++){
-            if(temp_dists(j)<dists(j)){
-                mu_ind(j)=active_indices[i];
-                dists(j)=temp_dists(j);
-            }
-        }
+    RowMatrixXd distances = RowMatrixXd::Zero(X_rows,non_zero_size);
+    for(unsigned int i = 0; i <non_zero_size; i++ ){
+        distances.col(i)= ((-X).rowwise()+mu.row(active_indices[i])).rowwise().norm();
     }
-    //std::cout<<"mu ind: "<< mu_ind<<std::endl;
+    //now find the min indices
+    Eigen::VectorXi mu_ind =  Eigen::VectorXi::Zero(X_rows);
+    Eigen::VectorXd::Index min_index;
+    for(unsigned int j = 0; j<X_rows; j++){
+        (distances.row(j)).minCoeff(&min_index);
+        mu_ind(j)= active_indices[min_index];
+                
+    //std::cout<<"Chosen indice: "<< mu_ind(j)<<"from vector: "<<distances.row(j)<<std::endl;
+    }
+    
+//    //allocate all points to the first active cluster.
+//    Eigen::VectorXi mu_ind =  Eigen::VectorXi::Ones(X_rows)*active_indices[0];
+//    
+//    //dists starts as the distances to the first cluster
+//    Eigen::VectorXd dists =  ((-X).rowwise()+mu.row(active_indices[0])).rowwise().norm();
+//    for(unsigned int i = 1; i <non_zero_size; i++ ){
+//        //temp_dists is the distance to the next cluster
+//        Eigen::VectorXd temp_dists =  ((-X).rowwise()+mu.row(active_indices[i])).rowwise().norm();
+//        for(unsigned int j = 0; j<X_rows; j++){
+//            if(temp_dists(j)<dists(j)){
+//                mu_ind(j)=active_indices[i];
+//                dists(j)=temp_dists(j);
+//            }
+//        }
+//    }
+    //;
     return mu_ind;
 }
 
@@ -203,19 +237,21 @@ const RowMatrixXd Clusterer::reevaluate_centers(const RowMatrixXd& X, const Eige
         mu_p.row(i)= ((centers.row(i).array()-reg/2)/nums(i)).matrix();
         mu_n.row(i)= ((centers.row(i).array()+reg/2)/nums(i)).matrix();
     }
+    RowMatrixXd mu_new = mu_n.cwiseMin(mu_p.cwiseMax(0));
+    return mu_new;
     //now do the three essential cases
     //#pragma omp parallel for shared(mu_p,mu_n)
-    for(unsigned int i = 0; i< k; i++){
-        for(unsigned int j = 0; j< X_cols; j++){
-            if(mu_p(i,j)<0){
-                mu_p(i,j)=mu_n(i,j);
-                if(mu_p(i,j)>0){
-                    mu_p(i,j)=0;
-                }
-            }
-        }
-    }
-    return mu_p;
+//    for(unsigned int i = 0; i< k; i++){
+//        for(unsigned int j = 0; j< X_cols; j++){
+//            if(mu_p(i,j)<0){
+//                mu_p(i,j)=mu_n(i,j);
+//                if(mu_p(i,j)>0){
+//                    mu_p(i,j)=0;
+//                }
+//            }
+//        }
+//    }
+//    return mu_p;
 }
 unsigned int Clusterer::element_from_vector(Eigen::VectorXd elements){
     //create a map to put all values in
@@ -419,7 +455,7 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
             
     }
     
-    return 1-std::sqrt((stability/indice_num));
+    return 1-(stability/indice_num);
 }
 
 //generates bootstrapped data sets by resampling an old data set
@@ -458,7 +494,11 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     RowMatrixXd distances_no_zero = RowMatrixXd::Zero(k_size,reg_size);
     RowMatrixXd found_cluster = RowMatrixXd::Zero(k_size,reg_size);
     RowMatrixXd found_cluster_no_zero = RowMatrixXd::Zero(k_size,reg_size);
-    
+    Eigen::VectorXi ind1;
+    Eigen::VectorXi ind2;
+    //allocate with no_zero
+    Eigen::VectorXi ind1_no_zero;
+    Eigen::VectorXi ind2_no_zero;
     for(unsigned int i = 0; i<iterations; i++){
         //std::cout<<"Overall iteration: "<< i << std::endl;
         for(unsigned int j = 0; j<k_size; j++){
@@ -474,11 +514,11 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
                 const Return_values ret1 = find_centers(b1,k(j), reg(l),remove_zeros);
                 const Return_values ret2 = find_centers(b2,k(j), reg(l),remove_zeros);
                 //allocate X using the new mus
-                const Eigen::VectorXi ind1 = allocate_clusters(X, ret1.centers );
-                const Eigen::VectorXi ind2 = allocate_clusters(X, ret2.centers );
+                ind1 = allocate_clusters(X, ret1.centers );
+                ind2 = allocate_clusters(X, ret2.centers );
                 //allocate with no_zero
-                const Eigen::VectorXi ind1_no_zero = allocate_clusters(X, ret1.centers_no_zero, true);
-                const Eigen::VectorXi ind2_no_zero = allocate_clusters(X, ret2.centers_no_zero, true);
+                ind1_no_zero = allocate_clusters(X, ret1.centers_no_zero, true);
+                ind2_no_zero = allocate_clusters(X, ret2.centers_no_zero, true);
                 //std::cout<<"calculating distances: "<< std::endl;
                 distances(j,l)+=cluster_distance(ind1,ind2,k(j));
                 distances_no_zero(j,l)+=cluster_distance(ind1_no_zero,ind2_no_zero,k(j));
@@ -495,6 +535,10 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
     ret.distances_no_zero= distances_no_zero/iterations;
     ret.found_cluster = found_cluster/(iterations*2);
     ret.found_cluster_no_zero = found_cluster_no_zero/(iterations*2);
+    ret.indexes1 = ind1;
+    ret.indexes2 = ind2;
+    ret.indexes1_no_zero = ind1_no_zero;
+    ret.indexes2_no_zero = ind2_no_zero;
     return ret;
     
 }

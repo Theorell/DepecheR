@@ -34,6 +34,10 @@ struct Optimization_values {
     RowMatrixXd found_cluster_no_zero;
     RowMatrixXd distances;
     RowMatrixXd distances_no_zero;
+    Eigen::VectorXi indexes1;
+    Eigen::VectorXi indexes2;
+    Eigen::VectorXi indexes1_no_zero;
+    Eigen::VectorXi indexes2_no_zero;
 };
 
 Rcpp::NumericMatrix eigen_to_numeric(RowMatrixXd X);
