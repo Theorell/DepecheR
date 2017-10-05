@@ -119,10 +119,10 @@ List grid_search(NumericMatrix X, IntegerVector k, NumericVector reg, const unsi
     IntegerVector inds2_no_zero(rows);
     
     for(unsigned int i = 0; i<rows; i++){
-        inds1 = vals.indexes1(i);
-        inds2 = vals.indexes2(i);
-        inds1_no_zero = vals.indexes1_no_zero(i);
-        inds2_no_zero = vals.indexes2_no_zero(i);
+        inds1(i) = vals.indexes1(i);
+        inds2(i) = vals.indexes2(i);
+        inds1_no_zero(i) = vals.indexes1_no_zero(i);
+        inds2_no_zero(i) = vals.indexes2_no_zero(i);
     }
     
     
