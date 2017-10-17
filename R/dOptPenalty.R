@@ -146,8 +146,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	      }
 	    }
 	  }
-
-
+	  print(paste("Set ", iter, " of ", chunkSize, " iterations completed."))
 	  iter <- iter+1
   }
 	
@@ -157,7 +156,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     warning("An optimal value was not identified before maxIter was reached")
   }
   
-  rownames(meanOptimDf) <- penalties
+  rownames(meanOptimDf) <- round(penalties, digits=1)
   colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
 
   penaltyOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
@@ -203,7 +202,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     plot(row.names(meanOptimDf), meanOptimDf[[penaltyOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
     axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
     mtext("Distance between bootstraps",side=2,line=2.5)
-    box()
+    graphics::box()
     
     # Draw the penalty axis
     axis(1,pretty(range(as.numeric(row.names(meanOptimDf))), n=10))
@@ -222,7 +221,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 
   if(returnClusterCenters==TRUE){
     #Here, the list of solutions with the best penalty and with or without origo cluster is exported
-    allClusterCentersBestPenalty <- allClusterCentersPenaltySorted[[which(penalties==penaltyOpt.df$bestPenalty)]]
+    allClusterCentersBestPenalty <- allClusterCentersPenaltySorted[[which(round(penalties, digits=1)==penaltyOpt.df$bestPenalty)]]
     
     if(penaltyOpt.df$withOrigoClust=="yes"){
       bestClusterCenters <- allClusterCentersBestPenalty[[1]]

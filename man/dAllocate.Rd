@@ -44,7 +44,7 @@ id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 setwd("~/Desktop")
 
 #Run the dOptAndClust function for the train set
-x_dOptAndClust_train <- dOptAndClust(x_scaled_train, ids=id_vector_train)
+x_dClust_train <- dClust(x_scaled_train)
 
 #Separate the info from the dOpt and dClust functions
 x_optim <- x_dOptAndClust_train[[1]]
@@ -65,5 +65,5 @@ title(xlab = "Clusters")
 title(ylab = "Percentage")
 }
 \seealso{
-\code{\link{dOptPenalty}}, \code{\link{dClust}}
+\code{\link{dClust}}
 }

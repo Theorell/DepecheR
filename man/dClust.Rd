@@ -17,7 +17,7 @@ dClust(inDataFrameScaled, ids, k = 30, penalties = c(0, 2, 4, 8, 16, 32, 64,
 
 \item{penalties}{This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 
-\item{minCRIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop.}
+\item{minCRIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01, or 1 percent.}
 
 \item{sampleSizes}{If the full dataset should not be used for the penalty optimization and the clustering, this term specifies one or multiple values that will be evaluated regarding their ability to correctly classify all events. Only meaningful when datasets are very large, i e >1 000 000 data points, as each cycle takes considerable time. "default" tries to adjust to this: if an extensive dataset is added, a number of smaller samples will be tested instead of running the full dataset.}
 
@@ -29,15 +29,15 @@ dClust(inDataFrameScaled, ids, k = 30, penalties = c(0, 2, 4, 8, 16, 32, 64,
 }
 \value{
 A nested list with varying components depending on the setup above:
- \describe{
+\describe{
    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
    \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
    \item{clusterCentersWZeroVariables}{A matrix similar to clusterCenters, but where all variables are included, regardless of if they contributed to creating the clusters or not. To be used in dAllocate.}
    \item{penaltyOptList}{This is only included when multiple penalties are run. A list of two dataframes:
-    \describe{
-              \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering with the optimal sample size. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
-              \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values}
-             }
+   \describe{
+             \item{penaltyOpt.df}{A one row dataframe with all the optimal settings from the penalty optimization. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution.}
+             \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values.}
+           }
     }
     \item{sampleSizeOptList}{This is only included if multiple sample sizes are run. It is a dataframe, in which each row represents one sample size, and in which the last row is thus the chosen, optimal sample size. It has the following columns:
     \describe{
@@ -74,7 +74,4 @@ xClustObject <- dClust(x_scaled, ids=x[,1], sampleSizes=c(100, 500, 1000))
 #Look at the result
 str(xClustObject)
 
-}
-\seealso{
-\code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dClust}}
 }

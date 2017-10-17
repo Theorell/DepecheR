@@ -59,15 +59,15 @@ x_scaled <- dScale(x=x[2:ncol(x)])
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
-xClustObject <- xOptAndClustObject[[2]]
+xClustObject <- dClust(x_scaled)
+clusterVector <- xClustObject[[1]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
 xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 
 #And finally run the function
-dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=xClustObject$clusterVector)
+dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcoxPlot}}

@@ -6,7 +6,7 @@
 #' @param clusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
 #' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @seealso \code{\link{dOptPenalty}}, \code{\link{dClust}}
+#' @seealso \code{\link{dClust}}
 #' @return A list with two components:
 #' \describe{
 #'     \item{realloClusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -31,7 +31,7 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the dOptAndClust function for the train set
-#' x_dOptAndClust_train <- dOptAndClust(x_scaled_train, ids=id_vector_train)
+#' x_dClust_train <- dClust(x_scaled_train)
 #'
 #' #Separate the info from the dOpt and dClust functions
 #' x_optim <- x_dOptAndClust_train[[1]]

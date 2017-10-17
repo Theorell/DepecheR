@@ -33,15 +33,15 @@
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xOptAndClustObject <- dOptAndClust(x_scaled,ids=x[,1])
-#' xClustObject <- xOptAndClustObject[[2]]
+#' xClustObject <- dClust(x_scaled)
+#' clusterVector <- xClustObject[[1]]
 #' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
 #' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
 #'
 #' #And finally run the function
-#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=xClustObject$clusterVector)
+#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
 #' @export dResidualPlot
 dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
 

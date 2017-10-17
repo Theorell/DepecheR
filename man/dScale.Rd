@@ -59,6 +59,3 @@ y_df <- dScale(x[,2:ncol(x)])
 #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 summary(y_df)
 }
-\seealso{
-\code{\link{truncateData}}
-}

@@ -14,7 +14,6 @@
 #' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
-#' @seealso \code{\link{truncateData}} 
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
