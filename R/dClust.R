@@ -8,7 +8,7 @@
 #' @param minCRIImprovement This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01, or 1 percent. 
 #' @param maxIter The maximal number of iterations that are performed in the penalty optimization. 
 #' @param sampleSizes If the full dataset should not be used for the penalty optimization and the clustering, this term specifies one or multiple values that will be evaluated regarding their ability to correctly classify all events. Only meaningful when datasets are very large, i e >1 000 000 data points, as each cycle takes considerable time. "default" tries to adjust to this: if an extensive dataset is added, a number of smaller samples will be tested instead of running the full dataset.
-#' @param maxCRI This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.01, or 1 percent.
+#' @param maxCRI This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.05, or 5 percent difference between sets of two full dataset allocations based on clusterings of a certain sample size.
 #' @param withOrigoClust In the event that no optimization of either penalties or sample sizes is performed, this argument specifies if a solution with a cluster in origo should be included or not. No default.
 #' @param ids Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.
 #' @return A nested list with varying components depending on the setup above:
@@ -56,7 +56,7 @@
 #' 
 #' @useDynLib DepecheR
 #' @export dClust
-dClust <- function(inDataFrameScaled, ids, k=30, penalties=c(0,2,4,8,16,32,64,128), minCRIImprovement=0.01, sampleSizes="default", maxCRI=0.01, maxIter=100, withOrigoClust){
+dClust <- function(inDataFrameScaled, ids, k=30, penalties=c(0,2,4,8,16,32,64,128), minCRIImprovement=0.01, sampleSizes="default", maxCRI=0.05, maxIter=100, withOrigoClust){
 
   if(sampleSizes=="default" && nrow(inDataFrameScaled)>1000000){
     sampleSizes <- c(10000, 50000, 100000)
