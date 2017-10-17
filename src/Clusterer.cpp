@@ -420,20 +420,20 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
     Eigen::VectorXd population1 = Eigen::VectorXd::Zero(k);
     Eigen::VectorXd population2 = Eigen::VectorXd::Zero(k);
     //unsigned int non_zero = 0;
-    
+
     for(unsigned int i = 0; i < intSize; i ++){
         population1(c1(i))+=1.0/size;
         population2(c2(i))+=1.0/size;
     }
     //now calculate the false positives
-    //std::cout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
+    //Rcout<<"The populations are: "<< population1 << "and "<< population2 <<std::endl;
     const double false1 = (population1.array()*(population1.array()-1.0/size)*(size/(size-1))).sum()*(population2.array()*(population2.array()-1.0/size)*(size/(size-1))).sum();
     const double false2 = (population1.array()*(1-(population1.array()-1.0/size)*(size/(size-1)))).sum()*(population2.array()*(1-(population2.array()-1.0/size)*(size/(size-1)))).sum();
-    
+
     double stability = 0;
     //always test 10000 indices!
     const unsigned int indice_num = 10000;
-    
+
     for(unsigned int num = 0; num<indice_num; num++){
         unsigned int i = 0;
         unsigned int j = 0;
@@ -443,14 +443,14 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
             j = rand_inds(1)%intSize;
         }
         if(c1(i)==c1(j)&& c2(i)==c2(j)){
-            stability+= 1 - false1;
+            stability+= 1;
         } else if((c1(i)!=c1(j)&& c2(i)!=c2(j))){
-            stability+=1 - false2;
+            stability+=1;
         }
-            
+
     }
-    
-    return 1-(stability/indice_num);
+
+    return 1-((stability/indice_num)-(false1+false2))/(1-(false1+false2));
 }
 
 //generates bootstrapped data sets by resampling an old data set
