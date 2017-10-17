@@ -146,7 +146,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	      }
 	    }
 	  }
-	  print(paste("Set ", iter, " of ", chunkSize, " iterations completed."))
+	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed.", sep=""))
 	  iter <- iter+1
   }
 	

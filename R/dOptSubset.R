@@ -45,7 +45,7 @@
 # #Run the function to identify at what sample size the cluster stability plateaus
 # x_optim <- dOpt(x_scaled)
 # @export dOptSubset
-dOptSubset <- function(inDataFrameScaled, sampleSizes, k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties){
+dOptSubset <- function(inDataFrameScaled, sampleSizes, fMeasureSampleSize=10000, k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties){
 
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
@@ -121,15 +121,20 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, k=30, maxIter=100, maxCRI
     allSolutions <- resultOfOptimalSettings[[3]]
     
     #Then, 10000 datapoints are retrieved from the full dataset
-    fMeasureDataSet <- data.matrix(sample_n(inDataFrameScaled, 10000), rownames.force = NA)
+    fMeasureDataSet <- data.matrix(sample_n(inDataFrameScaled, fMeasureSampleSize), rownames.force = NA)
     
     #Now, all clusterCenters are used to allocate the fMeasureDataSet.
     allocationResultList <- list()
     noZero <- ifelse(resultOfOptimalSettings[[1]][1,2]=="yes", 0, 1)
     
-    for(i in 1:length(allSolutions)){
-      allocationResultList[[i]] <- allocate_points(fMeasureDataSet, allSolutions[[i]], no_zero=noZero)[[1]]
+    if(ncol(fMeasureDataSet)<50){
+      for(i in 1:length(allSolutions)){
+        allocationResultList[[i]] <- allocate_points(fMeasureDataSet, allSolutions[[i]], no_zero=noZero)[[1]]
+      }
+    } else {
+      allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% allocate_points(fMeasureDataSet, allSolutions[[i]], no_zero=noZero)[[1]]
     }
+
     
     #Here, the mean F-measure with each allocationResult as the id vector and all the others as cluster vectors is identified
     meanFmeasureList <- list()
