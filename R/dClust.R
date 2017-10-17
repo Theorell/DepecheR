@@ -1,25 +1,36 @@
-#' Function to run penalized K means
+#' Performing optimization and penalized K-means clustering
+#' 
 #'
-#'
-#' This function is the core user function of the Depeche package. It clusters the data with a penalized version of K-means.
-#' @importFrom parallel detectCores makeCluster stopCluster
-#' @importFrom doSNOW registerDoSNOW 
-#' @importFrom foreach foreach %dopar%
-#' @importFrom gplots heatmap.2
-#' @importFrom dplyr sample_n
+#' This function is a user-friendly wrapper integrating the dOpt and dClust functions. It only requires a dataset and an id vector. It starts by doing all necessary optimizations, both on the smallest sample size that is needed to perform the most stable clustering, and to identify the optimal penalty. It then performs clustering based on the values identified in the optimization step. 
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-#' @param dOptObject This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.
-#' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
-#' @param sampleSize By default inherited from dOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.
-#' @param penalty By default inherited from dOptObject. The parameter that controls the level of penalization. 
-#' @param withOrigoClust By default inherited from dOptObject. This parameter controls if the generated result should contain a cluster in origo or not. 
-#' @param initCenters By default inherited from dOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.
-#' @seealso \code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dOptAndClust}}
-#' @return A list with three components:
-#' \describe{
-#'     \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
-#'     \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
-#'     \item{clusterPercentagesForAllIds}{A matrix showing the percentage of observations for each id in each cluster.}
+#' @param k Number of initial cluster centers. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30. If penalties=0, k-means clustering with k clusters will be performed.
+#' @param penalties This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
+#' @param minCRIImprovement This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. 
+#' @param maxIter The maximal number of iterations that are performed in the penalty optimization. 
+#' @param sampleSizes If the full dataset should not be used for the penalty optimization and the clustering, this term specifies one or multiple values that will be evaluated regarding their ability to correctly classify all events. Only meaningful when datasets are very large, i e >1 000 000 data points, as each cycle takes considerable time. "default" tries to adjust to this: if an extensive dataset is added, a number of smaller samples will be tested instead of running the full dataset.
+#' @param maxCRI This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.01, or 1 percent.
+#' @param withOrigoClust In the event that no optimization of either penalties or sample sizes is performed, this argument specifies if a solution with a cluster in origo should be included or not. No default.
+#' @param ids Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.
+#' @seealso \code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dClust}}
+#' @return A nested list with varying components depending on the setup above:
+#'  \describe{
+#'    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
+#'    \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
+#'    \item{clusterCentersWZeroVariables}{A matrix similar to clusterCenters, but where all variables are included, regardless of if they contributed to creating the clusters or not. To be used in dAllocate.}
+#'    \item{penaltyOptList}{This is only included when multiple penalties are run. A list of two dataframes:
+#'     \describe{
+#'               \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering with the optimal sample size. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
+#'               \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values}
+#'              }
+#'     }
+#'     \item{sampleSizeOptList}{This is only included if multiple sample sizes are run. It is a dataframe, in which each row represents one sample size, and in which the last row is thus the chosen, optimal sample size. It has the following columns:
+#'     \describe{
+#'               \item{SampleSize}{This column shows the sample size of each boot strap subsampling in the optimization procedure.}
+#'               \item{Lowest distance}{This vector shows the optimal stability, expressed as the lowest distance between the bootstrap subsampling runs at each of the boot strap subsamling sizes.}
+#'               \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minCRIImprovement, the algorithm automatically stops.}
+#'              } 
+#'     }
+#'     \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
 #' }
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
@@ -31,186 +42,79 @@
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
-#' #Run the dOptPenalty function to get good starting points
-#' x_optim <- dOpt(x_scaled)
+#' #First, just run with the standard settings
+#' xClustObject <- dClust(x_scaled, ids=x[,1])
 #'
-#' #Then run the actual function
-#' x_dClust <- dClust(x_scaled, dOptObject=x_optim, ids=x[,1])
+#' #Look at the result
+#' str(xClustObject)
+#' 
+#' #Then try changing to a few different sample sizes
+#' xClustObject <- dClust(x_scaled, ids=x[,1], sampleSizes=c(100, 500, 1000))
 #'
-#' #And finally look at your great result
-#' str(x_dClust)
+#' #Look at the result
+#' str(xClustObject)
+#' 
+#' @useDynLib DepecheR
 #' @export dClust
-dClust <- function(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, withOrigoClust, initCenters=30){
+dClust <- function(inDataFrameScaled, ids, k=30, penalties=c(0,2,4,8,16,32,64,128), minCRIImprovement=0.01, sampleSizes="default", maxCRI=0.01, maxIter=100, withOrigoClust){
 
-  
-  if(missing(ids)){
-    stop("Vector of ids is missing. Save youself some time and put it in before running again, as the function will otherwise throw an error at the end.")
-  }
-
-  if(exists("ids")==FALSE){
-    stop("Ids is a non-existent object. Save youself some time and put in an existing one before running again, as the function will otherwise throw an error at the end.")
-  }
-
-  if(missing(dOptObject)==FALSE){
-    if(missing(sampleSize)==TRUE){
-      sampleSize <- dOptObject[[1]][length(dOptObject[[1]])]
-    } else if(sampleSize!="All"){
-      sampleSize <- nrow(inDataFrameScaled)
-      inDataFrameUsed <- inDataFrameScaled
-    }
-    penalty <- dOptObject[[4]][1,1]
-    withOrigoClust <- dOptObject[[4]][1,2]
-    initCenters <- dOptObject[[4]][1,3]
+  if(sampleSizes=="default" && nrow(inDataFrameScaled)>1000000){
+    sampleSizes <- c(10000, 50000, 100000)
+  } else if(sampleSizes=="default" && nrow(inDataFrameScaled)<=1000000){
+    sampleSizes <- nrow(inDataFrameScaled)
   }
   
-  if(sampleSize!=nrow(inDataFrameScaled)){
-    inDataFrameUsed <- sample_n(inDataFrameScaled, sampleSize, replace=TRUE)
+  #First the two simplest cases, namely no optimization and all cells, and a pre-decided sample size, respectively
+  if(length(penalties)==1 && length(sampleSizes)==1){
+   dClustResult <-  dClustCoFunction(inDataFrameScaled, sampleSize=sampleSizes, penalty=penalties, k=k, withOrigoClust=withOrigoClust)
+
   }
 
-  k <- ((sampleSize*sqrt(ncol(inDataFrameUsed)))/1450)
+  #Now, the cases where penalty optimization is performed, but the full dataset is used.
+  if(length(penalties)>1 && sampleSizes[1]==nrow(inDataFrameScaled)){
+    dOptPenaltyObject <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, minCRIImprovement=minCRIImprovement, bootstrapObservations=nrow(inDataFrameScaled), penalties=penalties, makeGraph=TRUE, graphName="Optimization of penalties.pdf", disableWarnings=TRUE, returnClusterCenters=FALSE)
+    dClustResult <- dClustCoFunction(inDataFrameScaled, sampleSize=nrow(inDataFrameScaled), dOptPenaltyObject=dOptPenaltyObject)
+    newClustResultRow <- length(dClustResult)+1
+    dClustResult[[newClustResultRow]] <- dOptPenaltyObject
 
-  penaltyForRightSize <- penalty*k 
+  }  
 
-  dataMat<-data.matrix(inDataFrameUsed, rownames.force = NA)
+  #Now, the cases where sample size(s) is not equal to the full dataset and penalty optimization should be performed.
+  if(length(penalties)>1 && sampleSizes[1]!=nrow(inDataFrameScaled)){
+      dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameScaled, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties)
+  }   
+  
+  ######################################
+  
+  #Provided that a viable Id vector is added, a table with the percentage of cells in each cluster for each individual is created
+  
+  if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){
 
-  #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
-  n_cores <- detectCores() - 1
-  if(n_cores>=7){
-    if(n_cores<=21){
-      iterations <- n_cores
-    } else {
-      iterations <- 21
-    }
-  } else {
-    iterations <- 7
-  }
+    clusterTable <- table(dClustResult$clusterVector, ids)
+
+    countTable <- table(ids)
     
-#This is the central function of the whole package.
-	
-  cl <-  parallel::makeCluster(iterations, type = "SOCK")
-  registerDoSNOW(cl)
-  return_all <- foreach(i=1:iterations) %dopar% sparse_k_means(dataMat,initCenters,penaltyForRightSize,1, i)
-  parallel::stopCluster(cl)	
-  
-  #Alternative deprecated parallelization.
-	#if(Sys.info()['sysname']!="Windows"){
-	#  cl <- makeCluster(n_cores, type="FORK")
-	#  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	#  stopCluster(cl)
-	#} else {
-	#  cl <- makeCluster(n_cores, type="PSOCK")
-	#  return_all <-parLapply(cl,0:iterations,function(x) sparse_k_means(dataMat,initCenters,penaltyForRightSize,1,x))
-	#  stopCluster(cl)
-	#}
-	
-  #Here, the best iteration is retrieved
-  logMaxLik <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
-  minimumN <- max(logMaxLik)
-  returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
+    clusterFractionsForAllIds <- clusterTable
+    
+    for(i in 1:length(countTable)){
+      x <- clusterTable[,i]/countTable[i]
+      clusterFractionsForAllIds[,i] <- x
+    }
 
-	if(withOrigoClust=="yes" && length(unique(returnLowest$i))<initCenters){
-			clusterVector <- returnLowest$i
-
-			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is included, this cluster gets the denomination 0.
-			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, startValue=0)
-			clusterCenters <- returnLowest$c			  
-			colnames(clusterCenters) <- colnames(inDataFrameUsed)
-
-			#Remove all columns and rows that do not contain any information.
-			reducedClusterCentersColRow <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
-			
-			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
-			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
-
-			#In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
-			if(class(reducedClusterCentersColRow)=="numeric"){
-			  reducedClusterCentersColRow <- t(reducedClusterCentersColRow)
-			}
-			if(class(reducedClusterCentersRow)=="numeric"){
-			  reducedClusterCentersRow <- t(reducedClusterCentersRow)
-			}
-			
-			#Add the origo cluster back. This is not done when there is no sparsity.
-
-			  reducedClusterCentersColRowOrigo <- clusterCenters[1,which(colSums(clusterCenters)!=0)]
-			  reducedClusterCentersColRow <- rbind(rep(0, times=ncol(reducedClusterCentersColRow)), reducedClusterCentersColRow)
-			  reducedClusterCentersRow <- rbind(rep(0, times=ncol(reducedClusterCentersRow)), reducedClusterCentersRow)
-
-			  #Make the row names the same as the cluster names in the clusterVectorEquidistant
-
-			  	rownames(reducedClusterCentersColRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
-			    rownames(reducedClusterCentersRow) <- rep(0:(nrow(reducedClusterCentersColRow)-1))
-			    
-	} 
-  if(withOrigoClust=="no" || (withOrigoClust=="yes" && length(unique(returnLowest$i))==initCenters)){
-			clusterVector <- returnLowest$o
-			#Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
-			clusterVectorEquidistant <- turnVectorEquidistant(clusterVector)			
-			clusterCenters <- returnLowest$v		
-			colnames(clusterCenters) <- colnames(inDataFrameUsed)
-			#Remove all rows that do not contain any information
-			reducedClusterCentersColRow <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
-
-			#Here, only the rows that do not contain any information is removed. To be used in dClustPredict. 
-			reducedClusterCentersRow <- clusterCenters[which(rowSums(clusterCenters)!=0),]
-			
-			#In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
-			if(class(reducedClusterCentersColRow)=="numeric"){
-			  reducedClusterCentersColRow <- t(reducedClusterCentersColRow)
-			}
-			if(class(reducedClusterCentersRow)=="numeric"){
-			  reducedClusterCentersRow <- t(reducedClusterCentersRow)
-			}
-			
-			#Make the row names the same as the cluster names in the clusterVectorEquidistant
-
-			  rownames(reducedClusterCentersColRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
-			  rownames(reducedClusterCentersRow) <- rep(1:(nrow(reducedClusterCentersColRow)))
-
-			
-	}
-
-	#If the number of observations used for the clustering is not equal to the number of rows in the inDataFrameScaled, here a prediction is made for all the other events. 
-	if(sampleSize!=nrow(inDataFrameScaled)){
-	  myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
-	  
-	  if(withOrigoClust=="yes" && length(unique(returnLowest$i))<initCenters){
-	    clusterVectorEquidistant <- unlist(allocate_points(myMat,reducedClusterCentersRow,0))
-	  } else {
-	    clusterVectorEquidistant <- turnVectorEquidistant(unlist(allocate_points(myMat,reducedClusterCentersRow,1)))
-	  }
-	}
-		
-  #A table with the percentage of cells in each cluster for each individual is created
-
-  clusterTable <- table(clusterVectorEquidistant, ids)
-  	if(nrow(clusterTable)==1){
-  		print("Warning. The number of clusters is one, i.e. no separation of observations is present with the current settings. Try lowering the penalty.")
-  	}
-
-  countTable <- table(ids)
-
-  clusterFractionsForAllIds <- clusterTable
-
-  for(i in 1:length(countTable)){
-  	x <- clusterTable[,i]/countTable[i]
-  	clusterFractionsForAllIds[,i] <- x
+    nextClustResultPosition <- length(dClustResult)+1
+    dClustResult[[nextClustResultPosition]] <- as.data.frame.matrix(clusterFractionsForAllIds)
+    names(dClustResult)[[length(dClustResult)]] <- "idClusterFractions"
+    
   }
-
-
-  dClustResult <- list(clusterVectorEquidistant, as.data.frame.matrix(reducedClusterCentersColRow), reducedClusterCentersRow, as.data.frame.matrix(t(clusterFractionsForAllIds)))
-
-  names(dClustResult) <- c("clusterVector", "clusterCenters", "clusterCentersWZeroVariables", "idClusterFractions")
 
   #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
+  reducedClusterCentersColRow <- dClustResult[[2]]
   if(nrow(reducedClusterCentersColRow)>1){
     pdf("Cluster centers.pdf")
-    heatmap.2(reducedClusterCentersColRow, col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+    heatmap.2(as.matrix(reducedClusterCentersColRow), col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
     dev.off()    
   }
-
-
-	return(dClustResult)
+  
+  return(dClustResult)
 
 }
-

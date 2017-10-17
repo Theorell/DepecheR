@@ -2,36 +2,55 @@
 % Please edit documentation in R/dClust.R
 \name{dClust}
 \alias{dClust}
-\title{Function to run penalized K means}
+\title{Performing optimization and penalized K-means clustering}
 \usage{
-dClust(inDataFrameScaled, dOptObject, ids, sampleSize, penalty, withOrigoClust,
-  initCenters = 30)
+dClust(inDataFrameScaled, ids, k = 30, penalties = c(0, 2, 4, 8, 16, 32, 64,
+  128), minCRIImprovement = 0.01, sampleSizes = "default", maxCRI = 0.01,
+  maxIter = 100, withOrigoClust)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
-\item{dOptObject}{This object contains information about optimal sample size, penalty offset, solution with or without a cluster in origo, and the number of initial cluster centers that were used to find this optimal information.}
+\item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
 
-\item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
+\item{k}{Number of initial cluster centers. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 30. If penalties=0, k-means clustering with k clusters will be performed.}
 
-\item{sampleSize}{By default inherited from dOptObject. Number of observations that shoult be included in the initial clustering step. Three possible values. Either inherited, "All" or a user-specified number. Defaults to inheriting from dClustObject. If a dClustObject is not substituted, all rows in inDataFrameScaled are added by default. If another number, a sample is created from inDataFrameScaled. This is extra useful when clustering very large datasets. Replacement is set to TRUE.}
+\item{penalties}{This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 
-\item{penalty}{By default inherited from dOptObject. The parameter that controls the level of penalization.}
+\item{minCRIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop.}
 
-\item{withOrigoClust}{By default inherited from dOptObject. This parameter controls if the generated result should contain a cluster in origo or not.}
+\item{sampleSizes}{If the full dataset should not be used for the penalty optimization and the clustering, this term specifies one or multiple values that will be evaluated regarding their ability to correctly classify all events. Only meaningful when datasets are very large, i e >1 000 000 data points, as each cycle takes considerable time. "default" tries to adjust to this: if an extensive dataset is added, a number of smaller samples will be tested instead of running the full dataset.}
 
-\item{initCenters}{By default inherited from dOptObject. Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30.}
+\item{maxCRI}{This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.01, or 1 percent.}
+
+\item{maxIter}{The maximal number of iterations that are performed in the penalty optimization.}
+
+\item{withOrigoClust}{In the event that no optimization of either penalties or sample sizes is performed, this argument specifies if a solution with a cluster in origo should be included or not. No default.}
 }
 \value{
-A list with three components:
-\describe{
-    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
-    \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
-    \item{clusterPercentagesForAllIds}{A matrix showing the percentage of observations for each id in each cluster.}
+A nested list with varying components depending on the setup above:
+ \describe{
+   \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
+   \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
+   \item{clusterCentersWZeroVariables}{A matrix similar to clusterCenters, but where all variables are included, regardless of if they contributed to creating the clusters or not. To be used in dAllocate.}
+   \item{penaltyOptList}{This is only included when multiple penalties are run. A list of two dataframes:
+    \describe{
+              \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering with the optimal sample size. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
+              \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values}
+             }
+    }
+    \item{sampleSizeOptList}{This is only included if multiple sample sizes are run. It is a dataframe, in which each row represents one sample size, and in which the last row is thus the chosen, optimal sample size. It has the following columns:
+    \describe{
+              \item{SampleSize}{This column shows the sample size of each boot strap subsampling in the optimization procedure.}
+              \item{Lowest distance}{This vector shows the optimal stability, expressed as the lowest distance between the bootstrap subsampling runs at each of the boot strap subsamling sizes.}
+              \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minCRIImprovement, the algorithm automatically stops.}
+             } 
+    }
+    \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
 }
 }
 \description{
-This function is the core user function of the Depeche package. It clusters the data with a penalized version of K-means.
+This function is a user-friendly wrapper integrating the dOpt and dClust functions. It only requires a dataset and an id vector. It starts by doing all necessary optimizations, both on the smallest sample size that is needed to perform the most stable clustering, and to identify the optimal penalty. It then performs clustering based on the values identified in the optimization step.
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
@@ -43,15 +62,19 @@ x_scaled <- dScale(x[,2:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
-#Run the dOptPenalty function to get good starting points
-x_optim <- dOpt(x_scaled)
+#First, just run with the standard settings
+xClustObject <- dClust(x_scaled, ids=x[,1])
 
-#Then run the actual function
-x_dClust <- dClust(x_scaled, dOptObject=x_optim, ids=x[,1])
+#Look at the result
+str(xClustObject)
 
-#And finally look at your great result
-str(x_dClust)
+#Then try changing to a few different sample sizes
+xClustObject <- dClust(x_scaled, ids=x[,1], sampleSizes=c(100, 500, 1000))
+
+#Look at the result
+str(xClustObject)
+
 }
 \seealso{
-\code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dOptAndClust}}
+\code{\link{dAllocate}}, \code{\link{dOpt}}, \code{\link{dClust}}
 }

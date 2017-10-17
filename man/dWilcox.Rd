@@ -2,7 +2,7 @@
 % Please edit documentation in R/dWilcox.R
 \name{dWilcox}
 \alias{dWilcox}
-\title{Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result}
+\title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a dClust result}
 \usage{
 dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
   multipleCorrMethod = "hochberg", densContour = TRUE, name = "dWilcox",

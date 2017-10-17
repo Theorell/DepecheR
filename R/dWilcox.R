@@ -1,4 +1,4 @@
-#' Wilcoxon rank-sum or signed rank test comparison of subject groups in pKMRun result
+#' Wilcoxon rank-sum or signed rank test comparison of subject groups in a dClust result
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.

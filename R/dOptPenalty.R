@@ -8,9 +8,9 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 # @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-# @param initCenters Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
+# @param k Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
 # @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
-# @param minEERImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement be, and this sets the threshold when the iterations stop. 
+# @param minCRIImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the iterations stop. 
 # @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
 # @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
 # @param makeGraph If a graph should be created showing the distance between bootstraps under different penalties.
@@ -34,13 +34,13 @@
 #
 # #Run the function
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
-#' @export dOptPenalty
-#' @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE){
+# @export dOptPenalty
+# @useDynLib DepecheR
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
-  k <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
-  penalty <- penalties*k
+  penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
+  penalty <- penalties*penaltyConstant
 
   chunkSize <- detectCores() - 1
 
@@ -51,12 +51,13 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
   std=1
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
-  
-  while(iterTimesChunkSize<=14 || (std>=minEERImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
+  allClusterCentersPenaltySorted <- list()
+    
+  while(iterTimesChunkSize<=14 || (std>=minCRIImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
 
     cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
     registerDoSNOW(cl)
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,initCenters,penalty,1,bootstrapObservations, i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     parallel::stopCluster(cl)	
 
     #Alternative deprecated parallelization. 
@@ -65,7 +66,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
     #  } else {
     #  cl <- makeCluster(spec="PSOCK", names=chunkSize)
     #  }
-    #optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,initCenters,penalty, 1,bootstrapObservations,x))
+    #optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,k,penalty, 1,bootstrapObservations,x))
     #stopCluster(cl)
       
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
@@ -85,24 +86,13 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
     #Here, the  average and standard deviation of the error of the mean (or something like that) is retrieved
     meanOptimList <- list()	
     stdOptimList <- list()	
-    for(i in 1:length(optimListFull[[1]])){
+    for(i in 1:4){
       x <- do.call("rbind", lapply(optimListFull, "[[", i))
       meanOptimList[[i]] <- apply(x, 2, mean)
       stdOptimList[[i]] <- apply(x, 2, sd)
     }
-    #stdOptimDfTest <- as.data.frame(stdOptimList)
-    stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter*chunkSize))
 
-    #colnames(stdOptimDfTest) <- c(1:ncol(stdOptimDfTest))
-    #colnames(stdOptimDf) <- c(1:ncol(stdOptimDf))
-    #print(stdOptimDfTest)
-    #print(stdOptimDf)
-     
-    
-    for(i in 1:length(optimListFull[[1]])){
-      x <- do.call("rbind", lapply(optimListFull, "[[", i))
-      
-    }
+    stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter*chunkSize))
     meanOptimDf <- as.data.frame(meanOptimList)
 
     #Turn these into vectors
@@ -134,19 +124,39 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
 	  #print(iterTimesChunkSize)
 	  #print(distanceBetweenMinAndBestPrevious)
 
+
+	  if(returnClusterCenters==TRUE){
+	    #Here, the cluster center information for each run is saved, one list for the origoCLust solution and another for the nonOrigoClust:
+	    #First all cluster center information is saved in one place.
+	    allClusterCenters <- sapply(optimList, "[", 5)
+	    
+	    #Then each penalty and the solutions with and without origo clusters are reorganized and, if iter>1, integrated with previous runs. 
+	    for(i in 1:length(allClusterCenters[[1]])){
+	      
+	      tempPenaltyList <- sapply(allClusterCenters, "[", i)
+	      tempOrigoClusterCenters <- c(sapply(tempPenaltyList, "[", 1), sapply(tempPenaltyList, "[", 2))
+	      tempNonOrigoClusterCenters <- c(sapply(tempPenaltyList, "[", 3), sapply(tempPenaltyList, "[", 4))
+	      
+	      if(iter==1){
+	        allClusterCentersPenaltySorted[[i]] <- list(tempOrigoClusterCenters, tempNonOrigoClusterCenters)
+	        
+	      } else {
+	        allClusterCentersPenaltySorted[[i]][[1]] <- c(allClusterCentersPenaltySorted[[i]][[1]], tempOrigoClusterCenters)
+	        allClusterCentersPenaltySorted[[i]][[2]] <- c(allClusterCentersPenaltySorted[[i]][[2]], tempNonOrigoClusterCenters)
+	      }
+	    }
+	  }
+
+
 	  iter <- iter+1
   }
 	
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
-  
-  print(str(meanOptimDf))
-  
-  if(iter>=maxIter && (std>minEERImprovement || distanceBetweenMinAndBestPrevious<0)){
+
+  if(iter>=maxIter && (std>minCRIImprovement || distanceBetweenMinAndBestPrevious<0)){
     warning("An optimal value was not identified before maxIter was reached")
   }
   
-  #Here, the penalty values for the real dataset, not the bootstrap subsamples, is used.
-  realK <- ((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
   rownames(meanOptimDf) <- penalties
   colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
 
@@ -157,8 +167,7 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
   #Export if the solution with or without zero clusters give the optimal result
   penaltyOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
 
-
-  #In the exceptional event that one solution is as good for both with and without a origo cluster,  this argument is added that always prefers the solution without an origo cluster. It also prefers solutions with a higher penalty in cases where two origo-cluster free solutions give identical results
+  #In the exceptional event that one solution is as good both with and without a origo cluster, this argument is added that always prefers the solution without an origo cluster. It also prefers solutions with a higher penalty in cases where two origo-cluster free solutions give identical results.
   if(nrow(penaltyOpt.df)>1 && length(grep("nClustWOZero", penaltyOpt.df$withOrigoClust))>0){
   
     penaltyOpt.df <- penaltyOpt.df[which(penaltyOpt.df[,2]=="nClustWOZero"),]
@@ -175,16 +184,16 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
   if(disableWarnings==FALSE){
   
     if(penaltyOpt.df$bestPenalty==lowestPenalty){
-      print("Warning: the lowest penalty was the most optimal in the range. It is suggested to run with a few lower penalty values to make sure that the most optimal has been found")
+      print("Warning: the lowest penalty was the most optimal in the range. It might be a good idea to run with a few lower penalty values to make sure that the most optimal has been found")
     }
     if(penaltyOpt.df$bestPenalty==highestPenalty){
-      print("Warning: the highest penalty was the most optimal in the range. It is suggested to run with a few higher penalty values to make sure that the most optimal has been found")
+      print("Warning: the highest penalty was the most optimal in the range. It might be a good idea to run with a few higher penalty values to make sure that the most optimal has been found")
     }
   
   }
 
-  #Export the used initCenters, as this needs to be used also when running dClust based on the optimizations.
-  penaltyOpt.df$initCenters <- initCenters
+  #Export the used k, as this needs to be used also when running dClust based on the optimizations.
+  penaltyOpt.df$k <- k
 
   #Here, the optimization is plotted if wanted.
   if(makeGraph==TRUE){
@@ -208,10 +217,26 @@ dOptPenalty <- function(inDataFrameScaled, initCenters=30, maxIter=100, minEERIm
   }
 
 
-#Change the resulting names in withOrigoClust to something more meaningful
-penaltyOpt.df$withOrigoClust <- ifelse(penaltyOpt.df$withOrigoClust=="distWZero", "yes", "no")
+  #Change the resulting names in withOrigoClust to something more meaningful
+  penaltyOpt.df$withOrigoClust <- ifelse(penaltyOpt.df$withOrigoClust=="distWZero", "yes", "no")
 
-#Return the list.
-	penaltyOptList <- list(penaltyOpt.df, meanOptimDf)
+  if(returnClusterCenters==TRUE){
+    #Here, the list of solutions with the best penalty and with or without origo cluster is exported
+    allClusterCentersBestPenalty <- allClusterCentersPenaltySorted[[which(penalties==penaltyOpt.df$bestPenalty)]]
+    
+    if(penaltyOpt.df$withOrigoClust=="yes"){
+      bestClusterCenters <- allClusterCentersBestPenalty[[1]]
+    } else {
+      bestClusterCenters <- allClusterCentersBestPenalty[[2]]
+    }
+  }
+
+  #Return the list, that changes depending on the preference 
+  if(returnClusterCenters==TRUE){
+    penaltyOptList <- list(penaltyOpt.df, meanOptimDf, bestClusterCenters)
+  } else{
+    penaltyOptList <- list(penaltyOpt.df, meanOptimDf)
+  }
+
 	return(penaltyOptList)
 }
