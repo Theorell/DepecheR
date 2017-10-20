@@ -34,7 +34,7 @@
 #
 # #Run the function
 # x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
-# @export dOptPenalty
+#' @export dOptPenalty
 # @useDynLib DepecheR
 dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE){
 
@@ -52,23 +52,13 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   allClusterCentersPenaltySorted <- list()
-    
+  cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
+  registerDoSNOW(cl)  
+  
   while(iterTimesChunkSize<=14 || (std>=minCRIImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
 
-    cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
-    registerDoSNOW(cl)
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
-    parallel::stopCluster(cl)	
-
-    #Alternative deprecated parallelization. 
-    #if(Sys.info()['sysname']!="Windows"){
-    #  cl <- makeCluster(chunkSize, type="FORK")
-    #  } else {
-    #  cl <- makeCluster(spec="PSOCK", names=chunkSize)
-    #  }
-    #optimList <- parLapply(cl,1:chunkSize,function(x) grid_search(dataMat,k,penalty, 1,bootstrapObservations,x))
-    #stopCluster(cl)
-      
+    
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
@@ -150,6 +140,8 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	  iter <- iter+1
   }
 	
+  parallel::stopCluster(cl)	
+  
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
 
   if(iter>=maxIter && (std>minCRIImprovement || distanceBetweenMinAndBestPrevious<0)){

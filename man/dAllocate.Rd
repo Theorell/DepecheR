@@ -11,9 +11,9 @@ dAllocate(inDataFrameScaled, clusterCenters, withOrigoClust, ids)
 
 \item{clusterCenters}{This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.}
 
-\item{ids}{A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.}
+\item{withOrigoClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClust, again.}
 
-\item{withOrWithoutZeroClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.}
+\item{ids}{A vector of the same length as rows in the inDataFrameScaled. If included, it is used to generate a table of what fraction of observations for each individual that is present in each cluster.}
 }
 \value{
 A list with two components:
@@ -44,25 +44,26 @@ id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 setwd("~/Desktop")
 
 #Run the dOptAndClust function for the train set
-x_dClust_train <- dClust(x_scaled_train)
+x_dClust_train <- dClust(x_scaled_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
 
-#Separate the info from the dOpt and dClust functions
-x_optim <- x_dOptAndClust_train[[1]]
-x_dClust_train <- x_dOptAndClust_train[[2]]
+#Retrieve the clustering info
+clusterVector <- x_dClust_train[[1]]
+clusterCenters <- x_dClust_train[[2]]
+withOrigoClust <- x_dClust_train[[3]][[1]][1,2]
 
 #This is followed by running the actual function in question
 x_dClust_test <- dAllocate(x_scaled_test, 
-clusterCenters=x_dClust_train$clusterCentersWZeroVariables, 
-withOrigoClust=x_optim[[4]][1,2], ids=id_vector_test)
+clusterCenters=clusterCenters, 
+withOrigoClust=withOrigoClust, ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
-xmatrix <- as.matrix(rbind(x_dClust_train$clusterPercentagesForAllIds, 
-x_dClust_test$realloClusterPercentagesForAllIds))
+xmatrix <- t(cbind(x_dClust_train$idClusterFractions, 
+x_dClust_test$realloIdClusterFractions))
 library(gplots)
 barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
 title(main = "Difference between train and test set")
 title(xlab = "Clusters")
-title(ylab = "Percentage")
+title(ylab = "Fraction")
 }
 \seealso{
 \code{\link{dClust}}

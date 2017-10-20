@@ -4,8 +4,8 @@
 #' Here, observations of a dataset are allocated to a set of preestablished cluster centers. This is intended to be used for the test set in train-test dataset situations. It is called "predict" as most similar functions of other clustering algorithms have this term.
 #' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function. It should naturally be scaled together with the data used to genreate the cluster centers.
 #' @param clusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
-#' @param withOrWithoutZeroClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dOptPenalty, again.
-#' @param ids A vector of the same length as rows in the inDataFrameScaled. It is used to generate the final analysis, where a table of the percentage of observations for each individual and each cluster is created.
+#' @param withOrigoClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClust, again.
+#' @param ids A vector of the same length as rows in the inDataFrameScaled. If included, it is used to generate a table of what fraction of observations for each individual that is present in each cluster.
 #' @seealso \code{\link{dClust}}
 #' @return A list with two components:
 #' \describe{
@@ -31,53 +31,56 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the dOptAndClust function for the train set
-#' x_dClust_train <- dClust(x_scaled_train)
+#' x_dClust_train <- dClust(x_scaled_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
 #'
-#' #Separate the info from the dOpt and dClust functions
-#' x_optim <- x_dOptAndClust_train[[1]]
-#' x_dClust_train <- x_dOptAndClust_train[[2]]
+#' #Retrieve the clustering info
+#' clusterVector <- x_dClust_train[[1]]
+#' clusterCenters <- x_dClust_train[[2]]
+#' withOrigoClust <- x_dClust_train[[3]][[1]][1,2]
 #' 
 #' #This is followed by running the actual function in question
 #' x_dClust_test <- dAllocate(x_scaled_test, 
-#' clusterCenters=x_dClust_train$clusterCentersWZeroVariables, 
-#' withOrigoClust=x_optim[[4]][1,2], ids=id_vector_test)
+#' clusterCenters=clusterCenters, 
+#' withOrigoClust=withOrigoClust, ids=id_vector_test)
 #'
 #' #And finally plot this to see how great the overlap was:
-#' xmatrix <- as.matrix(rbind(x_dClust_train$clusterPercentagesForAllIds, 
-#' x_dClust_test$realloClusterPercentagesForAllIds))
+#' xmatrix <- t(cbind(x_dClust_train$idClusterFractions, 
+#' x_dClust_test$realloIdClusterFractions))
 #' library(gplots)
 #' barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
 #' title(main = "Difference between train and test set")
 #' title(xlab = "Clusters")
-#' title(ylab = "Percentage")
+#' title(ylab = "Fraction")
 #' @export dAllocate
 dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
 
-myMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
+  #If some variables have been excluded as they did not contribute to construction of any cluster, they are removed from the inData here
+  inDataFrameReduced <- inDataFrameScaled[,colnames(clusterCenters)]
+  
+  dataMat <- data.matrix(inDataFrameReduced)
+  centersMat <- data.matrix(clusterCenters)
+  origoClust <- ifelse(withOrigoClust=="yes", 0, 1)
+  
+  clusterReallocationResult <- allocate_points(dataMat,centersMat,origoClust)[[1]]
 
-	if(withOrigoClust=="yes"){
-	newInds <- allocate_points(myMat,clusterCenters,0)
-	}
-	if(withOrigoClust=="no"){
-	newInds <- allocate_points(myMat,clusterCenters,1)
-	}
-
+  
 #A table with the percentage of cells in each cluster for each individual is created
+  if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){
+    clusterTable <- table(clusterReallocationResult, ids)
 
-clusterTable <- table(newInds[[1]], ids)
+    countTable <- table(ids)
 
-countTable <- table(ids)
+    idClusterFractions <- clusterTable
 
-clusterPercentagesForAllIds <- clusterTable
-
-for(i in 1:length(countTable)){
-	x <- 100*clusterTable[,i]/countTable[i]
-	clusterPercentagesForAllIds[,i] <- x
-}
-
-clusterReallocationResult <- list(newInds$i, as.data.frame.matrix(t(clusterPercentagesForAllIds)))
-
-names(clusterReallocationResult) <- c("realloClusterVector", "realloClusterPercentagesForAllIds")
+    for(i in 1:length(countTable)){
+    	x <- clusterTable[,i]/countTable[i]
+    	idClusterFractions[,i] <- x
+    }
+    clusterReallocationResult <- list(clusterReallocationResult, as.data.frame.matrix(idClusterFractions))
+    
+    names(clusterReallocationResult) <- c("realloClusterVector", "realloIdClusterFractions")
+  }
 
 return(clusterReallocationResult)
+  
 }

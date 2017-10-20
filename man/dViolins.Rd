@@ -37,12 +37,13 @@ setwd("~/Desktop")
 #Optimize and run the clustering function.
 xClustObject <- dClust(x_scaled)
 clusterVector <- xClustObject[[1]]
+clusterCenters <- xClustObject[[2]]
 
 #Create the plots of the variables that contribute to creating each cluster
-dViolins(clusterCenters=xClustObject$clusterCenters, clusterVector=clusterVector, inDataFrame=x[,2:ncol(x)])
+dViolins(clusterCenters, clusterVector, inDataFrame=x[,2:ncol(x)])
 
 #Now, finally, create plots of all clusters, regardless of if they contributed or not
-dViolins(clusterCenters=xClustObject$clusterCenters, clusterVector=clusterVector, inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
+dViolins(clusterCenters, clusterVector, inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}
