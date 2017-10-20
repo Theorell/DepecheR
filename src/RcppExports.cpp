@@ -50,11 +50,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rand_index
+const double rand_index(IntegerVector inds1, IntegerVector inds2, unsigned int k);
+RcppExport SEXP _DepecheR_rand_index(SEXP inds1SEXP, SEXP inds2SEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type inds1(inds1SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type inds2(inds2SEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(rand_index(inds1, inds2, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_DepecheR_sparse_k_means", (DL_FUNC) &_DepecheR_sparse_k_means, 5},
     {"_DepecheR_grid_search", (DL_FUNC) &_DepecheR_grid_search, 6},
     {"_DepecheR_allocate_points", (DL_FUNC) &_DepecheR_allocate_points, 3},
+    {"_DepecheR_rand_index", (DL_FUNC) &_DepecheR_rand_index, 3},
     {NULL, NULL, 0}
 };
 

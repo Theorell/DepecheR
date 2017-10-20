@@ -13,3 +13,7 @@ allocate_points <- function(X, mu, no_zero) {
     .Call('_DepecheR_allocate_points', PACKAGE = 'DepecheR', X, mu, no_zero)
 }
 
+rand_index <- function(inds1, inds2, k) {
+    .Call('_DepecheR_rand_index', PACKAGE = 'DepecheR', inds1, inds2, k)
+}
+

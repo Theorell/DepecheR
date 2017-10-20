@@ -149,6 +149,21 @@ List allocate_points(NumericMatrix X, NumericMatrix mu,const bool no_zero ) {
     ret["i"]=inds;
     return ret;
 }
+
+    // [[Rcpp::export]]
+    const double rand_index(IntegerVector inds1,IntegerVector inds2, unsigned int k){
+        Clusterer c = Clusterer();
+        const unsigned int rows = inds1.size();
+        Eigen::VectorXi inds1_eigen = Eigen::VectorXi::Zero(rows);
+        Eigen::VectorXi inds2_eigen = Eigen::VectorXi::Zero(rows);
+        for(unsigned int i = 0; i<rows; i++){
+                inds1_eigen(i)= inds1(i);
+                inds2_eigen(i)= inds2(i);
+        }
+        return c.cluster_distance(inds1_eigen,inds2_eigen,k);
+    }
+
+
 Clusterer::Clusterer() {
     srand((unsigned int) time(0));
 }
@@ -321,29 +336,6 @@ RowMatrixXd Clusterer::m_rescale(const RowMatrixXd& Xin){
         X.col(i)=(X.col(i).array()/scaling).matrix();
     } 
     X = X.rowwise()-X.colwise().mean();
-    //get the mean absolute deviation
-//    Eigen::RowVectorXd abs_dev = X.cwiseAbs().colwise().sum();
-//    //Eigen::RowVectorXd mean = Xin.colwise().mean();
-//    //Eigen::RowVectorXd st_dev = ((Xin.rowwise() - mean).array().square().colwise().sum() / (Xin.rows() - 1)).sqrt();
-//    //Check if there are degenerate dimensions
-//    for(unsigned int i = 0; i <abs_dev.size(); i++){
-//        if(abs_dev(i)==0.0){
-//            abs_dev(i) = 1;
-//        }
-//    }
-//    // get rid of the mean abs_dev
-//    X = X.array().rowwise()/abs_dev.array();
-    
-//    if((st_dev.array()==0.0).any()){
-//        std::cout<<"Input matrix contains degenrate dimensions with no variance: Aborting"<<std::endl;
-//        RowMatrixXd ret;
-//        return ret;
-//    }
-    //RowMatrixXd X = (Xin.rowwise() - mean).array().rowwise() / st_dev.array();
-    
-    //subtract the median
-    //unsigned int x_cols = X.cols();
-
     return X;
 }
 double Clusterer::cluster_norm(const RowMatrixXd& X, const RowMatrixXd& centers, const Eigen::VectorXi ind, const double reg){

@@ -47,6 +47,7 @@ public:
     const Return_values find_centers(const RowMatrixXd& X, const unsigned int k, const double reg, const bool no_zero=false); 
     const Optimization_values optimize_param(const RowMatrixXd& X, const Eigen::Matrix<unsigned int, -1,1> k, const Eigen::VectorXd reg, const unsigned int iterations, const unsigned int bootstrapSamples);
     const Eigen::VectorXi allocate_clusters(const RowMatrixXd& X, const RowMatrixXd& mu, const bool no_zero=false);
+    const double cluster_distance(const Eigen::VectorXi c1, const Eigen::VectorXi c2, const unsigned int k);
     void reseed(const unsigned long seed_off_set){
         srand((unsigned int) time(0)+seed_off_set);;
     }
@@ -64,7 +65,7 @@ private:
     
     RowMatrixXd initialize_mu(const RowMatrixXd& X, const unsigned int k);
     unsigned int element_from_vector(Eigen::VectorXd elements);
-    const double cluster_distance(const Eigen::VectorXi c1, const Eigen::VectorXi c2, const unsigned int k);
+    
     const RowMatrixXd bootstrap_data(const RowMatrixXd& X, const unsigned int bootstrapSamples);
     unsigned int n_used_clusters(const unsigned int k, const Eigen::VectorXi inds);
     
