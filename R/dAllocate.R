@@ -59,10 +59,15 @@ dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
   
   dataMat <- data.matrix(inDataFrameReduced)
   centersMat <- data.matrix(clusterCenters)
-  origoClust <- ifelse(withOrigoClust=="yes", 0, 1)
+  origoClust <- ifelse(withOrigoClust=="no", 1, 0)
   
   clusterReallocationResult <- allocate_points(dataMat,centersMat,origoClust)[[1]]
 
+  #Here, the individual numbers are changed to accomodate the difference between the inclusion or exclusion of an origo cluster
+  if(withOrigoClust=="no"){
+    clusterReallocationResult <- turnVectorEquidistant(clusterReallocationResult)
+  }
+  
   
 #A table with the percentage of cells in each cluster for each individual is created
   if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){

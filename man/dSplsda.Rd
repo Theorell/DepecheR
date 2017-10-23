@@ -5,7 +5,7 @@
 \title{Sparse partial least squares discriminant analysis with paired and unpaired data}
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector = NULL,
-  densContour = TRUE, name = "dSplsda",
+  displayVector = NULL, densContour = TRUE, name = "dSplsda",
   groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
   title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
   directoryName = "dSplsda", bandColor = "black",
@@ -21,6 +21,8 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector = NULL,
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
 \item{pairingVector}{If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.}
+
+\item{displayVector}{Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
 
 \item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
 

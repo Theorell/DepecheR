@@ -8,7 +8,7 @@
 #' @importFrom foreach foreach %dopar%
 #' @param x A numeric/integer vector or dataframe
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
-#' @param scale If scaling should be performed. Two possible values: FALSE or a vector with two values indicating the low and high threshold quantiles for the scaling. "c(0.001, 0.999)" is default
+#' @param scale If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.
 #' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.
 #' @param center If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering. 
 #' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
@@ -43,7 +43,7 @@
 #' #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export dScale 
-dScale <- function(x, control, scale=c(0.001, 0.999), robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
+dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -57,6 +57,9 @@ dScale <- function(x, control, scale=c(0.001, 0.999), robustVarScale=TRUE, cente
     print("Warning. Column names of the x data and the control data are mismatched or are ordered differently, which may affect the result. Consider correcting this.")
   }
 
+  if(is.logical(scale)==TRUE && scale==TRUE){
+    scale <- c(0.001, 0.999)
+  }
     if(class(x)!="data.frame"){
     result <- dScaleCoFunction(x, control=control, scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
   }
@@ -77,8 +80,10 @@ dScale <- function(x, control, scale=c(0.001, 0.999), robustVarScale=TRUE, cente
 
 dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center, multiplicationFactor){
 
-
-
+  if(is.logical(scale)==TRUE && scale==FALSE){
+    responseVector <- multiplicationFactor*x
+  } 
+  
   if(length(scale)==2){
     #Define quantiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
     bottom <- Hmisc::hdquantile(control, probs = scale[1], se=FALSE, na.rm=TRUE)

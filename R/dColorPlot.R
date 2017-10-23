@@ -7,6 +7,7 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %dopar%
 #' @param colorData A vector or a dataframe of numeric observations that will be displayed as color on the plot.
+#' @param controlData Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.
 #' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
@@ -22,6 +23,7 @@
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
+#' @param truncate If truncation of the most extreme values should be performed for the visualizations. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is true, as it only affects datasets with more than one column.
@@ -49,7 +51,7 @@
 #' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
+dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -60,8 +62,8 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, ad
   }
 
   if(createDirectory==TRUE){
-    dir.create(directoryName)
     workingDirectory <- getwd()
+    dir.create(directoryName)
     setwd(paste(workingDirectory, directoryName, sep="/"))
 
   }
@@ -74,6 +76,10 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, ad
 
   if(names=="default" && class(colorData)=="data.frame"){
     names <- colnames(colorData)
+  }
+  
+  if(missing(controlData)==TRUE){
+    controlData <- colorData
   }
 
   #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
@@ -93,14 +99,12 @@ dColorPlot <- function(colorData, xYData,  names="default", densContour=TRUE, ad
   xYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   
   if(class(colorData)=="numeric"){
-    colorDataTruncated <- truncateData(colorData)
-    colorDataPercent <- dScale(colorDataTruncated, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
+    colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVector <- dColorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
     dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
   }
   if(class(colorData)=="data.frame"){
-    colorDataTruncated <- apply(colorData, 2, truncateData)
-    colorDataPercent <- apply(colorDataTruncated, 2, dScale, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
+    colorDataPercent <- mapply(dScale, colorData, controlData, MoreArgs=list(scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate))
     colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich.colors", order=c(1:100))
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1

@@ -76,12 +76,13 @@ dClust <- function(inDataFrameScaled, penalties=c(0,2,4,8,16,32,64,128), sampleS
     }
   }
 
-  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties, fMeasureSampleSize=fMeasureSampleSize, withOrigoClust="no")
+  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties, fMeasureSampleSize=fMeasureSampleSize, withOrigoClust=withOrigoClust)
 
   #
   #Here the data is added back, in the cases where very large datasets are used
   if(nrow(inDataFrameScaled)>1000000){
     dClustResult$clusterVector <- dAllocate(inDataFrameScaled, dClustResult$clusterCenters, withOrigoClust)
+   
   }
   ######################################
   

@@ -9,6 +9,7 @@
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param pairingVector If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.
+#' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
@@ -63,7 +64,7 @@
 #' #Then the actual multilevel sPLS-DA is run. 
 #' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, displayVector=NULL, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -221,9 +222,17 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
  # }
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
-  statisticVector <- clusterVector
+  #If a displayVector has been included, it is used here, to subset the clusterVector
+  if(is.null(displayVector)==FALSE){
+    statisticVector <- clusterVector[displayVector]
+    clusterVectorUsed <- clusterVector[displayVector]
+  } else {
+    statisticVector <- clusterVector
+    clusterVectorUsed <- clusterVector
+  }
+    
   for(i in 1:nrow(sPLSDALoadings)){
-    statisticVector[clusterVector==rownames(sPLSDALoadings)[i]] <- sPLSDALoadings[i]
+    statisticVector[clusterVectorUsed==rownames(sPLSDALoadings)[i]] <- sPLSDALoadings[i]
   }
 
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.

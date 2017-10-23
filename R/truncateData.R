@@ -34,7 +34,7 @@
 # #And the most extreme values have been reduced
 # summary(y_df)
 
-truncateData <- function(x, control, lowQuantile=0.0001, highQuantile=0.9999){
+truncateData <- function(x, control, lowQuantile=0.001, highQuantile=0.999){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")

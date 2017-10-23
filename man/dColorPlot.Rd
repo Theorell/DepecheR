@@ -4,14 +4,17 @@
 \alias{dColorPlot}
 \title{Display third variable as color on 2D plot}
 \usage{
-dColorPlot(colorData, xYData, names = "default", densContour = TRUE,
-  addLegend = FALSE, idsVector, drawColorPalette = FALSE, title = FALSE,
-  createDirectory = TRUE,
+dColorPlot(colorData, controlData, xYData, names = "default",
+  densContour = TRUE, addLegend = FALSE, idsVector,
+  drawColorPalette = FALSE, title = FALSE, createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
-  bandColor = "black", dotSize = 400/sqrt(nrow(xYData)), multiCore = TRUE)
+  truncate = TRUE, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)),
+  multiCore = TRUE)
 }
 \arguments{
 \item{colorData}{A vector or a dataframe of numeric observations that will be displayed as color on the plot.}
+
+\item{controlData}{Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.}
 
 \item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.}
 
@@ -36,6 +39,8 @@ If not present, it will be generated with the xYData. Useful when only a subfrac
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
 \item{directoryName}{The name of the created directory, if it should be created.}
+
+\item{truncate}{If truncation of the most extreme values should be performed for the visualizations. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 

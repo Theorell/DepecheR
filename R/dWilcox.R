@@ -6,6 +6,7 @@
 #' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
+#' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
@@ -118,9 +119,16 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE,
   colnames(result) <- c("Cluster", paste("Median percentage for", groupName1, sep=" "), paste("Median percentage for", groupName2, sep=" "), "Wilcoxon_statistic", "p-value", paste(multipleCorrMethod, "corrected p-value", sep=" "))
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
-  statisticVector <- clusterVector
+  #If a displayVector has been included, it is used here, to subset the clusterVector
+  if(is.null(displayVector)==FALSE){
+    statisticVector <- clusterVector[displayVector]
+    clusterVectorUsed <- clusterVector[displayVector]
+  } else {
+    statisticVector <- clusterVector
+    clusterVectorUsed <- clusterVector
+  }
   for(i in 1:nrow(result)){
-    statisticVector[clusterVector==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
+    statisticVector[clusterVectorUsed==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
   }
 
   #Here the data that will be used for plotting are scaled.

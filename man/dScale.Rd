@@ -4,16 +4,15 @@
 \alias{dScale}
 \title{Scaling of a vector or a dataframe.}
 \usage{
-dScale(x, control, scale = c(0.001, 0.999), robustVarScale = TRUE,
-  center = "peak", truncate = FALSE, multiplicationFactor = 1,
-  multiCore = FALSE)
+dScale(x, control, scale = TRUE, robustVarScale = TRUE, center = "peak",
+  truncate = FALSE, multiplicationFactor = 1, multiCore = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
 
 \item{control}{A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
 
-\item{scale}{If scaling should be performed. Two possible values: FALSE or a vector with two values indicating the low and high threshold quantiles for the scaling. "c(0.001, 0.999)" is default}
+\item{scale}{If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.}
 
 \item{robustVarScale}{If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.}
 
