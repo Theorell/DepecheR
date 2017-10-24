@@ -368,35 +368,36 @@ const Return_values Clusterer::find_centers(const RowMatrixXd& Xin, const unsign
     Eigen::VectorXi mu_ind =  Eigen::VectorXi::Ones(rows);
     Eigen::VectorXi mu_ind_old =  Eigen::VectorXi::Zero(rows);
     unsigned int count_limit = 1000;
-    for(unsigned int i = 0; i<count_limit; i++){
-        //std::cout << "Iteration: " <<i<< std::endl;
-        mu_ind=allocate_clusters(X,mu);
-        if((mu_ind_old-mu_ind).isZero(0)){
-            break;
-        }
-        mu_ind_old=mu_ind;
-        mu = reevaluate_centers(X,mu_ind,k,0);
-        
-        
-    }
-    Return_values ret;
-    ret.indexes = mu_ind;
-    ret.centers = mu;
-    ret.norm = cluster_norm(X,mu,mu_ind, reg);
+//    for(unsigned int i = 0; i<count_limit; i++){
+//        //std::cout << "Iteration: " <<i<< std::endl;
+//        mu_ind=allocate_clusters(X,mu);
+//        if((mu_ind_old-mu_ind).isZero(0)){
+//            break;
+//        }
+//        mu_ind_old=mu_ind;
+//        mu = reevaluate_centers(X,mu_ind,k,0);
+//        
+//        
+//    }
+
     //if no zero is true, continue to deallocate all points from the zero clusters.
-    if(no_zero){
-        mu = reevaluate_centers(X,mu_ind,k,reg);
+//    if(no_zero){
+//        mu = reevaluate_centers(X,mu_ind,k,reg);
         //std::cout << "Removing zero clusters"<< std::endl;
         for(unsigned int i = 0; i<count_limit; i++){
             //std::cout << "Iteration: " <<i<< std::endl;
             mu_ind=allocate_clusters(X,mu, no_zero);
-            if((mu_ind_old-mu_ind).isZero(0)){
+            if((mu_ind_old-mu_ind).isZero(0) && i >20){
                 break;
             }
             mu_ind_old=mu_ind;
-            mu = reevaluate_centers(X,mu_ind,k,reg);
+            mu = reevaluate_centers(X,mu_ind,k,std::min(reg, reg*((float)i/(float)20)));
         }
-    }
+//    }
+    Return_values ret;
+    ret.indexes = mu_ind;
+    ret.centers = mu;
+    ret.norm = cluster_norm(X,mu,mu_ind, reg);
     ret.indexes_no_zero = mu_ind;
     ret.centers_no_zero = mu;
     ret.norm_no_zero = cluster_norm(X,mu,mu_ind,reg);
@@ -516,20 +517,20 @@ const Optimization_values Clusterer::optimize_param(const RowMatrixXd& Xin, cons
                 ind2_no_zero = allocate_clusters(X, ret2.centers_no_zero, true);
                 //std::cout<<"calculating distances: "<< std::endl;
                 distances(j,l)+=cluster_distance(ind1,ind2,k(j));
-                distances_no_zero(j,l)+=cluster_distance(ind1_no_zero,ind2_no_zero,k(j));
+                //distances_no_zero(j,l)+=cluster_distance(ind1_no_zero,ind2_no_zero,k(j));
                 //std::cout<<"countng non-zero: "<< std::endl;
                 found_cluster(j,l)+=n_used_clusters(k(j),ret1.indexes);
                 found_cluster(j,l)+=n_used_clusters(k(j),ret2.indexes);
-                found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret1.indexes_no_zero);
-                found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret2.indexes_no_zero);
+                //found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret1.indexes_no_zero);
+                //found_cluster_no_zero(j,l)+=n_used_clusters(k(j),ret2.indexes_no_zero);
             }
         }
     }
     Optimization_values ret;
     ret.distances= distances/iterations;
-    ret.distances_no_zero= distances_no_zero/iterations;
+    ret.distances_no_zero= distances/iterations;
     ret.found_cluster = found_cluster/(iterations*2);
-    ret.found_cluster_no_zero = found_cluster_no_zero/(iterations*2);
+    ret.found_cluster_no_zero = found_cluster/(iterations*2);
     ret.centers = centers;
     return ret;
     
