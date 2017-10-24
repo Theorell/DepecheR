@@ -29,6 +29,8 @@ dClust(inDataFrameScaled, penalties = c(0, 2, 4, 8, 16, 32, 64, 128),
 \item{withOrigoClust}{Defines whether a cluster in origo should be allowed. In most instances, this makes no biological sense, and hence, default is "no".}
 
 \item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
+
+\item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying ht ecolumn name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
 }
 \value{
 A nested list with varying components depending on the setup above:

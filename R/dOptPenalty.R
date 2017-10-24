@@ -55,7 +55,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize<=14 || (std>=minCRIImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
+  while(iterTimesChunkSize<=6 || (std>=minCRIImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
 
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     

@@ -2,9 +2,8 @@
 #'
 #'
 #' Here, observations of a dataset are allocated to a set of preestablished cluster centers. This is intended to be used for the test set in train-test dataset situations. It is called "predict" as most similar functions of other clustering algorithms have this term.
-#' @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function. It should naturally be scaled together with the data used to genreate the cluster centers.
+#' @param inDataFrameScaled A dataframe with the data that that the cluster centers will be allocated to. The data in this dataframe should be scaled in the same way as the dataframe used to generate the clusters in the first place.
 #' @param clusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
-#' @param withOrigoClust This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClust, again.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. If included, it is used to generate a table of what fraction of observations for each individual that is present in each cluster.
 #' @seealso \code{\link{dClust}}
 #' @return A list with two components:
@@ -52,20 +51,27 @@
 #' title(xlab = "Clusters")
 #' title(ylab = "Fraction")
 #' @export dAllocate
-dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust, ids){
+dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust="no", ids){
 
   #If some variables have been excluded as they did not contribute to construction of any cluster, they are removed from the inData here
   inDataFrameReduced <- inDataFrameScaled[,colnames(clusterCenters)]
   
   dataMat <- data.matrix(inDataFrameReduced)
   centersMat <- data.matrix(clusterCenters)
-  origoClust <- ifelse(withOrigoClust=="no", 1, 0)
+  
+  #Here, the function looks to the actual cluster numbers to decide whether an origo cluster should be included or not
+  if(min(colnames(clusterCenters))==0 || min(colnames(clusterCenters))==100){
+    origoClust <- 0
+  } else {
+    origoClust <- 1
+  }
   
   clusterReallocationResult <- allocate_points(dataMat,centersMat,origoClust)[[1]]
 
   #Here, the individual numbers are changed to accomodate the difference between the inclusion or exclusion of an origo cluster
-  if(withOrigoClust=="no"){
-    clusterReallocationResult <- turnVectorEquidistant(clusterReallocationResult)
+  if(min(colnames(clusterCenters))!=0){
+    newNumbers <- colnames(clusterCenters)
+    clusterReallocationResult <- turnVectorEquidistant(clusterReallocationResult, newNumbers=newNumbers)
   }
   
   

@@ -4,14 +4,12 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataFrameScaled, clusterCenters, withOrigoClust, ids)
+dAllocate(inDataFrameScaled, clusterCenters, withOrigoClust = "no", ids)
 }
 \arguments{
-\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function. It should naturally be scaled together with the data used to genreate the cluster centers.}
+\item{inDataFrameScaled}{A dataframe with the data that that the cluster centers will be allocated to. The data in this dataframe should be scaled in the same way as the dataframe used to generate the clusters in the first place.}
 
 \item{clusterCenters}{This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.}
-
-\item{withOrigoClust}{This parameter controls if the generated result should contain a cluster in origo or not. This information is given by dClust, again.}
 
 \item{ids}{A vector of the same length as rows in the inDataFrameScaled. If included, it is used to generate a table of what fraction of observations for each individual that is present in each cluster.}
 }

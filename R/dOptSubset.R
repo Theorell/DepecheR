@@ -124,7 +124,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, fMeasureSampleSize="defau
     optPenalty <- list(dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]],dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[2]])
     
     #And here, the optimal results, given if an origo cluster should be included or not, are retrieved further
-    retrieveOrigoOrNotList <- retrieveOrigoOrNot(withOrigoClust = withOrigoClust, clusterVector=optimalClusterVector, clusterCenters=optimalClusterCenters, colnamesClusterCenters=colnames(inDataFrameScaled), k=k)
+    retrieveOrigoOrNotList <- retrieveOrigoOrNot(withOrigoClust = withOrigoClust, clusterVector=optimalClusterVector, clusterCenters=optimalClusterCenters, colnamesClusterCenters=colnames(inDataFrameScaled), k=k, firstClusterNumber=firstClusterNumber)
     clusterVectorEquidistant <- retrieveOrigoOrNotList[[1]]
     reducedClusterCenters <- retrieveOrigoOrNotList[[2]]
     
