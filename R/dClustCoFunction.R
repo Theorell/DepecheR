@@ -1,10 +1,11 @@
 #' @importFrom dplyr sample_n
+#' @importFrom gplots heatmap.2
 #' @useDynLib DepecheR
 #' @export dClustCoFunction
 dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", fMeasureSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, withOrigoClust="no", ids){
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
-  if(nrow(inDataFrameScaled)*ncol(inDataFrameScaled)>10000000){
+  if(nrow(inDataFrameScaled)>1000000){
     inDataFrameUsed <- sample_n(inDataFrameScaled, 1000000)
   } else {
     inDataFrameUsed <- inDataFrameScaled
@@ -23,7 +24,7 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
   
   #
   #Here the data is added back, in the cases where very large datasets are used
-  if(nrow(inDataFrameScaled)*ncol(inDataFrameScaled)>10000000){
+  if(nrow(inDataFrameScaled)>1000000){
     dClustResult$clusterVector <- dAllocate(inDataFrameScaled, dClustResult$clusterCenters, withOrigoClust=withOrigoClust)
     
   }

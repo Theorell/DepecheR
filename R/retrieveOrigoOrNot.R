@@ -22,7 +22,7 @@ retrieveOrigoOrNot <- function(withOrigoClust, clusterVector, clusterCenters, co
 
     #Make the row names the same as the cluster names in the clusterVectorEquidistant
     
-    rownames(reducedClusterCenters) <- rep(firstClusterNumber:firstClusterNumber+nrow(reducedClusterCenters))
+    rownames(reducedClusterCenters) <- rep(firstClusterNumber:(firstClusterNumber+nrow(reducedClusterCenters)-1))
 
   } 
   if(withOrigoClust=="no" || (withOrigoClust=="yes" && length(unique(clusterVector))==k)){
@@ -39,7 +39,7 @@ retrieveOrigoOrNot <- function(withOrigoClust, clusterVector, clusterCenters, co
     
     #Make the row names the same as the cluster names in the clusterVectorEquidistant
     
-    rownames(reducedClusterCenters) <- rep(firstClusterNumber:firstClusterNumber+(nrow(reducedClusterCenters)))
+    rownames(reducedClusterCenters) <- rep(firstClusterNumber:(firstClusterNumber+(nrow(reducedClusterCenters))-1))
 
     
   }

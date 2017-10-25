@@ -58,7 +58,7 @@
 #' str(xClustObject)
 #' 
 #' @export dClust
-dClust <- function(inDataFrameScaled, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", fMeasureSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, withOrigoClust="no", ids){
+dClust <- function(inDataFrameScaled, dualClustSetup, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", fMeasureSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, withOrigoClust="no", ids){
 
   if(missing(dualClustSetup)==TRUE){
     firstClusterNumber <- ifelse(withOrigoClust=="no", 1, 0)

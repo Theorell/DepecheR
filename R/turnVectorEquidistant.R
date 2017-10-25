@@ -2,7 +2,7 @@ turnVectorEquidistant <- function(x, startValue=1, newNumbers){
 
 	originalNumbers <- sort(unique(x))
 	
-	if(missingNewNumbers==TRUE){
+	if(missing(newNumbers)==TRUE){
 	  newNumbers <- c(startValue:(length(originalNumbers)+(startValue-1)))
 	}
 	

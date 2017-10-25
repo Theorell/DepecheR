@@ -5,7 +5,7 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @export dOptSubset
-dOptSubset <- function(inDataFrameScaled, sampleSizes, fMeasureSampleSize="default", k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties, withOrigoClust){
+dOptSubset <- function(inDataFrameScaled, sampleSizes, fMeasureSampleSize="default", k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties, withOrigoClust, firstClusterNumber){
 
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()

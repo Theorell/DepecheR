@@ -4,13 +4,15 @@
 \alias{dClust}
 \title{Performing optimization and penalized K-means clustering}
 \usage{
-dClust(inDataFrameScaled, penalties = c(0, 2, 4, 8, 16, 32, 64, 128),
-  sampleSizes = "default", fMeasureSampleSize = "default", k = 30,
-  minCRIImprovement = 0.01, maxCRI = 0.05, maxIter = 100,
+dClust(inDataFrameScaled, dualClustSetup, penalties = c(0, 2, 4, 8, 16, 32,
+  64, 128), sampleSizes = "default", fMeasureSampleSize = "default",
+  k = 30, minCRIImprovement = 0.01, maxCRI = 0.05, maxIter = 100,
   withOrigoClust = "no", ids)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
+
+\item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying ht ecolumn name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
 
 \item{penalties}{This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.}
 
@@ -29,8 +31,6 @@ dClust(inDataFrameScaled, penalties = c(0, 2, 4, 8, 16, 32, 64, 128),
 \item{withOrigoClust}{Defines whether a cluster in origo should be allowed. In most instances, this makes no biological sense, and hence, default is "no".}
 
 \item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
-
-\item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying ht ecolumn name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
 }
 \value{
 A nested list with varying components depending on the setup above:

@@ -1,42 +1,10 @@
-# Function to find the optimal penalty value for penalized K means
-#
-#
-# This function is used before the dClust function to identify the optimal penalty value for the specific dataset. This value decides the penalization and consequently also the number of clusters that are identified.
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %dopar%
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
-# @param inDataFrameScaled A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.
-# @param k Number of starting points for clusters. This essentially means that it is the highest possible number of clusters that can be defined. The higher the number, the greater the precision, but the computing time is also increased with the number of starting points. Default is 30
-# @param maxIter The maximal number of iterations that are performed to reach the minimal improvement. 
-# @param minCRIImprovement This is connected to the evaluation of the performance of the algorithm. The more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the iterations stop. 
-# @param bootstrapObservations The number of observations that are included in each bootstrap subsampling of the data. NB! The algorithm uses resampling, so the same event can be used twice.
-# @param penalties These values are the ones that are evaluated and the ones that decide the penalization. The number of suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs normal K-means clustering.
-# @param makeGraph If a graph should be created showing the distance between bootstraps under different penalties.
-# @param graphName The name of the graph. 
-# @param disableWarnings If the lowest or highest penalty is the most optimal, the function gives a warning. This is suppressed with this command. Mostly to simplify use within other functions, such as dOptSampleSize.
-# @seealso \code{\link{dClust}}, \code{\link{pClustPredict}}, \code{\link{dOptSampleSize}}
-# @return A graph showing the performance of the algorithm under the different penalty values and a list with two components:
-# \describe{
-#     \item{penaltyOpt.df}{A dataframe with one row with all the information about which settings that were used to generate the optimal clustering. The "withOrigoClust" information tells the user if the solution with or without a cluster in origo gives the most optimal solution. If yes, this origo population is generally small and could be viewed as not fitting in the model.}
-#     \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values}
-# }
-# @examples
-# #Generate a default size dataframe with bimodally distributed data
-# x <- generateBimodalData()
-#
-# #Scale this datamframe
-# x_scaled <- dScale(x[,2:ncol(x)])
-#
-# #Set a reasonable working directory, e.g.
-# setwd("~/Desktop")
-#
-# #Run the function
-# x_optim <- dOptPenalty(x_scaled, bootstrapObservations=1000)
 #' @export dOptPenalty
-# @useDynLib DepecheR
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, withOrigoClust="no"){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -175,10 +143,10 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   if(disableWarnings==FALSE){
   
     if(penaltyOpt.df$bestPenalty==lowestPenalty){
-      print("Warning: the lowest penalty was the most optimal in the range. It might be a good idea to run with a few lower penalty values to make sure that the most optimal has been found")
+      warning("The lowest penalty was the most optimal in the range. It might be a good idea to run with a few lower penalty values to make sure that the most optimal has been found")
     }
     if(penaltyOpt.df$bestPenalty==highestPenalty){
-      print("Warning: the highest penalty was the most optimal in the range. It might be a good idea to run with a few higher penalty values to make sure that the most optimal has been found")
+      warning("The highest penalty was the most optimal in the range. It might be a good idea to run with a few higher penalty values to make sure that the most optimal has been found")
     }
   
   }
@@ -215,7 +183,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     #Here, the list of solutions with the best penalty and with or without origo cluster is exported
     allClusterCentersBestPenalty <- allClusterCentersPenaltySorted[[which(round(penalties, digits=1)==penaltyOpt.df$bestPenalty)]]
     
-    if(penaltyOpt.df$withOrigoClust=="yes"){
+    if(withOrigoClust=="yes"){
       bestClusterCenters <- allClusterCentersBestPenalty[[1]]
     } else {
       bestClusterCenters <- allClusterCentersBestPenalty[[2]]
