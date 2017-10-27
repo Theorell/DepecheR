@@ -26,7 +26,7 @@ Here, violin plots of a specific cluster and the total population are created fo
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData(samplings=2, ncols=8)
+x <- generateBimodalData(samplings=2, dataCols=8)
 
 #Scale this dataframe
 x_scaled <- dScale(x[2:ncol(x)])

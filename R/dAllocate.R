@@ -35,12 +35,10 @@
 #' #Retrieve the clustering info
 #' clusterVector <- x_dClust_train[[1]]
 #' clusterCenters <- x_dClust_train[[2]]
-#' withOrigoClust <- x_dClust_train[[3]][[1]][1,2]
 #' 
 #' #This is followed by running the actual function in question
 #' x_dClust_test <- dAllocate(x_scaled_test, 
-#' clusterCenters=clusterCenters, 
-#' withOrigoClust=withOrigoClust, ids=id_vector_test)
+#' clusterCenters=clusterCenters, ids=id_vector_test)
 #'
 #' #And finally plot this to see how great the overlap was:
 #' xmatrix <- t(cbind(x_dClust_train$idClusterFractions, 
@@ -51,7 +49,7 @@
 #' title(xlab = "Clusters")
 #' title(ylab = "Fraction")
 #' @export dAllocate
-dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust="no", ids){
+dAllocate <- function(inDataFrameScaled, clusterCenters, ids){
 
   #If some variables have been excluded as they did not contribute to construction of any cluster, they are removed from the inData here
   inDataFrameReduced <- inDataFrameScaled[,colnames(clusterCenters)]
@@ -59,22 +57,12 @@ dAllocate <- function(inDataFrameScaled, clusterCenters, withOrigoClust="no", id
   dataMat <- data.matrix(inDataFrameReduced)
   centersMat <- data.matrix(clusterCenters)
   
-  #Here, the function looks to the actual cluster numbers to decide whether an origo cluster should be included or not
-  if(min(colnames(clusterCenters))==0 || min(colnames(clusterCenters))==100){
-    origoClust <- 0
-  } else {
-    origoClust <- 1
-  }
-  
-  clusterReallocationResult <- allocate_points(dataMat,centersMat,origoClust)[[1]]
+  clusterReallocationResult <- allocate_points(dataMat,centersMat,1)[[1]]
 
   #Here, the individual numbers are changed to accomodate the difference between the inclusion or exclusion of an origo cluster
-  if(min(colnames(clusterCenters))!=0){
-    newNumbers <- colnames(clusterCenters)
+    newNumbers <- rownames(clusterCenters)
     clusterReallocationResult <- turnVectorEquidistant(clusterReallocationResult, newNumbers=newNumbers)
-  }
-  
-  
+
 #A table with the percentage of cells in each cluster for each individual is created
   if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){
     clusterTable <- table(clusterReallocationResult, ids)

@@ -75,8 +75,10 @@ dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector")
   xYDataScaled <- dScale(xYData, scalingControl, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
   #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
-  if(densContour==TRUE){
-    densContour <- dContours(xYData)
+  if(is.logical(densContour)==TRUE){
+    if(densContour==TRUE){
+      densContour <- dContours(xYData)
+    }
   }
 
   if(length(color)==1){

@@ -4,7 +4,7 @@
 #' This function creates a dataframe with any chose size with bimodally distributed data in each column. The probability of the sizes of the respective populations in the bimodal distributions is stochastic.
 #' @importFrom dplyr bind_rows
 #' @param samplings Number of individual probability samplings with identical standard deviation samplings, ie a simple simulated parallel to number of subjects.
-#' @param ncols Number of columns in the generated dataframe. Default is 5.
+#' @param dataCols Number of columns in the generated dataframe. Default is 5.
 #' @param observations Number of rows per donor in the generated dataframe. Default is 10000.
 #' @return A dataframe with the specified numbers of columns and rows.
 #' @examples
@@ -15,15 +15,15 @@
 #' plot(x[,2], x[,3])
 #'
 #' @export generateBimodalData
-generateBimodalData <- function(samplings=1, ncols=5, observations=10000){
+generateBimodalData <- function(samplings=1, dataCols=5, observations=10000){
 
-  stdevs1 <- sample(c(0.5, 0.6, 0.7, 0.8, 0.9, 1), size=ncols, replace=TRUE)
-  stdevs2 <- sample(c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=ncols, replace=TRUE)
+  stdevs1 <- sample(c(0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
+  stdevs2 <- sample(c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
   stdevs <- cbind(stdevs1, stdevs2)
 
     sampleList <- list()
     for(i in 1:samplings){
-    probabilities1 <- sample(c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=ncols, replace=TRUE)
+    probabilities1 <- sample(c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
     probabilities <- cbind(probabilities1, 1-probabilities1)
     result <- data.frame(mapply(generateBimodalDataCoFunction, data.frame(t(probabilities)), data.frame(t(stdevs)), MoreArgs=list(observations=observations)))
     Sampling <- rep(i, times=observations)

@@ -30,11 +30,11 @@
 #' @return This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-#' xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
+#' xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
 #'
 #' #Now add three columns that will separate the first ten from 
 #' #the second ten individuals and merge the datasets
-#' xgroups <- generateBimodalData(samplings=2, ncols=3, observations=10000)
+#' xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=10000)
 #' colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 #' x <- cbind(xindividuals[,1], xgroups[,1], 
 #' xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -47,7 +47,7 @@
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled)
+#' xClustObject <- dClust(x_scaled, sampleSizes=100, selectionSampleSize=1000, maxIter=20)
 #' clusterVector <- xClustObject[[1]]
 #'
 #' #Run Barnes Hut tSNE on this. 
@@ -64,7 +64,7 @@
 #' #Then the actual multilevel sPLS-DA is run. 
 #' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector=NULL, displayVector=NULL, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -146,7 +146,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     clusterFractionsForAllIds2[,i] <- x
   }
   
-  if(is.null(pairingVector)==FALSE){
+  if(missing(pairingVector)==FALSE){
     #Here, a comparable pairing vector pair is created if a multilevel sPLS-DA should be performed.
   
     pairingVectorGroup1 <- as.character(pairingVector[groupVector==unique(groupVector)[1]])
@@ -223,7 +223,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   #If a displayVector has been included, it is used here, to subset the clusterVector
-  if(is.null(displayVector)==FALSE){
+  if(missing(displayVector)==FALSE){
     statisticVector <- clusterVector[displayVector]
     clusterVectorUsed <- clusterVector[displayVector]
   } else {
@@ -256,8 +256,10 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   xYDataScaled$col <- rev(colors)[grps]
 
   #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
-  if(densContour==TRUE){
-    densContour <- dContours(xYData)
+  if(is.logical(densContour)==TRUE){
+    if(densContour==TRUE){
+      densContour <- dContours(xYData)
+    }
   }
 
   if(title==TRUE){

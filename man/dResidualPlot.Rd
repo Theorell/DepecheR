@@ -50,7 +50,7 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-x <- generateBimodalData(samplings=2, ncols=7)
+x <- generateBimodalData(samplings=2, dataCols=7)
 
 #Scale the data 
 x_scaled <- dScale(x=x[2:ncol(x)])
@@ -59,7 +59,7 @@ x_scaled <- dScale(x=x[2:ncol(x)])
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xClustObject <- dClust(x_scaled)
+xClustObject <- dClust(x_scaled, sampleSizes=1000, selectionSampleSize=1000)
 clusterVector <- xClustObject[[1]]
 
 #Run Barnes Hut tSNE on this. 

@@ -24,7 +24,7 @@
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-#' x <- generateBimodalData(samplings=2, ncols=7)
+#' x <- generateBimodalData(samplings=2, dataCols=7)
 #'
 #' #Scale the data 
 #' x_scaled <- dScale(x=x[2:ncol(x)])
@@ -33,7 +33,7 @@
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled)
+#' xClustObject <- dClust(x_scaled, sampleSizes=1000, selectionSampleSize=1000)
 #' clusterVector <- xClustObject[[1]]
 #' 
 #' #Run Barnes Hut tSNE on this. 

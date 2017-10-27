@@ -28,7 +28,7 @@
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-#' xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
+#' xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
 #'
 #' #Now add three columns that will separate the first ten from 
 #' #the second ten individuals and merge the datasets
@@ -55,7 +55,7 @@
 #' #Run the function
 #' dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector)
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -120,7 +120,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, paired=FALSE,
 
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   #If a displayVector has been included, it is used here, to subset the clusterVector
-  if(is.null(displayVector)==FALSE){
+  if(missing(displayVector)==FALSE){
     statisticVector <- clusterVector[displayVector]
     clusterVectorUsed <- clusterVector[displayVector]
   } else {

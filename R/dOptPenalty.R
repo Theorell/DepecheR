@@ -4,11 +4,12 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 #' @export dOptPenalty
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, withOrigoClust="no"){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
   penalty <- penalties*penaltyConstant
+  roundPenalties <- round(penalties, digits=1)
 
   chunkSize <- detectCores() - 1
 
@@ -23,15 +24,14 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize<=6 || (std>=minCRIImprovement && iterTimesChunkSize<=maxIter && distanceBetweenMinAndBestPrevious<0)){
+  while(iterTimesChunkSize<7 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter && distanceBetweenMinAndBestPrevious<0)){
 
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
-	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n<=2)] <- 1
-  	  optimListNonTrivial[[i]]$z[which(optimList[[i]]$m==1)] <- 1	 
+	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
     }	
     
     #Now, the new list is combined with the older, if there are any
@@ -51,37 +51,32 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     }
 
     stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter*chunkSize))
-    meanOptimDf <- as.data.frame(meanOptimList)
+    meanOptimDf <- data.frame(meanOptimList[[1]], meanOptimList[[3]])
 
     #Turn these into vectors
-    meanOptimVector <- as.vector(t(meanOptimDf[,1:2]))
-    stdOptimVector <- as.vector(t(stdOptimDf[,1:2]))
+    meanOptimVector <- meanOptimDf[,1]
+    stdOptimVector <- stdOptimDf[,1]
 	  #Return the position of the minmum value
-    minPos <- which(meanOptimVector==min(meanOptimVector))
+    minPos <- which(meanOptimVector==min(meanOptimVector))[1]
 	  
-    #Add the standard deviation of this position to its mean
-    meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
-    
-	  #Return the positions of all values that are not minimum
-	  allNonMinPos <- which(meanOptimVector!=min(meanOptimVector))
-	  
-	  #Now subtract the standard deviation of each of these values from the mean
-	  meanMinus2StdAllNonMin <- meanOptimVector[allNonMinPos]-(2*stdOptimVector[allNonMinPos])
-
-	  #Identify the lowest value among these
-	  minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
-	  
-	  #Now, the distance between minMeanMinusSdAllNonMin and . If they overlap, the iteration has not made it totally clear which point is optimal. 
-	  distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
+    if(length(roundPenalties)>1){
+      #Add the standard deviation of this position to its mean
+      meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
+      
+      #Now subtract the standard deviation of each of the non-minimal values from the mean
+      
+      meanMinus2StdAllNonMin <- meanOptimVector[-minPos]-(2*stdOptimVector[-minPos])
+      
+      #Identify the lowest value among these
+      minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
+      
+      #Now, the distance between minMeanMinusSdAllNonMin and the lowest value. If they overlap, the iteration has not made it totally clear which point is optimal. 
+      distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
+    }
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
 	  std <- stdOptimVector[minPos]
 	  iterTimesChunkSize <- iter*chunkSize
-	  
-	  #print(std)
-	  #print(iterTimesChunkSize)
-	  #print(distanceBetweenMinAndBestPrevious)
-
 
 	  if(returnClusterCenters==TRUE){
 	    #Here, the cluster center information for each run is saved, one list for the origoCLust solution and another for the nonOrigoClust:
@@ -92,15 +87,13 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	    for(i in 1:length(allClusterCenters[[1]])){
 	      
 	      tempPenaltyList <- sapply(allClusterCenters, "[", i)
-	      tempOrigoClusterCenters <- c(sapply(tempPenaltyList, "[", 1), sapply(tempPenaltyList, "[", 2))
-	      tempNonOrigoClusterCenters <- c(sapply(tempPenaltyList, "[", 3), sapply(tempPenaltyList, "[", 4))
-	      
+	      tempClusterCenters <- c(sapply(tempPenaltyList, "[", 1), sapply(tempPenaltyList, "[", 2))
+
 	      if(iter==1){
-	        allClusterCentersPenaltySorted[[i]] <- list(tempOrigoClusterCenters, tempNonOrigoClusterCenters)
+	        allClusterCentersPenaltySorted[[i]] <- tempClusterCenters
 	        
 	      } else {
-	        allClusterCentersPenaltySorted[[i]][[1]] <- c(allClusterCentersPenaltySorted[[i]][[1]], tempOrigoClusterCenters)
-	        allClusterCentersPenaltySorted[[i]][[2]] <- c(allClusterCentersPenaltySorted[[i]][[2]], tempNonOrigoClusterCenters)
+	        allClusterCentersPenaltySorted[[i]] <- c(allClusterCentersPenaltySorted[[i]], tempClusterCenters)
 	      }
 	    }
 	  }
@@ -116,29 +109,14 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     warning("An optimal value was not identified before maxIter was reached")
   }
   
-  rownames(meanOptimDf) <- round(penalties, digits=1)
-  colnames(meanOptimDf) <- c("distWZero", "distWOZero", "nClustWZero", "nClustWOZero")
+  rownames(meanOptimDf) <- roundPenalties
+  colnames(meanOptimDf) <- c("CRI", "nClust")
 
-  penaltyOpt.df <- as.data.frame(as.numeric(row.names(which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE))))
+  #Here, the optimal penalty is selected. In the unlikely case of two identical optimal penalties, the lower penalty will be selected with this method.
+  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==min(meanOptimDf[,1]))[1]], k)
 
-  colnames(penaltyOpt.df)[1] <- "bestPenalty"
-
-  #Export if the solution with or without zero clusters give the optimal result
-  penaltyOpt.df$withOrigoClust <- colnames(meanOptimDf)[which(meanOptimDf[,1:2]==min(meanOptimDf[,1:2]), arr.ind=TRUE, useNames=TRUE)[2]]
-
-  #In the exceptional event that one solution is as good both with and without a origo cluster, this argument is added that always prefers the solution without an origo cluster. It also prefers solutions with a higher penalty in cases where two origo-cluster free solutions give identical results.
-  if(nrow(penaltyOpt.df)>1 && length(grep("nClustWOZero", penaltyOpt.df$withOrigoClust))>0){
-  
-    penaltyOpt.df <- penaltyOpt.df[which(penaltyOpt.df[,2]=="nClustWOZero"),]
-  }
-
-  if(nrow(penaltyOpt.df)>1){
-  
-    penaltyOpt.df <- penaltyOpt.df[min(which(penaltyOpt.df[,1]==max(penaltyOpt.df[,1]))),]
-  }
-
-  lowestPenalty <- as.numeric(row.names(meanOptimDf[1,]))
-  highestPenalty <- as.numeric(row.names(meanOptimDf[nrow(meanOptimDf),]))
+  lowestPenalty <- roundPenalties[1]
+  highestPenalty <- roundPenalties[length(roundPenalties)]
 
   if(disableWarnings==FALSE){
   
@@ -151,21 +129,18 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   
   }
 
-  #Export the used k, as this needs to be used also when running dClust based on the optimizations.
-  penaltyOpt.df$k <- k
-
   #Here, the optimization is plotted if wanted.
   if(makeGraph==TRUE){
     pdf(graphName)
     par(mar=c(5, 4, 4, 6) + 0.1)
     #Plot the data
-    plot(row.names(meanOptimDf), meanOptimDf[[penaltyOpt.df$withOrigoClust]], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
+    plot(row.names(meanOptimDf), meanOptimDf[,1], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
     axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
     mtext("Distance between bootstraps",side=2,line=2.5)
     graphics::box()
     
     # Draw the penalty axis
-    axis(1,pretty(range(as.numeric(row.names(meanOptimDf))), n=10))
+    axis(1,pretty(range(roundPenalties), n=10))
     mtext("Penalty values",side=1,col="black",line=2.5)
     
     # Add Legend
@@ -175,19 +150,9 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     dev.off() 
   }
 
-
-  #Change the resulting names in withOrigoClust to something more meaningful
-  penaltyOpt.df$withOrigoClust <- ifelse(penaltyOpt.df$withOrigoClust=="distWZero", "yes", "no")
-
   if(returnClusterCenters==TRUE){
-    #Here, the list of solutions with the best penalty and with or without origo cluster is exported
-    allClusterCentersBestPenalty <- allClusterCentersPenaltySorted[[which(round(penalties, digits=1)==penaltyOpt.df$bestPenalty)]]
-    
-    if(withOrigoClust=="yes"){
-      bestClusterCenters <- allClusterCentersBestPenalty[[1]]
-    } else {
-      bestClusterCenters <- allClusterCentersBestPenalty[[2]]
-    }
+    #Here, the list of solutions with the best penalty is exported
+    bestClusterCenters <- allClusterCentersPenaltySorted[[which(roundPenalties==penaltyOpt.df$bestPenalty)]]
   }
 
   #Return the list, that changes depending on the preference 

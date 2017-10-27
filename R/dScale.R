@@ -2,7 +2,6 @@
 #'
 #'
 #' This is a scaling function with a number of alternatives. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
-#' @importFrom Hmisc hdquantile
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %dopar%
@@ -86,8 +85,8 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
   
   if(length(scale)==2){
     #Define quantiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
-    bottom <- Hmisc::hdquantile(control, probs = scale[1], se=FALSE, na.rm=TRUE)
-    top <- Hmisc::hdquantile(control, probs = scale[2], se=FALSE, na.rm=TRUE)
+    bottom <- quantile(control, probs = scale[1], se=FALSE, na.rm=TRUE)
+    top <- quantile(control, probs = scale[2], se=FALSE, na.rm=TRUE)
 
     
     if(robustVarScale==FALSE){
@@ -107,8 +106,10 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
   }
 
   
-  if(truncate==TRUE){
-    responseVector <- truncateData(responseVector, lowQuantile=scale[1], highQuantile=scale[2])
+  if(is.logical(truncate)==TRUE){
+    if(truncate==TRUE){
+      responseVector <- truncateData(responseVector, lowQuantile=scale[1], highQuantile=scale[2])
+    }
   }
 
   if(length(truncate)==2){

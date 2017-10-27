@@ -4,11 +4,11 @@
 \alias{dWilcox}
 \title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a dClust result}
 \usage{
-dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
-  multipleCorrMethod = "hochberg", densContour = TRUE, name = "dWilcox",
-  groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
-  title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
-  directoryName = "dWilcox", bandColor = "black",
+dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
+  paired = FALSE, multipleCorrMethod = "hochberg", densContour = TRUE,
+  name = "dWilcox", groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
+  createDirectory = FALSE, directoryName = "dWilcox", bandColor = "black",
   dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
@@ -19,6 +19,8 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
 \item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
+
+\item{displayVector}{Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
 
 \item{paired}{If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.}
 
@@ -48,8 +50,6 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, paired = FALSE,
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
-
-\item{displayVector}{Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
 }
 \value{
 This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
@@ -59,7 +59,7 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
+xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
 
 #Now add three columns that will separate the first ten from 
 #the second ten individuals and merge the datasets

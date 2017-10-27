@@ -4,8 +4,8 @@
 \alias{dSplsda}
 \title{Sparse partial least squares discriminant analysis with paired and unpaired data}
 \usage{
-dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector = NULL,
-  displayVector = NULL, densContour = TRUE, name = "dSplsda",
+dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
+  displayVector, densContour = TRUE, name = "dSplsda",
   groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
   title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
   directoryName = "dSplsda", bandColor = "black",
@@ -59,11 +59,11 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, ncols=7, observations=500)
+xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
 
 #Now add three columns that will separate the first ten from 
 #the second ten individuals and merge the datasets
-xgroups <- generateBimodalData(samplings=2, ncols=3, observations=10000)
+xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=10000)
 colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 x <- cbind(xindividuals[,1], xgroups[,1], 
 xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -76,7 +76,7 @@ x_scaled <- dScale(x[3:ncol(x)])
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xClustObject <- dClust(x_scaled)
+xClustObject <- dClust(x_scaled, sampleSizes=100, selectionSampleSize=1000, maxIter=20)
 clusterVector <- xClustObject[[1]]
 
 #Run Barnes Hut tSNE on this. 

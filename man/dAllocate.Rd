@@ -4,7 +4,7 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataFrameScaled, clusterCenters, withOrigoClust = "no", ids)
+dAllocate(inDataFrameScaled, clusterCenters, ids)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that that the cluster centers will be allocated to. The data in this dataframe should be scaled in the same way as the dataframe used to generate the clusters in the first place.}
@@ -47,12 +47,10 @@ x_dClust_train <- dClust(x_scaled_train, maxIter=20, sampleSizes=1000, ids=id_ve
 #Retrieve the clustering info
 clusterVector <- x_dClust_train[[1]]
 clusterCenters <- x_dClust_train[[2]]
-withOrigoClust <- x_dClust_train[[3]][[1]][1,2]
 
 #This is followed by running the actual function in question
 x_dClust_test <- dAllocate(x_scaled_test, 
-clusterCenters=clusterCenters, 
-withOrigoClust=withOrigoClust, ids=id_vector_test)
+clusterCenters=clusterCenters, ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
 xmatrix <- t(cbind(x_dClust_train$idClusterFractions, 
