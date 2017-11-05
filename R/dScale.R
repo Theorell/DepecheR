@@ -50,16 +50,23 @@ dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", t
 
   if(missing("control")){
     control <- x
-  }
-
-  if(identical(colnames(x), colnames(control))==FALSE){
-    print("Warning. Column names of the x data and the control data are mismatched or are ordered differently, which may affect the result. Consider correcting this.")
+  } else {
+    control <- rbind(x, control)
   }
 
   if(is.logical(scale)==TRUE && scale==TRUE){
     scale <- c(0.001, 0.999)
   }
-    if(class(x)!="data.frame"){
+  
+  if(is.logical(truncate)==TRUE && truncate==TRUE){
+    if(is.logical(scale)==TRUE){
+      truncate <- c(0.001, 0.999)
+    } else {
+      truncate <- scale
+    }
+  }
+  
+  if(class(x)!="data.frame"){
     result <- dScaleCoFunction(x, control=control, scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
   }
   if(class(x)=="data.frame"){
@@ -80,17 +87,28 @@ dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", t
 dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center, multiplicationFactor){
 
   if(is.logical(scale)==TRUE && scale==FALSE){
-    responseVector <- multiplicationFactor*x
+    if(is.logical(truncate)==TRUE){
+      responseVector <- multiplicationFactor*x
+    }
+    if(length(truncate)==2){
+      xTruncReal <- truncateData(x, lowQuantile=truncate[1], highQuantile=truncate[2])
+      responseVector <- multiplicationFactor*xTruncReal
+    }
   } 
   
   if(length(scale)==2){
-    #Define quantiles using Harrell-Davis Distribution-Free Quantile Estimator for all values in one column
+    #Define quantile
     bottom <- quantile(control, probs = scale[1], se=FALSE, na.rm=TRUE)
     top <- quantile(control, probs = scale[2], se=FALSE, na.rm=TRUE)
 
-    
     if(robustVarScale==FALSE){
-      responseVector <- multiplicationFactor*((x-bottom)/(top-bottom))
+      if(is.logical(truncate)==TRUE){
+        responseVector <- multiplicationFactor*((x-bottom)/(top-bottom))
+      } 
+      if(length(truncate)==2){
+        xTruncReal <- truncateData(x, lowQuantile=truncate[1], highQuantile=truncate[2])
+        responseVector <- multiplicationFactor*((xTruncReal-bottom)/(top-bottom))
+      }
     }
     
     if(robustVarScale==TRUE){
@@ -100,23 +118,16 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
       sdxTruncated <- sd(xTruncated)
       
       #Now the data is scaled
-      responseVector <- multiplicationFactor*x/sdxTruncated
-      
+      if(is.logical(truncate)==TRUE){
+          responseVector <- multiplicationFactor*x/sdxTruncated
+      } 
+      if(length(truncate)==2){
+        xTruncReal <- truncateData(x, lowQuantile=truncate[1], highQuantile=truncate[2])
+        responseVector <- multiplicationFactor*xTruncReal/sdxTruncated
+      }
     }
   }
 
-  
-  if(is.logical(truncate)==TRUE){
-    if(truncate==TRUE){
-      responseVector <- truncateData(responseVector, lowQuantile=scale[1], highQuantile=scale[2])
-    }
-  }
-
-  if(length(truncate)==2){
-      responseVector <- truncateData(responseVector, lowQuantile=truncate[1], highQuantile=truncate[2])
-  }
-    
-    
   if(center=="mean"){
     responseVector <- responseVector-mean(responseVector)
   }

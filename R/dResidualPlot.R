@@ -106,8 +106,10 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   xYDataScaled$col <- rev(colors)[grps]
 
   #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
-  if(densContour==TRUE){
-    densContour <- dContours(xYData)
+  if(is.logical(densContour)==TRUE){
+    if(densContour==TRUE){
+      densContour <- dContours(xYData)
+    }
   }
 
   if(title==TRUE){

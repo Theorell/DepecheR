@@ -18,13 +18,13 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   #This command is reiterated the number of times that is needed to reach a minimal improvement of the distance. 
   iter <- 1
   std=1
-  distanceBetweenMinAndBestPrevious=-1
+  #distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   allClusterCentersPenaltySorted <- list()
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize<7 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter && distanceBetweenMinAndBestPrevious<0)){
+  while(iterTimesChunkSize<14 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter)){
 
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     
@@ -61,17 +61,17 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	  
     if(length(roundPenalties)>1){
       #Add the standard deviation of this position to its mean
-      meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
+      #meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
       
       #Now subtract the standard deviation of each of the non-minimal values from the mean
       
-      meanMinus2StdAllNonMin <- meanOptimVector[-minPos]-(2*stdOptimVector[-minPos])
+      #meanMinus2StdAllNonMin <- meanOptimVector[-minPos]-(2*stdOptimVector[-minPos])
       
       #Identify the lowest value among these
-      minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
+      #minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
       
       #Now, the distance between minMeanMinusSdAllNonMin and the lowest value. If they overlap, the iteration has not made it totally clear which point is optimal. 
-      distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
+      #distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
     }
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
@@ -105,7 +105,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
 
-  if(iter>=maxIter && (std>minCRIImprovement || distanceBetweenMinAndBestPrevious<0)){
+  if(iter*chunkSize>=maxIter && std>minCRIImprovement){
     warning("An optimal value was not identified before maxIter was reached")
   }
   
