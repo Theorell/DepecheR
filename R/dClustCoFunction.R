@@ -2,7 +2,7 @@
 #' @importFrom gplots heatmap.2
 #' @useDynLib DepecheR
 #' @export dClustCoFunction
-dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, ids, newNumbers){
+dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, ids, newNumbers, clusterOnAllData){
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
   if(nrow(inDataFrameScaled)>1000000){
@@ -12,16 +12,18 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
   }
   
   #Here, the sampleSize is set in cases it is "default".
-  if(sampleSizes=="default"){
-    if(nrow(inDataFrameScaled)<=10000){
-      sampleSizes <- nrow(inDataFrameScaled)
-    } else {
-      sampleSizes <- 10000
+  if(length(sampleSizes)==1){
+    if(sampleSizes=="default"){
+      if(nrow(inDataFrameScaled)<=10000){
+        sampleSizes <- nrow(inDataFrameScaled)
+      } else {
+        sampleSizes <- 10000
+      }
     }
   }
-  
-  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
-  
+
+  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize, clusterOnAllData=clusterOnAllData)
+    
   #
   #Here the data is added back, in the cases where very large datasets are used
   

@@ -2,6 +2,7 @@
 
 export(dAllocate)
 export(dClust)
+export(dClustAllData)
 export(dClustCoFunction)
 export(dColorPlot)
 export(dColorVector)

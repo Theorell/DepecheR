@@ -4,14 +4,17 @@
 \alias{dClust}
 \title{Performing optimization and penalized K-means clustering}
 \usage{
-dClust(inDataFrameScaled, dualClustSetup, penalties = c(0, 2, 4, 8, 16, 32,
-  64, 128), sampleSizes = "default", selectionSampleSize = "default",
-  k = 20, minCRIImprovement = 0.01, maxCRI = 0.05, maxIter = 28, ids)
+dClust(inDataFrameScaled, dualClustSetup, clusterOnAllData = "default",
+  penalties = c(0, 2, 4, 8, 16, 32, 64, 128), sampleSizes = "default",
+  selectionSampleSize = "default", k = 20, minCRIImprovement = 0.01,
+  maxCRI = 0.05, maxIter = 49, ids)
 }
 \arguments{
 \item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
 
 \item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying the column name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
+
+\item{clusterOnAllData}{If all data should be included in the final clustering. "default" leads to inclusion of all data if the number of data points does not exceed 10000. TRUE and FALSE are also accepted.}
 
 \item{penalties}{A single value, a vector of values, or possibly a list of two vectors, if dual clustering is performed. This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs standard K-means clustering.}
 

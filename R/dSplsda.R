@@ -10,7 +10,7 @@
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param pairingVector If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.
 #' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
-#' @param testSampleRows Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. 
+#' @param testSampleRows Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows. 
 #' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
@@ -83,16 +83,16 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
 
   if(missing(testSampleRows)==FALSE){
     
-    clusterVectorTrain <- clusterVector[1:testSampleRows[1]-1]
-    idsVectorTrain <- idsVector[1:testSampleRows[1]-1]
-    groupVectorTrain <- groupVector[1:testSampleRows[1]-1]
-    clusterVectorTest <- clusterVector[testSampleRows[1]:testSampleRows[2]]
-    idsVectorTest <- idsVector[testSampleRows[1]:testSampleRows[2]]
-    groupVectorTest <- groupVector[testSampleRows[1]:testSampleRows[2]]
+    clusterVectorTrain <- clusterVector[-testSampleRows]
+    idsVectorTrain <- idsVector[-testSampleRows]
+    groupVectorTrain <- groupVector[-testSampleRows]
+    clusterVectorTest <- clusterVector[testSampleRows]
+    idsVectorTest <- idsVector[testSampleRows]
+    groupVectorTest <- groupVector[testSampleRows]
     
     if(missing(pairingVector)==FALSE){
-      pairingVectorTrain <- pairingVector[1:testSampleRows[1]-1]
-      pairingVectorTest <- pairingVector[testSampleRows[1]:testSampleRows[2]]
+      pairingVectorTrain <- pairingVector[-testSampleRows]
+      pairingVectorTest <- pairingVector[testSampleRows]
     }
   } else{
     clusterVectorTrain <- clusterVector
@@ -123,7 +123,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   colnames(densityHist) <- c("sPLSDA_vector","Group")
   
   # Density plots with semi-transparent fill
-  ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
+  ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
     theme (line = element_blank(),
            panel.background = element_rect(fill = "white"))
   ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
@@ -234,7 +234,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     colnames(densityHist) <- c("sPLSDA_vector","Group")
     
     # Density plots with semi-transparent fill
-    ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
+    ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
       theme (line = element_blank(),
              panel.background = element_rect(fill = "white"))
     ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
