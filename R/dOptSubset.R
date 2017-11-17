@@ -5,18 +5,18 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @export dOptSubset
-dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties, firstClusterNumber, clusterOnAllData){
+dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties, firstClusterNumber){
 
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
 
 	  makeGraph <- ifelse(length(sampleSizes)>1, FALSE, TRUE)
 	  
-	  if((clusterOnAllData=="default" && nrow(inDataFrameScaled)<10000) || (is.logical(clusterOnAllData)==TRUE && clusterOnAllData==TRUE)){
-	    returnClusterCenters <- FALSE
-	  }  else {
-	    returnClusterCenters <- TRUE
-	  }
+	  #if((clusterOnAllData=="default" && nrow(inDataFrameScaled)<10000) || (is.logical(clusterOnAllData)==TRUE && clusterOnAllData==TRUE)){
+	 #   returnClusterCenters <- FALSE
+	  #}  else {
+	   # returnClusterCenters <- TRUE
+	  #}
 	  
 	  
 	 #This loop continues to run until two runs produce distances that diverge less than 0.01.
@@ -25,7 +25,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	      print(paste("Sample size ", sampleSizes[i-1], "completed. Jumping to next sample size."))
 	    }
 	    
-	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE, returnClusterCenters=returnClusterCenters)
+	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE)
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 	    print(paste("The lowest corrected Rand index with sample size ", sampleSizes[i], " is ", lowestDist[i], sep=""))
@@ -36,7 +36,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	    }
 	  }
 
-	  if(length(sampleSizes)>1 && lowestDist[i]<=maxCRI){
+	  if(length(sampleSizes)>1 && lowestDist[length(lowestDist)]<=maxCRI){
 	    print(paste("Cycle", i, "optimal. No need to run larger datasets."))	   
 	  }  
 	    
@@ -80,11 +80,25 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	    
 	  }
 	  
-    
-	 #If the dataset is small, a new clustering is performed on all the data, and the maximum likelihood solution is returned as the result
-	 if((clusterOnAllData=="default" && nrow(inDataFrameScaled)<10000) || (is.logical(clusterOnAllData)==TRUE && clusterOnAllData==TRUE)){
+	 #Now over to creating the final solution
+	 #Here, the selectionDataSet is created
+	 if(is.numeric(selectionSampleSize)==TRUE){
+	   selectionDataSet <- data.matrix(sample_n(inDataFrameScaled, selectionSampleSize, replace=TRUE))
+	 }
+	 if(selectionSampleSize=="default"){
+	   if(nrow(inDataFrameScaled)<=10000){
+	     selectionDataSet <- inDataFrameScaled
+	   } else if(sampleSizes[length(lowestDist)]<=10000){
+	     selectionDataSet <- sample_n(inDataFrameScaled, 10000, replace=TRUE)
+	   } else {
+	     selectionDataSet <- sample_n(inDataFrameScaled, sampleSizes[length(lowestDist)], replace=TRUE)
+	   }
+	 }
+	  
+	 #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
+	 if(nrow(inDataFrameScaled)<10000){
 	   penalty <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]][1,1]
-	   dClustAllDataResult <- dClustAllData(inDataFrameScaled, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
+	   dClustAllDataResult <- dClustAllData(selectionDataSet, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
 	   clusterVectorEquidistant <- dClustAllDataResult[[1]]
 	   reducedClusterCenters <- dClustAllDataResult[[2]]
 	 } else {
@@ -93,27 +107,17 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   #First, all solutions for the largest sample size is retrieved
 	   allSolutions <- resultOfOptimalSettings[[3]]
 	   
-	   #Here, the selectionDataSet is created
-	   if(is.numeric(selectionSampleSize)==TRUE){
-	     selectionDataSet <- data.matrix(sample_n(inDataFrameScaled, selectionSampleSize, replace=TRUE))
-	   }
-	   if(selectionSampleSize=="default"){
-	     if(nrow(inDataFrameScaled)<=10000){
-	       selectionDataSet <- data.matrix(inDataFrameScaled)
-	     } else {
-	       selectionDataSet <- data.matrix(sample_n(inDataFrameScaled, 10000, replace=TRUE))
-	     }
-	   }
-	   
 	   #Now, all clusterCenters are used to allocate the selectionDataSet.
 	   allocationResultList <- list()
 	   
+	   selectionDataSetMatrix <- data.matrix(selectionDataSet)
+	   
 	   if(ncol(selectionDataSet)<500){
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSet, clusterCenters=allSolutions[[i]])
+	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
 	   } else {
 	     cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
 	     registerDoSNOW(cl)
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSet, clusterCenters=allSolutions[[i]])
+	     allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
 	     parallel::stopCluster(cl)	
 	   }
 	   

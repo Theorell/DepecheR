@@ -6,6 +6,7 @@
 #' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
 #' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
+#' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
@@ -31,11 +32,35 @@
 #' #Now, finally, create plots of all clusters, regardless of if they contributed or not
 #' dViolins(clusterCenters, clusterVector, inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
 #' @export dViolins
-dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), inDataFrame, plotAll=FALSE){
+dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), colorScale="viridis", inDataFrame, plotAll=FALSE){
 
   percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 
-  paletteColors <- inferno(length(order))
+  if(length(colorScale)>1){
+    orderColors <- colorRampPalette(colorScale)(length(order)) 
+  } else {
+    if(colorScale=="inferno"){
+      paletteColors <- inferno(length(order)) 
+    }
+    if(colorScale=="viridis"){
+      paletteColors <- viridis(length(order)) 
+    }
+    if(colorScale=="plasma"){
+      paletteColors <- plasma(length(order)) 
+    }
+    if(colorScale=="magma"){
+      paletteColors <- magma(length(order)) 
+    }
+    if(colorScale=="rich_colors"){
+      paletteColors <- rich.colors(length(order)) 
+    }
+    if(colorScale=="rainbow"){
+      paletteColors <- rainbow(length(order)) 
+    }
+    if(colorScale=="dark_rainbow"){
+      paletteColors <- colorRampPalette(c("#990000", "#FFCC00", "#336600", "#000066", "#660033"))(length(order)) 
+    }
+  }
 
   #Here, a directory for all the subdirectories for each cluster is made
   directoryName <- "Cluster expressions"

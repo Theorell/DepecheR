@@ -26,7 +26,7 @@
 #' @param truncate If truncation of the most extreme values should be performed for the visualizations. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-#' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is true, as it only affects datasets with more than one column.
+#' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
@@ -51,7 +51,7 @@
 #' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore=TRUE){
+dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore="default"){
 
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
@@ -100,12 +100,19 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   
   if(class(colorData)=="numeric"){
     colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
-    colorVector <- dColorVector(round(colorDataPercent), colorScale="rich.colors", order=c(1:100))
+    colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(1:100))
     dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
   }
   if(class(colorData)=="data.frame"){
-    colorDataPercent <- mapply(dScale, colorData, controlData, MoreArgs=list(scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate))
-    colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich.colors", order=c(1:100))
+    colorDataPercent <- dScale(x=colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
+    colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(1:100))
+    if(multiCore=="default"){
+      if(nrow(colorData)>100000){
+        multiCore <- TRUE
+      } else {
+        multiCore <- FALSE
+      }
+    }
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1
       cl = makeCluster(no_cores, type = "SOCK")

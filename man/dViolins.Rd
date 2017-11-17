@@ -5,7 +5,7 @@
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
 dViolins(clusterCenters, clusterVector, order = unique(clusterVector),
-  inDataFrame, plotAll = FALSE)
+  colorScale = "viridis", inDataFrame, plotAll = FALSE)
 }
 \arguments{
 \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.}
@@ -13,6 +13,8 @@ dViolins(clusterCenters, clusterVector, order = unique(clusterVector),
 \item{clusterVector}{A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.}
 
 \item{order}{The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.}
+
+\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.}
 
 \item{inDataFrame}{A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.}
 

@@ -106,7 +106,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
 
   if(iter*chunkSize>=maxIter && std>minCRIImprovement){
-    warning("An optimal value was not identified before maxIter was reached")
+    warning("The maximum number of iterations was reached before stable optimal solution was found")
   }
   
   rownames(meanOptimDf) <- roundPenalties

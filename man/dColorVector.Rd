@@ -11,7 +11,7 @@ dColorVector(x, order = unique(x), colorScale = "viridis")
 
 \item{order}{The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.}
 
-\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich.colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.}
+\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.}
 }
 \value{
 A vector, the same length as x with each unique value substitutet with a color.

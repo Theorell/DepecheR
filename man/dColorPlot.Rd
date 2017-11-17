@@ -9,7 +9,7 @@ dColorPlot(colorData, controlData, xYData, names = "default",
   drawColorPalette = FALSE, title = FALSE, createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
   truncate = TRUE, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)),
-  multiCore = TRUE)
+  multiCore = "default")
 }
 \arguments{
 \item{colorData}{A vector or a dataframe of numeric observations that will be displayed as color on the plot.}
@@ -46,7 +46,7 @@ If not present, it will be generated with the xYData. Useful when only a subfrac
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 
-\item{multiCore}{If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is true, as it only affects datasets with more than one column.}
+\item{multiCore}{If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.}
 }
 \value{
 Plots showing the colorData displayed as color on the field created by xYData.

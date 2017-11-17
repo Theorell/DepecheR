@@ -8,7 +8,7 @@ dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20
 
   penaltyForRightSize <- penalty*((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 
-  dataMat<-data.matrix(inDataFrameScaled, rownames.force = NA)
+  dataMat<-data.matrix(inDataFrameScaled)
   
   #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
   n_cores <- detectCores() - 1
