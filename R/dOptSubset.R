@@ -143,9 +143,13 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   #Remove all rows and columns that do not contain any information
 	   reducedClusterCenters <- optimalClusterCenters[which(rowSums(optimalClusterCenters)!=0),which(colSums(optimalClusterCenters)!=0)]
 	   
-	   #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
+	   #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector. The same is done if the number of informative variables is just one.
 	   if(class(reducedClusterCenters)=="numeric"){
-	     reducedClusterCenters <- t(reducedClusterCenters)
+	     if(length(which(rowSums(optimalClusterCenters)!=0))==1){
+	       reducedClusterCenters <- t(reducedClusterCenters)
+	     } else if(which(colSums(optimalClusterCenters)!=0)==1){
+	       reducedClusterCenters <- as.matrix(reducedClusterCenters)
+	     }
 	   }
 	   
 	   #Make the row names the same as the cluster names in the clusterVectorEquidistant

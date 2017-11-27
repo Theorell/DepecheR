@@ -1,8 +1,14 @@
 removeEmptyVariablesAndAllocatePoints <- function(selectionDataSet, clusterCenters){
-  #First, all variables that do not contribute to defining a single cluster is removed
+  #First, all variables that do not contribute to defining a single cluster is removed. A specific case, namely that only one variable contains meaningful information, is taken into account
   clusterCentersNoEmptyVariables <- clusterCenters[,which(colSums(clusterCenters)!=0)]
+  if(is.numeric(clusterCentersNoEmptyVariables)=TRUE){
+    clusterCentersNoEmptyVariables <- as.matrix(clusterCentersNoEmptyVariables)
+  }
   #After this, the same variables are removed from the selectionDataSet
   selectionDataSetNoEmptyVariables <- selectionDataSet[,which(colSums(clusterCenters)!=0)]
+  if(is.numeric(selectionDataSetNoEmptyVariables)==TRUE){
+    selectionDataSetNoEmptyVariables <- as.matrix(selectionDataSetNoEmptyVariables)
+  }
   allocationResult <- allocate_points(selectionDataSetNoEmptyVariables, clusterCentersNoEmptyVariables, no_zero=1)[[1]]
   return(allocationResult)
 }
