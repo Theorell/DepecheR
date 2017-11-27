@@ -2,7 +2,9 @@
 #'
 #' Here, violin plots of a specific cluster and the total population are created for each variable that has not been penalized away in the penalized K-means analysis. As al such plots are generated for each cluster, this function creates a great number of plots in most instances.
 #' @importFrom ggplot2 ggplot aes geom_violin scale_color_manual scale_fill_manual theme_classic labs ggsave
-#' @importFrom viridis inferno
+#' @importFrom viridis inferno magma plasma viridis
+#' @importFrom gplots rich.colors
+#' @importFrom grDevices rainbow
 #' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
 #' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.

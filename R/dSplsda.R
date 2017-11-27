@@ -123,7 +123,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   colnames(densityHist) <- c("sPLSDA_vector","Group")
   
   # Density plots with semi-transparent fill
-  ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
+  ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("red", "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
     theme (line = element_blank(),
            panel.background = element_rect(fill = "white"))
   ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
@@ -234,7 +234,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     colnames(densityHist) <- c("sPLSDA_vector","Group")
     
     # Density plots with semi-transparent fill
-    ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("blue", "red")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
+    ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("red", "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
       theme (line = element_blank(),
              panel.background = element_rect(fill = "white"))
     ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
