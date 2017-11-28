@@ -46,9 +46,11 @@ dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20
   #Remove all rows and columns that do not contain any information
   reducedClusterCenters <- clusterCenters[which(rowSums(clusterCenters)!=0),which(colSums(clusterCenters)!=0)]
     
-  #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector
-  if(class(reducedClusterCenters)=="numeric"){
+  #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector. The same is done if the number of informative variables is just one.
+  if(length(which(rowSums(clusterCenters)!=0))==1){
     reducedClusterCenters <- t(reducedClusterCenters)
+  } else if(length(which(colSums(clusterCenters)!=0)==1)){
+    reducedClusterCenters <- as.matrix(reducedClusterCenters)
   }
     
   #Make the row names the same as the cluster names in the clusterVectorEquidistant
