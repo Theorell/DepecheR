@@ -146,7 +146,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector. The same is done if the number of informative variables is just one.
 	     if(length(which(rowSums(optimalClusterCenters)!=0))==1){
 	       reducedClusterCenters <- t(reducedClusterCenters)
-	     } else if(which(colSums(optimalClusterCenters)!=0)==1){
+	     } else if(length(which(colSums(optimalClusterCenters)!=0)==1)){
 	       reducedClusterCenters <- as.matrix(reducedClusterCenters)
 	     }
 
