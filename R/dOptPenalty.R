@@ -28,10 +28,18 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     
-    #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated.
+    #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
-	  optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
+	    optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
+	    #Further, solutions with only one dimension and two clusters are eliminated, as they are artifactual and always results in superior ARI.
+	    for(j in 1:length(optimListNonTrivial[[i]]$c)){
+	      if(optimList[[i]]$n[j]==2){
+	        if(length(which(apply(optimList[[i]]$c[[j]][[1]],2,function(x) !all(x==0))))==1 || length(which(apply(optimList[[i]]$c[[j]][[2]],2,function(x) !all(x==0))))==1){
+	          optimListNonTrivial[[i]]$d[j] <- 1
+	        }
+	      }
+	    }
     }	
     
     #Now, the new list is combined with the older, if there are any

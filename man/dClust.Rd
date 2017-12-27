@@ -4,13 +4,15 @@
 \alias{dClust}
 \title{Performing optimization and penalized K-means clustering}
 \usage{
-dClust(inDataFrameScaled, dualClustSetup, clusterOnAllData = "default",
-  penalties = c(0, 2, 4, 8, 16, 32, 64, 128), sampleSizes = "default",
+dClust(inDataFrame, dualClustSetup, clusterOnAllData = "default",
+  penalties = c((2^0)/2, (2^0.5)/2, 2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3,
+  2^3.5, 2^4, 2^4.5, 2^5, 2^5.5, 2^6), sampleSizes = "default",
   selectionSampleSize = "default", k = 20, minCRIImprovement = 0.01,
-  maxCRI = 0.05, maxIter = 49, ids)
+  maxCRI = 0.05, maxIter = 49, ids, returnScaledInData = TRUE,
+  log2Off = FALSE, ...)
 }
 \arguments{
-\item{inDataFrameScaled}{A dataframe with the data that will be used to create the clustering. The data in this dataframe should be scaled in a proper way. Empirically, many datasets seem to be clustered in a meaningful way if they are scaled with the dScale function.}
+\item{inDataFrame}{A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations need to be performed for all data. Scaling, etc, is on the other hand performed within the function.}
 
 \item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying the column name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
 
@@ -29,6 +31,12 @@ dClust(inDataFrameScaled, dualClustSetup, clusterOnAllData = "default",
 \item{maxIter}{The maximal number of iterations that are performed in the penalty optimization.}
 
 \item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
+
+\item{returnScaledInData}{If the scaled and centered data should be returned. Defaults to TRUE.}
+
+\item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
+
+\item{...}{Arguments passed to dScale.}
 }
 \value{
 A nested list with varying components depending on the setup above:
@@ -49,6 +57,7 @@ A nested list with varying components depending on the setup above:
              } 
     }
     \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
+    \item{scaledInData}{If returnScaledInData is TRUE, this slot will contain the scaled and centered indata.}
 } If a dual setup is used, the result will be a nested list, where the first sublist with the information above of the result of the primary clustering and the following list components are the result of all the secondary clusterings combined.
 }
 \description{
@@ -58,25 +67,22 @@ This function is a user-friendly wrapper integrating the dOpt and dClust functio
 #Generate a default size dataframe with bimodally distributed data
 x <- generateBimodalData(samplings=2, dataCols=12)
 
-#Scale this datamframe
-x_scaled <- dScale(x[,2:ncol(x)])
-
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #First, just run with the standard settings
-xClustObject <- dClust(x_scaled, sampleSizes=500, maxIter=20)
+xClustObject <- dClust(x[,2:ncol(x)], sampleSizes=500, maxIter=20)
 
 #Look at the result
 str(xClustObject)
 
 #Now, a dual cluster setup is attempted
-xClustObject <- dClust(x_scaled, dualClustSetup=data.frame(rep(1:2, each=6), colnames(x_scaled)), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, maxIter=20, ids=x[,1])
+xClustObject <- dClust(x[,2:ncol(x)], dualClustSetup=data.frame(rep(1:2, each=6), colnames(x_scaled)), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, maxIter=20, ids=x[,1])
 
 #Look at the result
 str(xClustObject)
 
 }
 \seealso{
-\code{\link{dAllocate}}
+\code{\link{dAllocate}}, \code{\link{dScale}}
 }
