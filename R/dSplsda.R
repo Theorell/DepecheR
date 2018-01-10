@@ -11,7 +11,6 @@
 #' @param pairingVector If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.
 #' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param testSampleRows Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows. 
-#' @param densContour An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
 #' @param name The main name for the graph and the analysis.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
 #' \describe{
@@ -42,18 +41,16 @@
 #' 
 #' colnames(x)[1:2] <- c("ids", "group")
 #'
-#' #Scale the data
-#' x_scaled <- dScale(x[3:ncol(x)])
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled, sampleSizes=100, selectionSampleSize=1000, maxIter=20)
-#' clusterVector <- xClustObject[[1]]
+#' xDepecheObject <- depeche(x[3:ncol(x)], sampleSizes=100, selectionSampleSize=1000, maxIter=20)
+#' clusterVector <- xDepecheObject[[1]]
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+#' xSNE <- Rtsne.multicore(dScale(x[3:ncol(x)]), pca=FALSE)
 #'
 #' #Run the function. This time without pairing.
 #' sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector)

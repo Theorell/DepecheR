@@ -5,11 +5,9 @@
 #' @importFrom viridis inferno magma plasma viridis
 #' @importFrom gplots rich.colors
 #' @importFrom grDevices rainbow
-#' @param clusterCenters A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term.
-#' @param clusterVector A vector with information about the cluster identity of all observations. Needs to have the same length as the number of rows in the inDataFrame.
+#' @param depecheObject A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix and the scaled data used for clustering.
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
-#' @param inDataFrame A dataframe that has been used to generate the cluster vector and the clusterCenters. Note that the scaling does not matter in this case, as each variable wil be plotted separately.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}
@@ -17,25 +15,24 @@
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateBimodalData(samplings=2, dataCols=8)
 #'
-#' #Scale this dataframe
-#' x_scaled <- dScale(x[2:ncol(x)])
-#'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled)
-#' clusterVector <- xClustObject[[1]]
-#' clusterCenters <- xClustObject[[2]]
+#' xDepecheObject <- depeche(x[2:ncol(x)])
 #'
 #' #Create the plots of the variables that contribute to creating each cluster
-#' dViolins(clusterCenters, clusterVector, inDataFrame=x[,2:ncol(x)])
+#' dViolins(xDepecheObject)
 #' 
-#' #Now, finally, create plots of all clusters, regardless of if they contributed or not
-#' dViolins(clusterCenters, clusterVector, inDataFrame=x[,2:ncol(x)], plotAll=TRUE)
+#' #Now create plots of all clusters, regardless of if they contributed or not
+#' dViolins(xDepecheObject, plotAll=TRUE)
 #' @export dViolins
-dViolins <- function(clusterCenters, clusterVector, order=unique(clusterVector), colorScale="viridis", inDataFrame, plotAll=FALSE){
+dViolins <- function(depecheObject, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE){
 
+  clusterVector <- depecheObject$clusterVector
+  clusterCenters <- depecheObject$clusterCenters
+  inDataFrame <- depecheObject$scaledInData
+  
   percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 
   if(length(colorScale)>1){

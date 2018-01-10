@@ -20,7 +20,7 @@
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+#' xSNE <- Rtsne.multicore(as.matrix(dScale(x[2:ncol(x)])), pca=FALSE)
 #'
 #' #Now use our function
 #' xColors <- dColorVector(x[,1])

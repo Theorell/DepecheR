@@ -15,7 +15,9 @@
 #' @param ids Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.
 #' @param returnScaledInData If the scaled and centered data should be returned. Defaults to TRUE.
 #' @param log2Off In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.  
-#' @param ... Arguments passed to dScale.
+#' @param scalingControl For internal dScale. A numeric/integer dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
+#' @param scale For internal dScale. If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.
+#' @param multiCoreScaling For internal dScale. If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @seealso \code{\link{dAllocate}}, \code{\link{dScale}}
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{
@@ -46,46 +48,44 @@
 #' setwd("~/Desktop")
 #'
 #' #First, just run with the standard settings
-#' xClustObject <- dClust(x[,2:ncol(x)], sampleSizes=500, maxIter=20)
+#' xDepecheObject <- depeche(x[,2:ncol(x)], sampleSizes=500, maxIter=20)
 #'
 #' #Look at the result
-#' str(xClustObject)
+#' str(xDepecheObject)
 #' 
 #' #Now, a dual cluster setup is attempted
-#' xClustObject <- dClust(x[,2:ncol(x)], dualClustSetup=data.frame(rep(1:2, each=6), colnames(x_scaled)), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, maxIter=20, ids=x[,1])
+#' xDepecheObject <- depeche(x[,2:ncol(x)], dualClustSetup=data.frame(rep(1:2, each=6), colnames(x_scaled)), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, maxIter=20, ids=x[,1])
 #'
 #' #Look at the result
-#' str(xClustObject)
+#' str(xDepecheObject)
 #' 
-#' @export dClust
-dClust <- function(inDataFrame, dualClustSetup, clusterOnAllData="default", penalties=c((2^0)/2, (2^0.5)/2, 2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5, 2^5.5, 2^6), sampleSizes="default", selectionSampleSize="default", k=20, minCRIImprovement=0.01, maxCRI=0.05, maxIter=49, ids, returnScaledInData=TRUE, log2Off=FALSE, ...){
+#' @export depeche
+depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minCRIImprovement=0.01, maxCRI=0.01, maxIter=49, ids, returnScaledInData=TRUE, log2Off=FALSE, scalingControl, scale=FALSE, multiCoreScaling=FALSE){
 
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
   }
-  
 
+  #Here it is checked if the data has very extreme tails, and if so, the data is log2 transformed
+  if(log2Off==FALSE && kurtosis(as.vector(as.matrix(inDataFrame)))>100){
+    kurtosisValue1 <- kurtosis(as.vector(as.matrix(inDataFrame)))
+    inDataFrame <- log2(inDataFrame+1)
+    kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
+    print(paste("The data was found to be very strongly skewed (kurtosis", kurtosisValue1, "), so it was log2-transformed before clustering, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter if you dislike it."))
+  }
   
   #Scaling is performed
   if(ncol(inDataFrame)<100){
-    print("As the dataset has no more than 100 columns, it is assumed that it contains protein information, and scaling is therefore performed on a per-column basis. Change this using dScale parameters if you dislike it.")
-    inDataFramePreScaled <- dScale(inDataFrame)
-    #Here it is checked if the data has very extreme tails, and if so, the data is log2 transformed
-    if(log2Off==FALSE && kurtosis(as.vector(as.matrix(inDataFramePreScaled)))>100){
-      print("The data was found to be very strongly skewed (kurtosis >100), so it was log2-transformed before clustering. Turn this off using the log2Off parameter if you dislike it.")
-      inDataFramePreScaled <- log2(inDataFramePreScaled)
-    }
+    print("As the dataset has less than 100 columns, it is assumed that it contains protein information. Peak centering is therefore used. Change this using dScale parameters if you dislike it.")
+
+    inDataFramePreScaled <- dScale(inDataFrame, control=scalingControl, scale=scale, multiCore=multiCoreScaling)
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
   } else {
     print("As the dataset has more than 100 columns, it is assumed that it contains single cell RNA sequencing information, and that scaling and normalization has already been performed. Change this using dScale parameters if you dislike it.")
     inDataFramePreScaled <- scale(inDataFrame, scale=FALSE)
-    #Here it is checked if the data has very extreme tails, and if so, the data is log2 transformed
-    if(log2Off==FALSE && kurtosis(as.vector(as.matrix(inDataFramePreScaled)))>100){
-      print("The data was found to be very strongly skewed (kurtosis >100), so it was log2-transformed before clustering. Turn this off using the log2Off parameter if you dislike it.")
-      inDataFramePreScaled <- log2(inDataFramePreScaled)
-    }
+
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled

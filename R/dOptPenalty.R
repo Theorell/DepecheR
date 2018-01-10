@@ -4,7 +4,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 #' @export dOptPenalty
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, maxCRI=0.05){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -24,8 +24,8 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize<21 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter)){
-
+  while(iterTimesChunkSize< 20 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter)){
+    ptm <- proc.time()
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
@@ -105,8 +105,10 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
 	      }
 	    }
 	  }
-	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed.", sep=""))
+	  fullTime <- proc.time()-ptm
+	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", fullTime[3], " seconds.", sep=""))
 	  iter <- iter+1
+	  	  
   }
 	
   parallel::stopCluster(cl)	
@@ -120,8 +122,12 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   rownames(meanOptimDf) <- roundPenalties
   colnames(meanOptimDf) <- c("CRI", "nClust")
 
-  #Here, the optimal penalty is selected. In the unlikely case of two identical optimal penalties, the lower penalty will be selected with this method.
-  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==min(meanOptimDf[,1]))[1]], k)
+  #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an CRI of less than the selected threshold (default 0.05).
+  if(length(which(meanOptimDf[,1]<maxCRI))>1){
+    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]<maxCRI)[1]], k)
+  } else {
+    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==min(meanOptimDf[,1]))], k)
+  }
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]
@@ -142,14 +148,14 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     pdf(graphName)
     par(mar=c(5, 4, 4, 6) + 0.1)
     #Plot the data
-    plot(row.names(meanOptimDf), meanOptimDf[,1], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
+    plot(log10(roundPenalties), meanOptimDf[,1], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
     axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
     mtext("Distance between bootstraps",side=2,line=2.5)
     graphics::box()
     
     # Draw the penalty axis
-    axis(1,pretty(range(roundPenalties), n=10))
-    mtext("Penalty values",side=1,col="black",line=2.5)
+    axis(1,pretty(range(log10(roundPenalties)), n=10))
+    mtext("Log10 of penalty values",side=1,col="black",line=2.5)
     
     # Add Legend
     legend("topleft",legend="Distance (low is good)",

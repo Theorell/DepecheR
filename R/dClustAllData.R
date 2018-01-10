@@ -12,21 +12,21 @@ dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20
   
   #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
   n_cores <- detectCores() - 1
-  if(n_cores>=7){
-    if(n_cores<=21){
-      iterations <- n_cores
-    } else {
-      iterations <- 21
-    }
-  } else {
-    iterations <- 7
-  }
+  #if(n_cores>=7){
+  #  if(n_cores<=21){
+ #     iterations <- n_cores
+ #   } else {
+ #     iterations <- 21
+ #   }
+ # } else {
+ #   iterations <- 7
+ # }
   
   #This is the central function of the whole package.
   
-  cl <-  parallel::makeCluster(iterations, type = "SOCK")
+  cl <-  parallel::makeCluster(n_cores, type = "SOCK")
   registerDoSNOW(cl)
-  return_all <- foreach(i=1:iterations) %dopar% sparse_k_means(dataMat,k,penaltyForRightSize,1, i)
+  return_all <- foreach(i=1:21) %dopar% sparse_k_means(dataMat,k,penaltyForRightSize,1, i)
   parallel::stopCluster(cl)	
 
   #Here, the best iteration is retrieved

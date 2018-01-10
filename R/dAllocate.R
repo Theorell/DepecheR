@@ -5,7 +5,7 @@
 #' @param inDataFrameScaled A dataframe with the data that that the cluster centers will be allocated to. The data in this dataframe should be scaled in the same way as the dataframe used to generate the clusters in the first place.
 #' @param clusterCenters This is a matrix that needs to be inherited from a dClust run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.
 #' @param ids A vector of the same length as rows in the inDataFrameScaled. If included, it is used to generate a table of what fraction of observations for each individual that is present in each cluster.
-#' @seealso \code{\link{dClust}}
+#' @seealso \code{\link{depeche}}
 #' @return A list with two components:
 #' \describe{
 #'     \item{realloClusterVector}{A vector with the same length as number of rows in the inDataFrameScaled, where the cluster identity of each observation is noted.}
@@ -15,12 +15,9 @@
 #' #Generate a default size dataframe with bimodally distributed data
 #' x <- generateBimodalData()
 #'
-#' #Scale this datamframe
-#' x_scaled <- dScale(x[,2:ncol(x)])
-#'
 #' #Divide this scaled dataframe in two parts
-#' x_scaled_train <- x_scaled[1:5000,]
-#' x_scaled_test <- x_scaled[5001:10000,]
+#' x_train <- x[1:5000,2:ncol(x)]
+#' x_test <- x[5001:10000,2:ncol(x)]
 #'
 #' #Create two completely meaningless ids vectors
 #' id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
@@ -30,14 +27,14 @@
 #' setwd("~/Desktop")
 #'
 #' #Run the dOptAndClust function for the train set
-#' x_dClust_train <- dClust(x_scaled_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
+#' x_depeche_train <- depeche(x_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
 #'
 #' #Retrieve the clustering info
-#' clusterVector <- x_dClust_train[[1]]
-#' clusterCenters <- x_dClust_train[[2]]
+#' clusterVector <- x_depeche_train[[1]]
+#' clusterCenters <- x_depeche_train[[2]]
 #' 
 #' #This is followed by running the actual function in question
-#' x_dClust_test <- dAllocate(x_scaled_test, 
+#' x_dClust_test <- dAllocate(x_test, 
 #' clusterCenters=clusterCenters, ids=id_vector_test)
 #'
 #' #And finally plot this to see how great the overlap was:

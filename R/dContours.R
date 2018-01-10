@@ -29,7 +29,6 @@
 #' xaxs="i", yaxs="i")
 #'
 #' @export dContours
-
 dContours <- function(sneData, n=100){
 
 	sneDataNorm <- dScale(x=sneData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)

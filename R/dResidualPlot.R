@@ -33,8 +33,8 @@
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled, sampleSizes=1000, selectionSampleSize=1000)
-#' clusterVector <- xClustObject[[1]]
+#' xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=1000, selectionSampleSize=1000)
+#' clusterVector <- xDepecheObject[[1]]
 #' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)

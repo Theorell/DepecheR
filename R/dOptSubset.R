@@ -5,7 +5,7 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @export dOptSubset
-dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, maxCRI=0.01, minCRIImprovement=0.01, penalties, firstClusterNumber){
+dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, maxCRI=0.05, minCRIImprovement=0.01, penalties, firstClusterNumber){
 
     dOptPenaltyResultList <- list()
 	  lowestDist <- vector()
@@ -25,7 +25,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	      print(paste("Sample size ", sampleSizes[i-1], "completed. Jumping to next sample size."))
 	    }
 	    
-	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE)
+	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE, maxCRI=maxCRI)
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
 	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
 	    print(paste("The lowest corrected Rand index with sample size ", sampleSizes[i], " is ", lowestDist[i], sep=""))

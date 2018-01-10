@@ -4,8 +4,9 @@
 \alias{dScale}
 \title{Scaling of a vector or a dataframe.}
 \usage{
-dScale(x, control, scale = TRUE, robustVarScale = TRUE, center = "peak",
-  truncate = FALSE, multiplicationFactor = 1, multiCore = FALSE)
+dScale(x, control, scale = TRUE, robustVarScale = TRUE,
+  center = "default", truncate = FALSE, multiplicationFactor = 1,
+  multiCore = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -16,7 +17,7 @@ dScale(x, control, scale = TRUE, robustVarScale = TRUE, center = "peak",
 
 \item{robustVarScale}{If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.}
 
-\item{center}{If centering should be performed. Alternatives are "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations, the reason it is default. "mean" results in mean centering.}
+\item{center}{If centering should be performed. Alternatives are "default", mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. In "default", the position of the peak decides which of the centering alternatives that is used: if, as often with FCS2 data, the peak occurs at the lowest point, peak centering to the second lowest point is performed. Otherwise, peak centering is used.}
 
 \item{truncate}{If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation.}
 

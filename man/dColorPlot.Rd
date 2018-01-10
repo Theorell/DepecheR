@@ -58,12 +58,9 @@ Function to overlay one variable for a set of observations on a field created by
 #Generate a default size dataframe with bimodally distributed data
 x <- generateBimodalData(samplings=3, observations=3000)
 
-#Scale the data 
-x_scaled <- dScale(x=x[2:ncol(x)])
-
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+xSNE <- Rtsne.multicore(as.matrix(dScale(x[2:ncol(x)])), pca=FALSE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")

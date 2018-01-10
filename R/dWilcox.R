@@ -39,14 +39,12 @@
 #' 
 #' colnames(x)[1:2] <- c("ids", "group")
 #'
-#' #Scale the data
-#' x_scaled <- dScale(x[3:ncol(x)])
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xClustObject <- dClust(x_scaled)
-#' clusterVector <- xClustObject[[1]]
+#' xDepecheObject <- depeche(x[3:ncol(x)])
+#' clusterVector <- xDepecheObject[[1]]
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)

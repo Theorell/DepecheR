@@ -27,12 +27,9 @@ Here, observations of a dataset are allocated to a set of preestablished cluster
 #Generate a default size dataframe with bimodally distributed data
 x <- generateBimodalData()
 
-#Scale this datamframe
-x_scaled <- dScale(x[,2:ncol(x)])
-
 #Divide this scaled dataframe in two parts
-x_scaled_train <- x_scaled[1:5000,]
-x_scaled_test <- x_scaled[5001:10000,]
+x_train <- x[1:5000,2:ncol(x)]
+x_test <- x[5001:10000,2:ncol(x)]
 
 #Create two completely meaningless ids vectors
 id_vector_train <- c(rep("Train 1", 2500), rep("Train 2", 2500))
@@ -42,14 +39,14 @@ id_vector_test <- c(rep("Test 3", 2500), rep("Test 4", 2500))
 setwd("~/Desktop")
 
 #Run the dOptAndClust function for the train set
-x_dClust_train <- dClust(x_scaled_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
+x_depeche_train <- depeche(x_train, maxIter=20, sampleSizes=1000, ids=id_vector_train)
 
 #Retrieve the clustering info
-clusterVector <- x_dClust_train[[1]]
-clusterCenters <- x_dClust_train[[2]]
+clusterVector <- x_depeche_train[[1]]
+clusterCenters <- x_depeche_train[[2]]
 
 #This is followed by running the actual function in question
-x_dClust_test <- dAllocate(x_scaled_test, 
+x_dClust_test <- dAllocate(x_test, 
 clusterCenters=clusterCenters, ids=id_vector_test)
 
 #And finally plot this to see how great the overlap was:
@@ -62,5 +59,5 @@ title(xlab = "Clusters")
 title(ylab = "Fraction")
 }
 \seealso{
-\code{\link{dClust}}
+\code{\link{depeche}}
 }

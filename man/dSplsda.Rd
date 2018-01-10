@@ -26,7 +26,12 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows.}
 
-\item{densContour}{An object to create the density contours for the plot. If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{An object to create the density contours for the plot. Three possible values: 
+\describe{
+              \item{densContour}{A densContour object generated previously with dContours}
+              \item{TRUE}{a densContour object will be generated internally}
+              \item{FALSE}{No density contours will be displayed.}
+             }}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -45,13 +50,6 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
-
-\item{densContour}{An object to create the density contours for the plot. Three possible values: 
-\describe{
-              \item{densContour}{A densContour object generated previously with dContours}
-              \item{TRUE}{a densContour object will be generated internally}
-              \item{FALSE}{No density contours will be displayed.}
-             }}
 }
 \value{
 This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
@@ -72,18 +70,16 @@ xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
 
 colnames(x)[1:2] <- c("ids", "group")
 
-#Scale the data
-x_scaled <- dScale(x[3:ncol(x)])
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xClustObject <- dClust(x_scaled, sampleSizes=100, selectionSampleSize=1000, maxIter=20)
-clusterVector <- xClustObject[[1]]
+xDepecheObject <- depeche(x[3:ncol(x)], sampleSizes=100, selectionSampleSize=1000, maxIter=20)
+clusterVector <- xDepecheObject[[1]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+xSNE <- Rtsne.multicore(dScale(x[3:ncol(x)]), pca=FALSE)
 
 #Run the function. This time without pairing.
 sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector)
