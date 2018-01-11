@@ -444,7 +444,7 @@ const double Clusterer::cluster_distance(const Eigen::VectorXi c1, const Eigen::
 
     }
 
-    return 1-((stability/indice_num)-(false1+false2))/(1-(false1+false2));
+    return ((stability/indice_num)-(false1+false2))/(1-(false1+false2));
 }
 
 //generates bootstrapped data sets by resampling an old data set

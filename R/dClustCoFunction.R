@@ -2,7 +2,7 @@
 #' @importFrom gplots heatmap.2
 #' @useDynLib DepecheR
 #' @export dClustCoFunction
-dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minCRIImprovement=0.01, maxCRI=0.05, maxIter=100, ids, newNumbers){
+dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers){
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
   if(nrow(inDataFrameScaled)>1000000){
@@ -22,7 +22,7 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
     }
   }
 
-  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, maxCRI=maxCRI, minCRIImprovement=minCRIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
+  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, minARI=minARI, minARIImprovement=minARIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
     
   #
   #Here the data is added back, in the cases where very large datasets are used

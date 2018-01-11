@@ -4,7 +4,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 #' @export dOptPenalty
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, maxCRI=0.05){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.95){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -24,7 +24,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize< 20 || (std>=minCRIImprovement && iterTimesChunkSize<maxIter)){
+  while(iterTimesChunkSize< 20 || (std>=minARIImprovement && iterTimesChunkSize<maxIter)){
     ptm <- proc.time()
     optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
     
@@ -65,7 +65,8 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     meanOptimVector <- meanOptimDf[,1]
     stdOptimVector <- stdOptimDf[,1]
 	  #Return the position of the minmum value
-    minPos <- which(meanOptimVector==min(meanOptimVector))[1]
+    maxPos <- which(meanOptimVector==max(meanOptimVector))[1]
+
 	  
     if(length(roundPenalties)>1){
       #Add the standard deviation of this position to its mean
@@ -83,7 +84,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
     }
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
-	  std <- stdOptimVector[minPos]
+	  std <- stdOptimVector[maxPos]
 	  iterTimesChunkSize <- iter*chunkSize
 
 	  if(returnClusterCenters==TRUE){
@@ -115,18 +116,18 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minCRIImprovement=
   
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
 
-  if(iter*chunkSize>=maxIter && std>minCRIImprovement){
+  if(iter*chunkSize>=maxIter && std>minARIImprovement){
     warning("The maximum number of iterations was reached before stable optimal solution was found")
   }
   
   rownames(meanOptimDf) <- roundPenalties
-  colnames(meanOptimDf) <- c("CRI", "nClust")
+  colnames(meanOptimDf) <- c("ARI", "nClust")
 
-  #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an CRI of less than the selected threshold (default 0.05).
-  if(length(which(meanOptimDf[,1]<maxCRI))>1){
-    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]<maxCRI)[1]], k)
+  #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI of less than the selected threshold (default 0.05).
+  if(length(which(meanOptimDf[,1]>minARI))>1){
+    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>minARI)[1]], k)
   } else {
-    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==min(meanOptimDf[,1]))], k)
+    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==max(meanOptimDf[,1]))], k)
   }
 
   lowestPenalty <- roundPenalties[1]

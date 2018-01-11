@@ -5,10 +5,10 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @export dOptSubset
-dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, maxCRI=0.05, minCRIImprovement=0.01, penalties, firstClusterNumber){
+dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, minARI=0.95, minARIImprovement=0.01, penalties, firstClusterNumber){
 
     dOptPenaltyResultList <- list()
-	  lowestDist <- vector()
+	  highestARI <- vector()
 
 	  makeGraph <- ifelse(length(sampleSizes)>1, FALSE, TRUE)
 	  
@@ -25,18 +25,19 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	      print(paste("Sample size ", sampleSizes[i-1], "completed. Jumping to next sample size."))
 	    }
 	    
-	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE, maxCRI=maxCRI)
+	    dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, bootstrapObservations=sampleSizes[i], penalties=penalties, makeGraph=makeGraph, disableWarnings=TRUE, minARI=minARI)
 	    dOptPenaltyResultList[[i]] <- dOptPenaltyResult
-	    lowestDist[i] <- min(dOptPenaltyResult[[2]][,1:2])
-	    print(paste("The lowest corrected Rand index with sample size ", sampleSizes[i], " is ", lowestDist[i], sep=""))
+
+	    highestARI[i] <- max(dOptPenaltyResult[[2]][,1])
+	    print(paste("The highest adjusted Rand index with sample size ", sampleSizes[i], " is ", highestARI[i], sep=""))
 	    
-	    if(lowestDist[length(lowestDist)]<=maxCRI){
+	    if(highestARI[length(highestARI)]>=minARI){
 	      sampleSizes <- sampleSizes[1:i]
 	      break
 	    }
 	  }
 
-	  if(length(sampleSizes)>1 && lowestDist[length(lowestDist)]<=maxCRI){
+	  if(length(sampleSizes)>1 && highestARI[length(highestARI)]>=minARI){
 	    print(paste("Cycle", i, "optimal. No need to run larger datasets."))	   
 	  }  
 	    
@@ -67,16 +68,16 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	    ggsave("Distance as a function of penalties for different sample sizes.pdf")
 	    
 	    #Create a vector of improvements between sample sizes
-	    improvement <- lowestDist
+	    improvement <- highestARI
 	    #Here, the first position, that cannot be related to any smaller fractions, is turned to one.
 	    improvement[1] <- 1
-	    if(length(lowestDist)>1){
-	      for(i in 2:length(lowestDist)){
-	        improvement[i] <- lowestDist[i-1]-lowestDist[i]
+	    if(length(highestARI)>1){
+	      for(i in 2:length(highestARI)){
+	        improvement[i] <- highestARI[i]-highestARI[i-1]
 	      } 
 	    }
 	    
-	    sampleSizeOpt <- data.frame("SampleSize"=sampleSizes[1:(length(sampleSizes))], "Lowest distance"=lowestDist, "Improvement"=improvement)
+	    sampleSizeOpt <- data.frame("SampleSize"=sampleSizes[1:(length(sampleSizes))], "Highest ARI"=highestARI, "Improvement"=improvement)
 	    
 	  }
 	  
@@ -88,10 +89,10 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	 if(selectionSampleSize=="default"){
 	   if(nrow(inDataFrameScaled)<=10000){
 	     selectionDataSet <- inDataFrameScaled
-	   } else if(sampleSizes[length(lowestDist)]<=10000){
+	   } else if(sampleSizes[length(highestARI)]<=10000){
 	     selectionDataSet <- sample_n(inDataFrameScaled, 10000, replace=TRUE)
 	   } else {
-	     selectionDataSet <- sample_n(inDataFrameScaled, sampleSizes[length(lowestDist)], replace=TRUE)
+	     selectionDataSet <- sample_n(inDataFrameScaled, sampleSizes[length(highestARI)], replace=TRUE)
 	   }
 	 }
 	  
@@ -125,12 +126,12 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   n_cores <- detectCores() - 1
 	   cl <-  parallel::makeCluster(n_cores, type = "SOCK")
 	   registerDoSNOW(cl)
-	   meanCRIList <- foreach(i=1:length(allocationResultList)) %dopar% mean(sapply(allocationResultList, rand_index, inds2=allocationResultList[[i]], k=k))
+	   meanARIList <- foreach(i=1:length(allocationResultList)) %dopar% mean(sapply(allocationResultList, rand_index, inds2=allocationResultList[[i]], k=k))
 	   parallel::stopCluster(cl)	
-	   meanCRIVector <- unlist(meanCRIList)
+	   meanARIVector <- unlist(meanARIList)
 	   
 	   #Now the solution being the most similar to all the others is retrieved
-	   optimalClusterCenters <- unlist(allSolutions[[which(meanCRIVector==min(meanCRIVector))[1]]])
+	   optimalClusterCenters <- unlist(allSolutions[[which(meanARIVector==max(meanARIVector))[1]]])
 	   
 	   #And here, the optimal solution is created with the full dataset
 	   optimalClusterVector <- allocate_points(data.matrix(inDataFrameScaled, rownames.force = NA), optimalClusterCenters, no_zero=1)[[1]]
