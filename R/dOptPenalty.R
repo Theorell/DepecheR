@@ -31,12 +31,12 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
-	    optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 1
+	    optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 0
 	    #Further, solutions with only one dimension and two clusters are eliminated, as they are artifactual and always results in superior ARI.
 	    for(j in 1:length(optimListNonTrivial[[i]]$c)){
 	      if(optimList[[i]]$n[j]==2){
 	        if(length(which(apply(optimList[[i]]$c[[j]][[1]],2,function(x) !all(x==0))))==1 || length(which(apply(optimList[[i]]$c[[j]][[2]],2,function(x) !all(x==0))))==1){
-	          optimListNonTrivial[[i]]$d[j] <- 1
+	          optimListNonTrivial[[i]]$d[j] <- 0
 	        }
 	      }
 	    }
@@ -123,12 +123,8 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   rownames(meanOptimDf) <- roundPenalties
   colnames(meanOptimDf) <- c("ARI", "nClust")
 
-  #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI of less than the selected threshold (default 0.05).
-  if(length(which(meanOptimDf[,1]>minARI))>1){
-    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>minARI)[1]], k)
-  } else {
-    penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]==max(meanOptimDf[,1]))], k)
-  }
+  #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI that is not lower than 0.01 less than the best ARI. 
+  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>max(meanOptimDf[,1])-(1-minARI))][1], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]

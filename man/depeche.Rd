@@ -6,8 +6,8 @@
 \usage{
 depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
   2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes = "default",
-  selectionSampleSize = "default", k = 20, minCRIImprovement = 0.01,
-  maxCRI = 0.01, maxIter = 49, ids, returnScaledInData = TRUE,
+  selectionSampleSize = "default", k = 20, minARIImprovement = 0.01,
+  minARI = 0.99, maxIter = 49, ids, returnScaledInData = TRUE,
   log2Off = FALSE, scalingControl, scale = FALSE,
   multiCoreScaling = FALSE)
 }
@@ -24,9 +24,9 @@ depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
 
 \item{k}{Number of initial cluster centers. The higher the number, the greater the precision of the clustering, but the computing time is also increased with the number of starting points. Default is 20. If penalties=0, k-means clustering with k clusters will be performed.}
 
-\item{minCRIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01, or 1 percent.}
+\item{minARIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01, or 1 percent.}
 
-\item{maxCRI}{This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.05, or 5 percent difference between sets of two full dataset allocations based on clusterings of a certain sample size.}
+\item{minARI}{This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.05, or 5 percent difference between sets of two full dataset allocations based on clusterings of a certain sample size.}
 
 \item{maxIter}{The maximal number of iterations that are performed in the penalty optimization.}
 
@@ -57,7 +57,7 @@ A nested list with varying components depending on the setup above:
     \describe{
               \item{SampleSize}{This column shows the sample size of each boot strap subsampling in the optimization procedure.}
               \item{Lowest distance}{This vector shows the optimal stability, expressed as the lowest distance between the bootstrap subsampling runs at each of the boot strap subsamling sizes.}
-              \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minCRIImprovement, the algorithm automatically stops.}
+              \item{Improvement}{Here, the improvement, expressed as a fraction between 0 and 1 is shown. When the improvement is less than minARIImprovement, the algorithm automatically stops.}
              } 
     }
     \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}

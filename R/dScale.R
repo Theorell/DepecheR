@@ -9,7 +9,7 @@
 #' @param control A numeric/integer vector or dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
 #' @param scale If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.
 #' @param robustVarScale If the data should be scaled to its standard deviation within the quantiles defined by the scale values above. If TRUE (the default), the data is unit variance scaled based on the standard deviation of the data within the range defined by scale.
-#' @param center If centering should be performed. Alternatives are "default", mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. In "default", the position of the peak decides which of the centering alternatives that is used: if, as often with FCS2 data, the peak occurs at the lowest point, peak centering to the second lowest point is performed. Otherwise, peak centering is used.
+#' @param center If centering should be performed. Alternatives are mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. 
 #' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
@@ -42,7 +42,7 @@
 #' #placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export dScale 
-dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="default", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
+dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
 
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("Data needs to be either a numeric/integer vector or a dataframe. Change the class and try again.")
@@ -128,22 +128,6 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
     }
   }
 
-  if(center=="default"){
-    #First, the distribution is checked. In cases with FCS2 data, the peak is generally the lowest value, which means that it is not well suited for centering. In these cases, centering to the second highest peak is used instead.
-    #The peak of the data is defined
-    histdata <- hist(responseVector, breaks=length(x)/50, plot=FALSE)
-    zeroPosition <- histdata$mids[match(max(histdata$counts), histdata$counts)]
-    if(zeroPosition==histdata$mids[1]){
-      n <- length(histdata$counts)
-      secondHighest <- sort(histdata$counts,partial=n-1)[n-1]
-      zeroPosition2 <- histdata$mids[match(secondHighest, histdata$counts)]
-      responseVector <- responseVector-zeroPosition2
-    } else {
-      #The position for the peak is subtracted from all points
-      responseVector <- responseVector-zeroPosition
-    }
-  }
-  
   if(center=="mean"){
     responseVector <- responseVector-mean(responseVector)
   }
