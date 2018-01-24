@@ -147,7 +147,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     #Plot the data
     plot(log10(roundPenalties), meanOptimDf[,1], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
     axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
-    mtext("Distance between bootstraps",side=2,line=2.5)
+    mtext("Adjusted rand index (ARI) between data resamplings",side=2,line=2.5)
     graphics::box()
     
     # Draw the penalty axis
@@ -155,7 +155,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     mtext("Log10 of penalty values",side=1,col="black",line=2.5)
     
     # Add Legend
-    legend("topleft",legend="Distance (low is good)",
+    legend("topleft",legend="ARI (high is good)",
            text.col="black",pch=c(16,15),col="black")
     
     dev.off() 
