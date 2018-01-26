@@ -107,7 +107,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	    }
 	  }
 	  fullTime <- proc.time()-ptm
-	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", fullTime[3], " seconds.", sep=""))
+	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", round(fullTime[3]), " seconds.", sep=""))
 	  iter <- iter+1
 	  	  
   }
