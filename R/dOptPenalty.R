@@ -4,11 +4,11 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 #' @export dOptPenalty
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.95){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.99){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
-  penalty <- penalties*penaltyConstant
+  realPenalties <- penalties*penaltyConstant
   roundPenalties <- round(penalties, digits=1)
 
   chunkSize <- detectCores() - 1
@@ -24,28 +24,53 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
-  while(iterTimesChunkSize< 20 || (std>=minARIImprovement && iterTimesChunkSize<maxIter)){
+  interestingPenalties <- realPenalties
+  kOptimal <- k
+  
+  while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,penalty,1,bootstrapObservations,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,bootstrapObservations,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
 	    optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 0
 	    #Further, solutions with only one dimension and two clusters are eliminated, as they are artifactual and always results in superior ARI.
-	    for(j in 1:length(optimListNonTrivial[[i]]$c)){
-	      if(optimList[[i]]$n[j]==2){
-	        if(length(which(apply(optimList[[i]]$c[[j]][[1]],2,function(x) !all(x==0))))==1 || length(which(apply(optimList[[i]]$c[[j]][[2]],2,function(x) !all(x==0))))==1){
-	          optimListNonTrivial[[i]]$d[j] <- 0
-	        }
-	      }
-	    }
+	    #for(j in 1:length(optimListNonTrivial[[i]]$c)){
+	    #  if(optimList[[i]]$n[j]==2){
+	    #    if(length(which(apply(optimList[[i]]$c[[j]][[1]],2,function(x) !all(x==0))))==1 || length(which(apply(optimList[[i]]$c[[j]][[2]],2,function(x) !all(x==0))))==1){
+	    #      optimListNonTrivial[[i]]$d[j] <- 0
+	   #     }
+	   #   }
+	   # }
     }	
     
     #Now, the new list is combined with the older, if there are any
     if(iter==1){
     	optimListFull <- optimListNonTrivial
     } else {
+      #First, the excluded values are included as NAs for each of the iterations in the chunk
+      for(i in 1:length(optimListNonTrivial)){
+        d <- rep("NA", length(optimListFull[[1]][[1]]))
+        d[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$d
+        optimListNonTrivial[[i]]$d <- d
+        z <- rep("NA", length(optimListFull[[1]][[1]]))
+        z[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$z
+        optimListNonTrivial[[i]]$z <- z
+        n <- rep("NA", length(optimListFull[[1]][[1]]))
+        n[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$n
+        optimListNonTrivial[[i]]$n <- n
+        m <- rep("NA", length(optimListFull[[1]][[1]]))
+        m[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$m
+        optimListNonTrivial[[i]]$m <- m
+        #The same is done for all the matrices, to make the lists the right length 
+        mockCenterMatrix <- matrix("NA", nrow=nrow(optimListFull[[1]][[5]][[1]][[1]]), ncol=ncol(optimListFull[[1]][[5]][[1]][[1]]))
+        mockCenterMatrixList <- list(mockCenterMatrix, mockCenterMatrix, mockCenterMatrix, mockCenterMatrix)
+        mockCenterList <- rep(list(mockCenterMatrixList), times=length(optimListFull[[1]][[5]]))
+        mockCenterList[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]][[5]]
+        optimListNonTrivial[[i]][[5]] <- mockCenterList
+      }
+            
     	optimListFull <- c(optimListFull, optimListNonTrivial)
     }
  
@@ -54,8 +79,9 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     stdOptimList <- list()	
     for(i in 1:4){
       x <- do.call("rbind", lapply(optimListFull, "[[", i))
-      meanOptimList[[i]] <- apply(x, 2, mean)
-      stdOptimList[[i]] <- apply(x, 2, sd)
+      xNumeric <- suppressWarnings(apply(x, 2, as.numeric))
+      meanOptimList[[i]] <- apply(xNumeric, 2, mean, na.rm=TRUE)
+      stdOptimList[[i]] <- apply(xNumeric, 2, sd, na.rm=TRUE)
     }
 
     stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter*chunkSize))
@@ -64,23 +90,26 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     #Turn these into vectors
     meanOptimVector <- meanOptimDf[,1]
     stdOptimVector <- stdOptimDf[,1]
-	  #Return the position of the minmum value
+	  #Return the position of the mazimum value
     maxPos <- which(meanOptimVector==max(meanOptimVector))[1]
 
 	  
     if(length(roundPenalties)>1){
       #Add the standard deviation of this position to its mean
-      #meanPlus2StdMin <- meanOptimVector[minPos]+(2*stdOptimVector[minPos])
+      meanMinus2StdMax <- meanOptimVector[maxPos]-(2*stdOptimVector[maxPos])
       
-      #Now subtract the standard deviation of each of the non-minimal values from the mean
+      #Now add the standard deviation of each of the non-minimal values to the mean
       
-      #meanMinus2StdAllNonMin <- meanOptimVector[-minPos]-(2*stdOptimVector[-minPos])
+      meanPlus2StdAll <- meanOptimVector+(2*stdOptimVector)
       
       #Identify the lowest value among these
-      #minMeanMinus2StdAllNonMin <- min(meanMinus2StdAllNonMin)
+      maxMeanPlus2StdAllNonMax <- max(meanPlus2StdAll[-maxPos])
       
       #Now, the distance between minMeanMinusSdAllNonMin and the lowest value. If they overlap, the iteration has not made it totally clear which point is optimal. 
-      #distanceBetweenMinAndBestPrevious <- minMeanMinus2StdAllNonMin-meanPlus2StdMin
+      distanceBetweenMaxAndSecond <- meanMinus2StdMax-maxMeanPlus2StdAllNonMax
+      
+      #Here, all penalties and solutions that do not overlap with the optimal solution are excluded from further optimiations, to reduce calculation time.
+      interestingPenalties <- realPenalties[which(meanPlus2StdAll>meanMinus2StdMax)]
     }
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
@@ -88,11 +117,11 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	  iterTimesChunkSize <- iter*chunkSize
 
 	  if(returnClusterCenters==TRUE){
-	    #Here, the cluster center information for each run is saved, one list for the origoCLust solution and another for the nonOrigoClust:
+	    #Here, the cluster center information for each run is saved:
 	    #First all cluster center information is saved in one place.
-	    allClusterCenters <- sapply(optimList, "[", 5)
+	    allClusterCenters <- sapply(optimListNonTrivial, "[", 5)
 	    
-	    #Then each penalty and the solutions with and without origo clusters are reorganized and, if iter>1, integrated with previous runs. 
+	    #Then each penalty and the solutions are reorganized and, if iter>1, integrated with previous runs. 
 	    for(i in 1:length(allClusterCenters[[1]])){
 	      
 	      tempPenaltyList <- sapply(allClusterCenters, "[", i)
@@ -106,6 +135,9 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	      }
 	    }
 	  }
+	  #Here, the k is optimized, to be no larger than the double k of the lowest penalty still present, and still not larger than the oroginal k.
+	  kOptimal <- round(2*max(meanOptimList[[3]][which(meanPlus2StdAll>meanMinus2StdMax)]))
+	  kOptimal <- ifelse(kOptimal>k, k, kOptimal)
 	  fullTime <- proc.time()-ptm
 	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", round(fullTime[3]), " seconds.", sep=""))
 	  iter <- iter+1

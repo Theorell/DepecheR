@@ -58,7 +58,7 @@
 #' str(xDepecheObject)
 #' 
 #' @export depeche
-depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minARIImprovement=0.01, minARI=0.99, maxIter=49, ids, returnProcessedInData=FALSE, log2Off=FALSE, multiCoreScaling=FALSE){
+depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minARIImprovement=0.01, minARI=0.99, maxIter=200, ids, returnProcessedInData=FALSE, log2Off=FALSE, multiCoreScaling=FALSE){
 
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
@@ -72,6 +72,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
     print(paste("The data was found to be very strongly skewed (kurtosis", kurtosisValue1, "), so it was log2-transformed before clustering, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter if you dislike it."))
   }
   
+
   #Scaling is performed
   if(ncol(inDataFrame)<100){
     print("As the dataset has less than 100 columns, it is assumed that it contains protein information. Peak centering is therefore used.")
@@ -86,7 +87,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
 
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
-    inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
+    inDataFrameScaled <- as.data.frame(inDataFramePreScaled/sdInDataFramePreScaled)
   }
   
   if(missing(dualClustSetup)==TRUE){

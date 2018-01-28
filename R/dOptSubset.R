@@ -97,7 +97,8 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	 }
 	  
 	 #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
-	 if(nrow(inDataFrameScaled)<10000){
+	 #This is not practivally removed
+	 if(nrow(inDataFrameScaled)<1){
 	   penalty <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]][1,1]
 	   dClustAllDataResult <- dClustAllData(selectionDataSet, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
 	   clusterVectorEquidistant <- dClustAllDataResult[[1]]
