@@ -114,14 +114,14 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   
 	   selectionDataSetMatrix <- data.matrix(selectionDataSet)
 	   
-	   if(ncol(selectionDataSet)<500){
+	   #if(ncol(selectionDataSet)<500){
 	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	   } else {
-	     cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
-	     registerDoSNOW(cl)
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	     parallel::stopCluster(cl)	
-	   }
+	   #} #else {
+	     #cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
+	     #registerDoSNOW(cl)
+	     #allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
+	     #parallel::stopCluster(cl)	
+	   #}
 	   
 	   #Here, the corrected Rand index with each allocationResult as the first vector vector and all the others as individual second vectors is identified
 	   n_cores <- detectCores() - 1

@@ -26,10 +26,11 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   
   interestingPenalties <- realPenalties
   kOptimal <- k
+  usedPositions <- 1:length(realPenalties)
   
   while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,bootstrapObservations,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,kOptimal,interestingPenalties,1,bootstrapObservations,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
@@ -52,26 +53,26 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
       #First, the excluded values are included as NAs for each of the iterations in the chunk
       for(i in 1:length(optimListNonTrivial)){
         d <- rep("NA", length(optimListFull[[1]][[1]]))
-        d[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$d
+        d[usedPositions] <- optimListNonTrivial[[i]]$d
         optimListNonTrivial[[i]]$d <- d
         z <- rep("NA", length(optimListFull[[1]][[1]]))
-        z[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$z
+        z[usedPositions] <- optimListNonTrivial[[i]]$z
         optimListNonTrivial[[i]]$z <- z
         n <- rep("NA", length(optimListFull[[1]][[1]]))
-        n[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$n
+        n[usedPositions] <- optimListNonTrivial[[i]]$n
         optimListNonTrivial[[i]]$n <- n
         m <- rep("NA", length(optimListFull[[1]][[1]]))
-        m[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]]$m
+        m[usedPositions] <- optimListNonTrivial[[i]]$m
         optimListNonTrivial[[i]]$m <- m
         #The same is done for all the matrices, to make the lists the right length 
         mockCenterMatrix <- matrix("NA", nrow=nrow(optimListFull[[1]][[5]][[1]][[1]]), ncol=ncol(optimListFull[[1]][[5]][[1]][[1]]))
         mockCenterMatrixList <- list(mockCenterMatrix, mockCenterMatrix, mockCenterMatrix, mockCenterMatrix)
         mockCenterList <- rep(list(mockCenterMatrixList), times=length(optimListFull[[1]][[5]]))
-        mockCenterList[which(meanPlus2StdAll>meanMinus2StdMax)] <- optimListNonTrivial[[i]][[5]]
+        mockCenterList[usedPositions] <- optimListNonTrivial[[i]][[5]]
         optimListNonTrivial[[i]][[5]] <- mockCenterList
       }
             
-    	optimListFull <- c(optimListFull, optimListNonTrivial)
+    	optimListFull <- c(optimListFull[1:7], optimListNonTrivial)
     }
  
     #Here, the  average and standard deviation of the error of the mean (or something like that) is retrieved
@@ -91,10 +92,10 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     meanOptimVector <- meanOptimDf[,1]
     stdOptimVector <- stdOptimDf[,1]
 	  #Return the position of the mazimum value
-    maxPos <- which(meanOptimVector==max(meanOptimVector))[1]
+    maxPos <- which.max(meanOptimVector)[1]
 
 	  
-    if(length(roundPenalties)>1){
+    if(length(interestingPenalties)>1){
       #Add the standard deviation of this position to its mean
       meanMinus2StdMax <- meanOptimVector[maxPos]-(2*stdOptimVector[maxPos])
       
@@ -102,14 +103,20 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
       
       meanPlus2StdAll <- meanOptimVector+(2*stdOptimVector)
       
-      #Identify the lowest value among these
+      #Identify the highest value among these
       maxMeanPlus2StdAllNonMax <- max(meanPlus2StdAll[-maxPos])
       
       #Now, the distance between minMeanMinusSdAllNonMin and the lowest value. If they overlap, the iteration has not made it totally clear which point is optimal. 
       distanceBetweenMaxAndSecond <- meanMinus2StdMax-maxMeanPlus2StdAllNonMax
       
+      #And now, the interesting positions are defined. These are the ones that either overlap with uncertainity with the optimal solution, or that are very similar to it.
+      
+      usedPositions <- which(meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*2)) 
+      
       #Here, all penalties and solutions that do not overlap with the optimal solution are excluded from further optimiations, to reduce calculation time.
-      interestingPenalties <- realPenalties[which(meanPlus2StdAll>meanMinus2StdMax)]
+      interestingPenalties <- realPenalties[usedPositions]
+    } else {
+      distanceBetweenMaxAndSecond <- 1
     }
 	  
 	  #Finally, another criterion on the gain of adding more rows is included
@@ -136,8 +143,12 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	    }
 	  }
 	  #Here, the k is optimized, to be no larger than the double k of the lowest penalty still present, and still not larger than the oroginal k.
-	  kOptimal <- round(2*max(meanOptimList[[3]][which(meanPlus2StdAll>meanMinus2StdMax)]))
-	  kOptimal <- ifelse(kOptimal>k, k, kOptimal)
+	  #if(length(interestingPenalties)>1){
+	  #  kOptimal <- round(2*max(meanOptimList[[3]][usedPositions]))
+	  #} else {
+	 #   kOptimal <- round(2*meanOptimList[[3]][which.max(meanOptimVector)])
+	 # }
+	 #  kOptimal <- ifelse(kOptimal>k, k, kOptimal)
 	  fullTime <- proc.time()-ptm
 	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", round(fullTime[3]), " seconds.", sep=""))
 	  iter <- iter+1
@@ -156,7 +167,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   colnames(meanOptimDf) <- c("ARI", "nClust")
 
   #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI that is not lower than 0.01 less than the best ARI. 
-  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>max(meanOptimDf[,1])-(1-minARI))][1], k)
+  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-minARI))][1], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]
