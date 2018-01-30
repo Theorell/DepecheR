@@ -97,7 +97,8 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	 }
 	  
 	 #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
-	 if(nrow(inDataFrameScaled)<10000){
+	 #This is not practivally removed
+	 if(nrow(inDataFrameScaled)<1){
 	   penalty <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]][1,1]
 	   dClustAllDataResult <- dClustAllData(selectionDataSet, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
 	   clusterVectorEquidistant <- dClustAllDataResult[[1]]
@@ -113,14 +114,14 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   
 	   selectionDataSetMatrix <- data.matrix(selectionDataSet)
 	   
-	   if(ncol(selectionDataSet)<500){
+	   #if(ncol(selectionDataSet)<500){
 	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	   } else {
-	     cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
-	     registerDoSNOW(cl)
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	     parallel::stopCluster(cl)	
-	   }
+	   #} #else {
+	     #cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
+	     #registerDoSNOW(cl)
+	     #allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
+	     #parallel::stopCluster(cl)	
+	   #}
 	   
 	   #Here, the corrected Rand index with each allocationResult as the first vector vector and all the others as individual second vectors is identified
 	   n_cores <- detectCores() - 1

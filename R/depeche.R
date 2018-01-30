@@ -13,10 +13,8 @@
 #' @param maxIter The maximal number of iterations that are performed in the penalty optimization.
 #' @param minARI This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.05, or 5 percent difference between sets of two full dataset allocations based on clusterings of a certain sample size.
 #' @param ids Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.
-#' @param returnScaledInData If the scaled and centered data should be returned. Defaults to TRUE.
+#' @param returnProcessedInData If the scaled and centered data should be returned. Defaults to TRUE.
 #' @param log2Off In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.  
-#' @param scalingControl For internal dScale. A numeric/integer dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.
-#' @param scale For internal dScale. If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.
 #' @param multiCoreScaling For internal dScale. If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @seealso \code{\link{dAllocate}}, \code{\link{dScale}}
 #' @return A nested list with varying components depending on the setup above:
@@ -37,7 +35,7 @@
 #'              } 
 #'     }
 #'     \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
-#'     \item{scaledInData}{If returnScaledInData is TRUE, this slot will contain the scaled and centered indata.}
+#'     \item{scaledInData}{If returnProcessedInData is TRUE, this slot will contain the scaled and centered indata.}
 
 #' } If a dual setup is used, the result will be a nested list, where the first sublist with the information above of the result of the primary clustering and the following list components are the result of all the secondary clusterings combined.
 #' @examples
@@ -60,7 +58,7 @@
 #' str(xDepecheObject)
 #' 
 #' @export depeche
-depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minARIImprovement=0.01, minARI=0.99, maxIter=49, ids, returnScaledInData=TRUE, log2Off=FALSE, scalingControl, scale=FALSE, multiCoreScaling=FALSE){
+depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minARIImprovement=0.01, minARI=0.99, maxIter=200, ids, returnProcessedInData=FALSE, log2Off=FALSE, multiCoreScaling=FALSE){
 
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
@@ -74,21 +72,22 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
     print(paste("The data was found to be very strongly skewed (kurtosis", kurtosisValue1, "), so it was log2-transformed before clustering, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter if you dislike it."))
   }
   
+
   #Scaling is performed
   if(ncol(inDataFrame)<100){
-    print("As the dataset has less than 100 columns, it is assumed that it contains protein information. Peak centering is therefore used. Change this using dScale parameters if you dislike it.")
+    print("As the dataset has less than 100 columns, it is assumed that it contains protein information. Peak centering is therefore used.")
 
-    inDataFramePreScaled <- dScale(inDataFrame, control=scalingControl, scale=scale, multiCore=multiCoreScaling)
+    inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak", multiCore=multiCoreScaling)
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
   } else {
-    print("As the dataset has more than 100 columns, it is assumed that it contains single cell RNA sequencing information, and that scaling and normalization has already been performed. Change this using dScale parameters if you dislike it.")
-    inDataFramePreScaled <- scale(inDataFrame, scale=FALSE)
+    print("As the dataset has more than 100 columns, it is assumed that it contains single cell RNA sequencing information, and mean centering is applied.")
+      inDataFramePreScaled <- scale(inDataFrame, scale=FALSE)
 
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
-    inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
+    inDataFrameScaled <- as.data.frame(inDataFramePreScaled/sdInDataFramePreScaled)
   }
   
   if(missing(dualClustSetup)==TRUE){
@@ -97,7 +96,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
     } else {
       dClustResult <- dClustCoFunction(inDataFrameScaled, firstClusterNumber=1, penalties=penalties, sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids)
     }
-    if(returnScaledInData==TRUE){
+    if(returnProcessedInData==TRUE){
       resultLengt <- length(dClustResult)+1
       dClustResult[[resultLengt]] <- inDataFrameScaled
     }
@@ -216,7 +215,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
       
     }
     
-    if(returnScaledInData==TRUE){
+    if(returnProcessedInData==TRUE){
       resultLength <- length(dClustResult)+1
       dClustResult[[resultLength]] <- inDataFrameScaled
     }

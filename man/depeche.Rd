@@ -7,9 +7,8 @@
 depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
   2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes = "default",
   selectionSampleSize = "default", k = 20, minARIImprovement = 0.01,
-  minARI = 0.99, maxIter = 49, ids, returnScaledInData = TRUE,
-  log2Off = FALSE, scalingControl, scale = FALSE,
-  multiCoreScaling = FALSE)
+  minARI = 0.99, maxIter = 200, ids, returnProcessedInData = FALSE,
+  log2Off = FALSE, multiCoreScaling = FALSE)
 }
 \arguments{
 \item{inDataFrame}{A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations need to be performed for all data. Scaling, etc, is on the other hand performed within the function.}
@@ -32,13 +31,9 @@ depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
 
 \item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
 
-\item{returnScaledInData}{If the scaled and centered data should be returned. Defaults to TRUE.}
+\item{returnProcessedInData}{If the scaled and centered data should be returned. Defaults to TRUE.}
 
 \item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
-
-\item{scalingControl}{For internal dScale. A numeric/integer dataframe of values that could be used to define the range. If no control data is present, the function defaults to using the indata as control data.}
-
-\item{scale}{For internal dScale. If scaling should be performed. Three possible values: a vector with two values indicating the low and high threshold quantiles for the scaling, TRUE, which equals the vector "c(0.001, 0.999)", and FALSE.}
 
 \item{multiCoreScaling}{For internal dScale. If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 }
@@ -61,7 +56,7 @@ A nested list with varying components depending on the setup above:
              } 
     }
     \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
-    \item{scaledInData}{If returnScaledInData is TRUE, this slot will contain the scaled and centered indata.}
+    \item{scaledInData}{If returnProcessedInData is TRUE, this slot will contain the scaled and centered indata.}
 } If a dual setup is used, the result will be a nested list, where the first sublist with the information above of the result of the primary clustering and the following list components are the result of all the secondary clusterings combined.
 }
 \description{
