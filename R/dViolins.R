@@ -5,7 +5,8 @@
 #' @importFrom viridis inferno magma plasma viridis
 #' @importFrom gplots rich.colors
 #' @importFrom grDevices rainbow
-#' @param depecheObject A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix and the scaled data used for clustering.
+#' @param depecheObject A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix.
+#' @param inDataFrame The data used to generate the depecheObject
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
@@ -27,11 +28,10 @@
 #' #Now create plots of all clusters, regardless of if they contributed or not
 #' dViolins(xDepecheObject, plotAll=TRUE)
 #' @export dViolins
-dViolins <- function(depecheObject, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE){
+dViolins <- function(depecheObject, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE){
 
   clusterVector <- depecheObject$clusterVector
   clusterCenters <- depecheObject$clusterCenters
-  inDataFrame <- depecheObject$scaledInData
   
   percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 

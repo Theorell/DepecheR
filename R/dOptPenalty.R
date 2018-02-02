@@ -25,25 +25,16 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   registerDoSNOW(cl)  
   
   interestingPenalties <- realPenalties
-  kOptimal <- k
   usedPositions <- 1:length(realPenalties)
   
   while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,kOptimal,interestingPenalties,1,bootstrapObservations,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,bootstrapObservations,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
     for(i in 1:length(optimListNonTrivial)){	  
 	    optimListNonTrivial[[i]]$d[which(optimList[[i]]$n==1)] <- 0
-	    #Further, solutions with only one dimension and two clusters are eliminated, as they are artifactual and always results in superior ARI.
-	    #for(j in 1:length(optimListNonTrivial[[i]]$c)){
-	    #  if(optimList[[i]]$n[j]==2){
-	    #    if(length(which(apply(optimList[[i]]$c[[j]][[1]],2,function(x) !all(x==0))))==1 || length(which(apply(optimList[[i]]$c[[j]][[2]],2,function(x) !all(x==0))))==1){
-	    #      optimListNonTrivial[[i]]$d[j] <- 0
-	   #     }
-	   #   }
-	   # }
     }	
     
     #Now, the new list is combined with the older, if there are any
@@ -72,7 +63,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
         optimListNonTrivial[[i]][[5]] <- mockCenterList
       }
             
-    	optimListFull <- c(optimListFull[1:7], optimListNonTrivial)
+    	optimListFull <- c(optimListFull, optimListNonTrivial)
     }
  
     #Here, the  average and standard deviation of the error of the mean (or something like that) is retrieved
@@ -110,9 +101,8 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
       distanceBetweenMaxAndSecond <- meanMinus2StdMax-maxMeanPlus2StdAllNonMax
       
       #And now, the interesting positions are defined. These are the ones that either overlap with uncertainity with the optimal solution, or that are very similar to it.
-      
       usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*2))) 
-      
+  
       #Here, all penalties and solutions that do not overlap with the optimal solution are excluded from further optimiations, to reduce calculation time.
       interestingPenalties <- realPenalties[usedPositions]
     } else {
@@ -142,13 +132,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	      }
 	    }
 	  }
-	  #Here, the k is optimized, to be no larger than the double k of the lowest penalty still present, and still not larger than the oroginal k.
-	  #if(length(interestingPenalties)>1){
-	  #  kOptimal <- round(2*max(meanOptimList[[3]][usedPositions]))
-	  #} else {
-	 #   kOptimal <- round(2*meanOptimList[[3]][which.max(meanOptimVector)])
-	 # }
-	 #  kOptimal <- ifelse(kOptimal>k, k, kOptimal)
+
 	  fullTime <- proc.time()-ptm
 	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", round(fullTime[3]), " seconds.", sep=""))
 	  iter <- iter+1

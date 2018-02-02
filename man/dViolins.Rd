@@ -4,11 +4,13 @@
 \alias{dViolins}
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
-dViolins(depecheObject, order = unique(clusterVector),
+dViolins(depecheObject, inDataFrame, order = unique(clusterVector),
   colorScale = "viridis", plotAll = FALSE)
 }
 \arguments{
-\item{depecheObject}{A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix and the scaled data used for clustering.}
+\item{depecheObject}{A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix.}
+
+\item{inDataFrame}{The data used to generate the depecheObject}
 
 \item{order}{The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.}
 
