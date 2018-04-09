@@ -151,7 +151,10 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   colnames(meanOptimDf) <- c("ARI", "nClust")
 
   #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI that is not lower than 0.01 less than the best ARI. 
-  penaltyOpt.df <- data.frame("bestPenalty"=roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-minARI))][1], k)
+  optimalPenalties <- roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-minARI))]
+
+  #The best penalty is defined as the mean penalty or the optimal penalty just below the mean, in the case of an even number.
+  penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[round(mean(c(1:length(optimalPenalties))))], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]

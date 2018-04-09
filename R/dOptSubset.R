@@ -12,13 +12,6 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 
 	  makeGraph <- ifelse(length(sampleSizes)>1, FALSE, TRUE)
 	  
-	  #if((clusterOnAllData=="default" && nrow(inDataFrameScaled)<10000) || (is.logical(clusterOnAllData)==TRUE && clusterOnAllData==TRUE)){
-	 #   returnClusterCenters <- FALSE
-	  #}  else {
-	   # returnClusterCenters <- TRUE
-	  #}
-	  
-	  
 	 #This loop continues to run until two runs produce distances that diverge less than 0.01.
 	  for(i in 1:length(sampleSizes)){
 	    if(i>1){
@@ -97,8 +90,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	 }
 	  
 	 #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
-	 #This is not practivally removed
-	 if(nrow(inDataFrameScaled)<1){
+	 if(nrow(inDataFrameScaled)<10000){
 	   penalty <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]][1,1]
 	   dClustAllDataResult <- dClustAllData(selectionDataSet, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
 	   clusterVectorEquidistant <- dClustAllDataResult[[1]]
@@ -115,7 +107,7 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   selectionDataSetMatrix <- data.matrix(selectionDataSet)
 	   
 	   #if(ncol(selectionDataSet)<500){
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
+	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% DepecheR:::removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
 	   #} #else {
 	     #cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
 	     #registerDoSNOW(cl)

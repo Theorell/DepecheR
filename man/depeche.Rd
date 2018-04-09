@@ -7,7 +7,7 @@
 depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
   2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes = "default",
   selectionSampleSize = "default", k = 20, minARIImprovement = 0.01,
-  minARI = 0.99, maxIter = 200, ids, returnProcessedInData = FALSE,
+  minARI = 0.95, maxIter = 100, ids, returnProcessedInData = FALSE,
   log2Off = FALSE, multiCoreScaling = FALSE)
 }
 \arguments{
