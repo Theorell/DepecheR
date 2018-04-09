@@ -160,7 +160,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   #assign each value to a bin
   grps <- with(statistic.df, cut(statistic.df[,1], breaks = brks, include.lowest = TRUE))
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
-  xYDataScaled$col <- colors[grps]
+  xYDataScaled$col <- rev(colors)[grps]
 
   #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
   if(is.logical(densContour)==TRUE){
