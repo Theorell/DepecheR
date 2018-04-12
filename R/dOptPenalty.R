@@ -100,9 +100,18 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
       #Now, the distance between minMeanMinusSdAllNonMin and the lowest value. If they overlap, the iteration has not made it totally clear which point is optimal. 
       distanceBetweenMaxAndSecond <- meanMinus2StdMax-maxMeanPlus2StdAllNonMax
       
-      #And now, the interesting positions are defined. These are the ones that either overlap with uncertainity with the optimal solution, or that are very similar to it.
-      usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*2))) 
-  
+      #And now, the interesting positions are defined. These are the ones that either overlap with uncertainity with the optimal solution, or that are very similar to it. In the first iterations, the critera are more inclusive.
+      if(iter==1){
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-(2*stdOptimVector[maxPos])) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*4))) 
+        
+      } else if(iter==2){
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-stdOptimVector[maxPos]) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*3))) 
+        
+      } else {
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*2))) 
+        
+      }
+      
       #Here, all penalties and solutions that do not overlap with the optimal solution are excluded from further optimiations, to reduce calculation time.
       interestingPenalties <- realPenalties[usedPositions]
     } else {

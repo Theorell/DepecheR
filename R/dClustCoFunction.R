@@ -56,8 +56,10 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
   #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
   reducedClusterCentersColRow <- dClustResult[[2]]
   if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1){
+    colorLadder <- colorRampPalette(c("blue", "white", "red"))(21)
+    colorLadder[11] <- "#A2A2A2"
     pdf("Cluster centers.pdf")
-    heatmap.2(as.matrix(reducedClusterCentersColRow), col=colorRampPalette(c("blue", "white", "red"))(100), trace="none")
+    heatmap.2(as.matrix(reducedClusterCentersColRow), col=colorLadder, trace="none")
     dev.off()    
   }
   

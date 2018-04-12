@@ -67,7 +67,18 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
   #Here it is checked if the data has very extreme tails, and if so, the data is log2 transformed
   if(log2Off==FALSE && kurtosis(as.vector(as.matrix(inDataFrame)))>100){
     kurtosisValue1 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-    inDataFrame <- log2(inDataFrame+1)
+    #Here, the log transformation is performed. In cases where the lowest value is 0, everything is simple. In other cases, a slightly more complicated formula is needed
+    if(min(inDataFrame)>=0){
+      inDataFrame <- log2(inDataFrame+1)
+    } else {
+      #First, the data needs to be reasonably log transformed to not too extreme values, but still without loosing resolution.
+      inDataFrameLog <- log2((inDataFrame-quantile(inDataFrame, 0.01))+1)
+      #Then, the extreme negative values will be replaced by 0, as they give rise to artefacts.
+      inDataFrameLog[which(is.nan(inDataFrameLog))] <- 0
+      inDataFrame <- inDataFrameLog
+      rm(inDataFrameLog)
+    }
+    
     kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
     print(paste("The data was found to be very strongly skewed (kurtosis", kurtosisValue1, "), so it was log2-transformed before clustering, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter if you dislike it."))
   }
