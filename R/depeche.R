@@ -58,7 +58,7 @@
 #' str(xDepecheObject)
 #' 
 #' @export depeche
-depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=20, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE, multiCoreScaling=FALSE){
+depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE){
 
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
@@ -88,7 +88,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
   if(ncol(inDataFrame)<100){
     print("As the dataset has less than 100 columns, it is assumed that it contains protein information. Peak centering is therefore used.")
 
-    inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak", multiCore=multiCoreScaling)
+    inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak")
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled

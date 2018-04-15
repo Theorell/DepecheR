@@ -1,11 +1,11 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW 
+#' @importFrom moments kurtosis
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 #' @export dClustAllData
 dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20){
-
   penaltyForRightSize <- penalty*((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 
   dataMat<-data.matrix(inDataFrameScaled)
@@ -22,17 +22,26 @@ dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20
  #   iterations <- 7
  # }
   
-  #This is the central function of the whole package.
   
   cl <-  parallel::makeCluster(n_cores, type = "SOCK")
   registerDoSNOW(cl)
-  return_all <- foreach(i=1:21) %dopar% sparse_k_means(dataMat,k,penaltyForRightSize,1, i)
-  parallel::stopCluster(cl)	
-
-  #Here, the best iteration is retrieved
+  return_all <- foreach(i=1:7, .packages="DepecheR") %dopar% sparse_k_means(dataMat,round(k*3),penaltyForRightSize,1, i)
+  
+  #First, the solutions with the dominant number of clusters are selected
+  #clusterVectorList <- lapply(return_all, "[[", 1)
+  #nClustAll <- sapply(clusterVectorList, function(x) length(unique(x)))
+  #interestingSolutions <- return_all[which(nClustAll==round(median(nClustAll)))]
+  
+  #Here, the best iteration is retrieved in this dominant "stratum"
   logMaxLik <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
   minimumN <- max(logMaxLik)
   returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
+  
+  #meanARIList <- foreach(i=1:length(clusterVectorList), .packages="DepecheR") %dopar% mean(sapply(clusterVectorList, rand_index, inds2=clusterVectorList[[i]], k=k+1))
+  
+  parallel::stopCluster(cl)	
+  #meanARIVector <- unlist(meanARIList)
+  #returnLowest <- return_all[[which(meanARIVector==max(meanARIVector))[1]]]
   
   #And here, the optimal results, given if an origo cluster should be included or not, are retrieved further
   clusterVector <- returnLowest$i
