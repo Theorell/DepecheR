@@ -80,7 +80,7 @@ depeche <- function(inDataFrame, dualClustSetup, penalties=c(2^0, 2^0.5, 2^1, 2^
     }
     
     kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-    print(paste("The data was found to be very strongly skewed (kurtosis", kurtosisValue1, "), so it was log2-transformed before clustering, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter if you dislike it."))
+    print(paste("The data was found to be heavily tailed (kurtosis", kurtosisValue1, "). Therefore, it was log2-transformed, leading to a new kurtosis value of", kurtosisValue2, ". Turn this off using the log2Off parameter."))
   }
   
 
