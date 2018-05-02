@@ -7,3 +7,7 @@
 .RData
 *~
 
+
+*.csv
+
+*.pdf
