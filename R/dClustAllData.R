@@ -26,23 +26,18 @@ dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20
   cl <-  parallel::makeCluster(n_cores, type = "SOCK")
   registerDoSNOW(cl)
   return_all <- foreach(i=1:7, .packages="DepecheR") %dopar% sparse_k_means(dataMat,round(k*3),penaltyForRightSize,1, i)
+
+  #Here, the best iteration is retrieved, if this is not one with only 1 cluster
   
-  #First, the solutions with the dominant number of clusters are selected
-  #clusterVectorList <- lapply(return_all, "[[", 1)
-  #nClustAll <- sapply(clusterVectorList, function(x) length(unique(x)))
-  #interestingSolutions <- return_all[which(nClustAll==round(median(nClustAll)))]
-  
-  #Here, the best iteration is retrieved in this dominant "stratum"
   logMaxLik <- as.vector(do.call("rbind", lapply(return_all, "[[", 5)))
-  minimumN <- max(logMaxLik)
-  returnLowest <- return_all[[which(abs(logMaxLik)==minimumN)[1]]]
+  nClust <- sapply(return_all, function(x) sum(rowSums(x[[3]]!=0)!=0))
+  logMaxLikNotOne <- logMaxLik[which(nClust>1)]
+  maxN <- max(logMaxLikNotOne)
+  returnLowest <- return_all[[which(logMaxLik==maxN)[1]]]
   
-  #meanARIList <- foreach(i=1:length(clusterVectorList), .packages="DepecheR") %dopar% mean(sapply(clusterVectorList, rand_index, inds2=clusterVectorList[[i]], k=k+1))
-  
+
   parallel::stopCluster(cl)	
-  #meanARIVector <- unlist(meanARIList)
-  #returnLowest <- return_all[[which(meanARIVector==max(meanARIVector))[1]]]
-  
+
   #And here, the optimal results, given if an origo cluster should be included or not, are retrieved further
   clusterVector <- returnLowest$i
   clusterCenters <- returnLowest$c
