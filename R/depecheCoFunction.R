@@ -1,8 +1,7 @@
 #' @importFrom dplyr sample_n
 #' @importFrom gplots heatmap.2
 #' @useDynLib DepecheR
-#' @export dClustCoFunction
-dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers){
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers){
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
   if(nrow(inDataFrameScaled)>1000000){
@@ -22,13 +21,13 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
     }
   }
 
-  dClustResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, minARI=minARI, minARIImprovement=minARIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
+  depecheResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, minARI=minARI, minARIImprovement=minARIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
     
   #
   #Here the data is added back, in the cases where very large datasets are used
   
   if(nrow(inDataFrameScaled)>1000000){
-    dClustResult$clusterVector <- dAllocate(inDataFrameScaled, dClustResult$clusterCenters)
+    depecheResult$clusterVector <- dAllocate(inDataFrameScaled, depecheResult$clusterCenters)
   }
   ######################################
   
@@ -36,7 +35,7 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
   
   if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){
     
-    clusterTable <- table(dClustResult$clusterVector, ids)
+    clusterTable <- table(depecheResult$clusterVector, ids)
     
     countTable <- table(ids)
     
@@ -47,14 +46,14 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
       clusterFractionsForAllIds[,i] <- x
     }
     
-    nextClustResultPosition <- length(dClustResult)+1
-    dClustResult[[nextClustResultPosition]] <- as.data.frame.matrix(clusterFractionsForAllIds)
-    names(dClustResult)[[length(dClustResult)]] <- "idClusterFractions"
+    nextClustResultPosition <- length(depecheResult)+1
+    depecheResult[[nextClustResultPosition]] <- as.data.frame.matrix(clusterFractionsForAllIds)
+    names(depecheResult)[[length(depecheResult)]] <- "idClusterFractions"
     
   }
   
   #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
-  reducedClusterCentersColRow <- dClustResult[[2]]
+  reducedClusterCentersColRow <- depecheResult[[2]]
   if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1){
     reducedClusterCentersColRow[reducedClusterCentersColRow==0] <- NA
     colorLadder <- colorRampPalette(c("blue", "white", "red"))(21)
@@ -63,6 +62,6 @@ dClustCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=
     dev.off()    
   }
   
-  return(dClustResult)
+  return(depecheResult)
   
 }

@@ -6,8 +6,9 @@
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
   displayVector, testSampleRows, densContour = TRUE, name = "dSplsda",
-  groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2],
-  title = FALSE, maxAbsPlottingValues, createDirectory = FALSE,
+  groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2], title = FALSE,
+  maxAbsPlottingValues, createDirectory = FALSE,
   directoryName = "dSplsda", bandColor = "black",
   dotSize = 400/sqrt(nrow(xYData)))
 }
@@ -59,11 +60,11 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
+xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=50)
 
 #Now add three columns that will separate the first ten from 
 #the second ten individuals and merge the datasets
-xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=10000)
+xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=1000)
 colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 x <- cbind(xindividuals[,1], xgroups[,1], 
 xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -74,22 +75,26 @@ colnames(x)[1:2] <- c("ids", "group")
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xDepecheObject <- depeche(x[3:ncol(x)], sampleSizes=100, selectionSampleSize=1000, maxIter=20)
+xDepecheObject <- depeche(x[3:ncol(x)], sampleSizes=100, selectionSampleSize=500, maxIter=20)
 clusterVector <- xDepecheObject[[1]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(dScale(x[3:ncol(x)]), pca=FALSE)
+xSNE <- Rtsne.multicore(x[3:ncol(x)], pca=FALSE)
 
 #Run the function. This time without pairing.
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector)
+sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, 
+groupVector=x$group, clusterVector=clusterVector)
 
 #Here, pairing is used
-#First, an artificial pairing vector, making the first donor amongst the first ten connected to the first donor among the second ten.
-pairingVector <- c(rep(1:20, each=500), rep(1:20, each=500))
+#First, an artificial pairing vector, making the first donor amongst the first ten 
+#connected to the first donor among the second ten.
+pairingVector <- c(rep(1:20, each=50), rep(1:20, each=50))
 
 #Then the actual multilevel sPLS-DA is run. 
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
+sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, 
+clusterVector=clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", 
+groupName1="Stimulation 1", groupName2="Stimulation 2")
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

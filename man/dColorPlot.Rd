@@ -2,21 +2,21 @@
 % Please edit documentation in R/dColorPlot.R
 \name{dColorPlot}
 \alias{dColorPlot}
-\title{Display third variable as color on 2D plot}
+\title{Display third variable as color on a 2D plot}
 \usage{
 dColorPlot(colorData, controlData, xYData, names = "default",
   densContour = TRUE, addLegend = FALSE, idsVector,
   drawColorPalette = FALSE, title = FALSE, createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
-  truncate = TRUE, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)),
-  multiCore = "default")
+  truncate = TRUE, bandColor = "black",
+  dotSize = 400/sqrt(nrow(xYData)), multiCore = "default")
 }
 \arguments{
-\item{colorData}{A vector or a dataframe of numeric observations that will be displayed as color on the plot.}
+\item{colorData}{A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.}
 
 \item{controlData}{Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.}
 
-\item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.}
+\item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.}
 
 \item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
@@ -56,23 +56,24 @@ Function to overlay one variable for a set of observations on a field created by
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData(samplings=3, observations=3000)
+x <- generateBimodalData(samplings=3, observations=500)
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(as.matrix(dScale(x[2:ncol(x)])), pca=FALSE)
+xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Run the function for all the variables
-dColorPlot(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
+dColorPlot(colorData=x[2:ncol(x)], xYData=xSNE$Y, drawColorPalette=TRUE)
 
 #Create a color vector and display it on the SNE field.
 xColor <- dColorVector(x[,1], colorScale="plasma")
-dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), 
+names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{dColorVector}}
+\code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 }

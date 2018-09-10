@@ -4,7 +4,8 @@
 \alias{generateBimodalData}
 \title{Function to generate synthetic flow cytometry-like data}
 \usage{
-generateBimodalData(samplings = 1, dataCols = 5, observations = 10000)
+generateBimodalData(samplings = 1, dataCols = 5,
+  observations = 10000)
 }
 \arguments{
 \item{samplings}{Number of individual probability samplings with identical standard deviation samplings, ie a simple simulated parallel to number of subjects.}

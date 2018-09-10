@@ -11,10 +11,10 @@
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
-#' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData(samplings=2, dataCols=8)
+#' x <- generateBimodalData(samplings=2, dataCols=8, observations=100)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
@@ -23,10 +23,10 @@
 #' xDepecheObject <- depeche(x[2:ncol(x)])
 #'
 #' #Create the plots of the variables that contribute to creating each cluster
-#' dViolins(xDepecheObject)
+#' dViolins(xDepecheObject, inDataFrame=x[2:ncol(x)])
 #' 
 #' #Now create plots of all clusters, regardless of if they contributed or not
-#' dViolins(xDepecheObject, plotAll=TRUE)
+#' dViolins(xDepecheObject, inDataFrame=x[2:ncol(x)], plotAll=TRUE)
 #' @export dViolins
 dViolins <- function(depecheObject, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE){
 
@@ -86,7 +86,7 @@ dViolins <- function(depecheObject, inDataFrame, order=unique(clusterVector), co
 
     #This code is an efficient way of giving all rows in the "Clusters" column the same name, except for the rows with the cluster of interest.
 
-    clustIndicesSpecific <- sapply(clusterVector, singleEventClusterNaming, n=order[i])
+    clustIndicesSpecific <- sapply(clusterVector, dViolinsCoFunction1, n=order[i])
 
     #Create a color vector for the visualzation
     clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
@@ -101,9 +101,9 @@ dViolins <- function(depecheObject, inDataFrame, order=unique(clusterVector), co
     #Here the variable names is exported
     allVarNames <- colnames(inDataFocused)
     #Then a list is created that contains the objects for the plot creation
-    oneClustAllVarList <- mapply(createAllClustOneVarMu, inDataFocused, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
+    oneClustAllVarList <- mapply(dViolinsCoFunction2, inDataFocused, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
     #And then the plots are created
-    sapply(oneClustAllVarList, createOneViolin, plotAll=plotAll)
+    sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll=plotAll)
 
     setwd(workingDirectoryClusters)
 
@@ -111,50 +111,5 @@ dViolins <- function(depecheObject, inDataFrame, order=unique(clusterVector), co
 
   setwd(workingDirectory)
 
-}
-
-#This function is the core of this whole thing, creating the plot
-createOneViolin <- function(allClustOneVarOneMuList, plotAll){
-  if(plotAll==FALSE){
-    if(allClustOneVarOneMuList[[2]]!=0){
-      
-      plotname = paste("Cluster", "_", allClustOneVarOneMuList[[4]], "_", allClustOneVarOneMuList[[3]], ".pdf", sep="")
-      dp <- ggplot(allClustOneVarOneMuList[[1]], aes(x=Cluster, y=var, fill=Cluster)) +
-        geom_violin(trim=FALSE)+
-        scale_color_manual(values=allClustOneVarOneMuList[[5]])+
-        scale_fill_manual(values=allClustOneVarOneMuList[[5]])+
-        labs(title=paste("Plot of", allClustOneVarOneMuList[[3]], "for cluster", allClustOneVarOneMuList[[4]]), x="Cluster", y = "Intensity")
-      dp + theme_classic()
-      ggsave(filename = plotname, dpi=300)
-    }
-  } else {
-
-      plotname = paste("Cluster", "_", allClustOneVarOneMuList[[4]], "_", allClustOneVarOneMuList[[3]], ".pdf", sep="")
-      dp <- ggplot(allClustOneVarOneMuList[[1]], aes(x=Cluster, y=var, fill=Cluster)) +
-        geom_violin(trim=FALSE)+
-        scale_color_manual(values=allClustOneVarOneMuList[[5]])+
-        scale_fill_manual(values=allClustOneVarOneMuList[[5]])+
-        labs(title=paste("Plot of", allClustOneVarOneMuList[[3]], "for cluster", allClustOneVarOneMuList[[4]]), x="Cluster", y = "Intensity")
-      dp + theme_classic()
-      ggsave(filename = plotname, dpi=300)
-  }
-
-}
-
-#Function needed to create the right kind of object for the createOneViolinOneClust function
-createAllClustOneVarMu <- function(var, oneClustOneMu, varName, clust, cols, clustNum){
-
-	allClustOneVar <- data.frame(clust, var)
-
-	colnames(allClustOneVar) <- c("Cluster", "var")
-
-	allClustOneVarOneMuList <- list(allClustOneVar, oneClustOneMu, varName, clustNum, cols)
-	return(allClustOneVarOneMuList)
-}
-
-
-#Function to give the right cluster annotation to each event for each cluster investigation
-singleEventClusterNaming <- function(event, n){
-	ifelse(event==n, return(n), return("All clusters"))
 }
 

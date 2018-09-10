@@ -1,4 +1,4 @@
-#' Display third variable as color on 2D plot
+#' Display third variable as color on a 2D plot
 #'
 #'
 #' Function to overlay one variable for a set of observations on a field created by two other variables known for the same observations. The plot is constructed primarily for displaying variables on 2D-stochastic neighbour embedding fields, but can be used for any sets of (two or) three variables known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become extremely big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
@@ -6,9 +6,9 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %dopar%
-#' @param colorData A vector or a dataframe of numeric observations that will be displayed as color on the plot.
+#' @param colorData A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.
 #' @param controlData Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.
-#' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a dataframe with two columns and the same number of rows as the colorData object.
+#' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.
 #' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
 #' @param densContour An object to create the density contours for the plot. Three possible values: 
 #' \describe{
@@ -27,35 +27,43 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.
-#' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}, \code{\link{dColorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
 #' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData(samplings=3, observations=3000)
+#' x <- generateBimodalData(samplings=3, observations=500)
 #' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(as.matrix(dScale(x[2:ncol(x)])), pca=FALSE)
+#' xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
 #' #Run the function for all the variables
-#' dColorPlot(colorData=x_scaled, xYData=as.data.frame(xSNE$Y), drawColorPalette=TRUE)
+#' dColorPlot(colorData=x[2:ncol(x)], xYData=xSNE$Y, drawColorPalette=TRUE)
 #'
 #' #Create a color vector and display it on the SNE field.
 #' xColor <- dColorVector(x[,1], colorScale="plasma")
-#' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+#' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), 
+#' names="separate samplings", addLegend=TRUE, idsVector=x[,1])
 #' 
 #' @export dColorPlot
 dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore="default"){
 
+  if(class(colorData)=="matrix"){
+    colorData <- as.data.frame(colorData)
+  }
+  
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
-    stop("colorData needs to be either a numeric, vector, a character vector of colors or a dataframe. Change the class and try again.")
+    stop("colorData needs to be either a numeric vector, a character vector of colors or a matrix or dataframe of numbers.")
   }
 
-  if(class(xYData)!="data.frame"){
-    stop("xYData needs to be a dataframe. Change the class and try again.")
+  if(class(xYData)=="matrix"){
+    xYData <- as.data.frame(xYData)
+  }
+  if(ncol(xYData)!=2){
+    stop("xYData needs to contain two vectors to be displayed.")
   }
 
   if(createDirectory==TRUE){
@@ -98,14 +106,15 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   if(class(colorData)=="numeric"){
     colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(1:100))
-    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, drawColorPalette=drawColorPalette)
+    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
   }
   if(class(colorData)=="data.frame"){
     colorDataPercent <- dScale(x=colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(1:100))
     if(multiCore=="default"){
       if(nrow(colorData)>100000){
-        multiCore <- TRUE
+        multiCore <- TRUExYDataFraction <- DepecheR:::dScale(as.data.frame(xSNE$Y), scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+
       } else {
         multiCore <- FALSE
       }
@@ -143,21 +152,3 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
 
 }
 
-dColorPlotCoFunction <- function(colorVariable, name, xYDataFraction, title=FALSE, densContour, bandColor, dotSize){
-
-  colnames(xYDataFraction) <- c("V1", "V2")
-  
-  png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  # Plot it
-  if(title==TRUE){
-    plot(V2~V1, data=xYDataFraction, main=name, pch=20, cex=dotSize, cex.main=5, col=colorVariable, xlim=c(-0.05, 10.5), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(title==FALSE){
-    plot(V2~V1, data=xYDataFraction, main=NULL, pch=20, cex=dotSize, cex.main=5, col=colorVariable, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  } 
-  dev.off()
-}

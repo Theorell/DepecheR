@@ -4,8 +4,9 @@
 \alias{dScale}
 \title{Scaling of a vector or a dataframe.}
 \usage{
-dScale(x, control, scale = TRUE, robustVarScale = TRUE, center = "peak",
-  truncate = FALSE, multiplicationFactor = 1, multiCore = FALSE)
+dScale(x, control, scale = TRUE, robustVarScale = TRUE,
+  center = "peak", truncate = FALSE, multiplicationFactor = 1,
+  multiCore = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -29,32 +30,4 @@ A vector or dataframe with the same size but where all values in the vector or c
 }
 \description{
 This is a scaling function with a number of alternatives. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
-}
-\examples{
-#Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData()
-
-#Retrieve the first column
-x2 <- x[,2]
-
-#The maximum and minimum values are
-max(x2)
-min(x2)
-
-#Run the function without mean centering and with the quantiles set to 0 and 1.
-y2 <- dScale(x2, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
-
-#And the data has been scaled to the range between 0 and 1.
-max(y2)
-min(y2)
-
-#Now run the default function for a dataframe
-summary(x[,2:ncol(x)])
-
-y_df <- dScale(x[,2:ncol(x)])
-
-#Here, the data has first been truncated to the default percentiles, then scaled 
-#to the standard deviation in the remaining interval and finally the center has been
-#placed where the highest peak in the data is present. NB! Here, no truncation has been performed in the scaling, only to obtain the scaling values.
-summary(y_df)
 }

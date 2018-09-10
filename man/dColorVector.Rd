@@ -21,15 +21,11 @@ This function takes a vector x and a shorter ordering vector with all the unique
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-x <- generateBimodalData(samplings=5, observations=2000)
-
-#Scale the data (not actually necessary in this artificial 
-#example due to the nature of the generated data)
-x_scaled <- dScale(x=x[2:ncol(x)])
+x <- generateBimodalData(samplings=5, observations=500)
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(as.matrix(dScale(x[2:ncol(x)])), pca=FALSE)
+xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
 
 #Now use our function
 xColors <- dColorVector(x[,1])

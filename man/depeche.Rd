@@ -4,16 +4,16 @@
 \alias{depeche}
 \title{Performing optimization and penalized K-means clustering}
 \usage{
-depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
-  2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSizes = "default",
-  selectionSampleSize = "default", k = 30, minARIImprovement = 0.01,
-  minARI = 0.95, maxIter = 100, ids, returnProcessedInData = FALSE,
-  log2Off = FALSE)
+depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
+  2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5),
+  sampleSizes = "default", selectionSampleSize = "default", k = 30,
+  minARIImprovement = 0.01, minARI = 0.95, maxIter = 100, ids,
+  returnProcessedInData = FALSE, log2Off = FALSE)
 }
 \arguments{
 \item{inDataFrame}{A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations need to be performed for all data. Scaling, etc, is on the other hand performed within the function.}
 
-\item{dualClustSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying the column name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
+\item{dualDepecheSetup}{A dataframe with two columns: the first specifying which step (1 or 2) the variable should be included in, the second specifying the column name for the variable in question. Iit is used if a two-step clustering should be performed, eg in the case where phenotypic clustering should be performed, followed by clustering on functional variables.}
 
 \item{penalties}{A single value, a vector of values, or possibly a list of two vectors, if dual clustering is performed. This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when this offset is 0, there is no penalization, which means that the algorithm runs standard K-means clustering.}
 
@@ -34,8 +34,6 @@ depeche(inDataFrame, dualClustSetup, penalties = c(2^0, 2^0.5, 2^1, 2^1.5,
 \item{returnProcessedInData}{If the scaled and centered data should be returned. Defaults to TRUE.}
 
 \item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
-
-\item{multiCoreScaling}{For internal dScale. If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 }
 \value{
 A nested list with varying components depending on the setup above:
@@ -60,7 +58,7 @@ A nested list with varying components depending on the setup above:
 } If a dual setup is used, the result will be a nested list, where the first sublist with the information above of the result of the primary clustering and the following list components are the result of all the secondary clusterings combined.
 }
 \description{
-This function is a user-friendly wrapper integrating the dOpt and dClust functions. It only requires a dataset and an id vector. It starts by doing all necessary optimizations, both on the smallest sample size that is needed to perform the most stable clustering, and to identify the optimal penalty. It then performs clustering based on the values identified in the optimization step.
+This function only requires a dataset and an id vector. It starts by doing all necessary optimizations and then performs clustering based on the values identified in the optimization step.
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
@@ -76,7 +74,9 @@ xDepecheObject <- depeche(x[,2:ncol(x)], sampleSizes=500, maxIter=20)
 str(xDepecheObject)
 
 #Now, a dual cluster setup is attempted
-xDepecheObject <- depeche(x[,2:ncol(x)], dualClustSetup=data.frame(rep(1:2, each=6), colnames(x_scaled)), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, maxIter=20, ids=x[,1])
+xDepecheObject <- depeche(x[,2:ncol(x)], dualDepecheSetup=data.frame(rep(1:2, each=6), 
+colnames(x[,2:ncol(x)])), penalties=c(64, 128), sampleSizes=500, selectionSampleSize=500, 
+maxIter=20, ids=x[,1])
 
 #Look at the result
 str(xDepecheObject)

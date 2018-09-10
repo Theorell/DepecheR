@@ -4,8 +4,7 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
-#' @export dClustAllData
-dClustAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20){
+depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20){
   penaltyForRightSize <- penalty*((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 
   dataMat<-data.matrix(inDataFrameScaled)

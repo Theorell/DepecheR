@@ -5,10 +5,12 @@
 \title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a dClust result}
 \usage{
 dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
-  paired = FALSE, multipleCorrMethod = "hochberg", densContour = TRUE,
-  name = "dWilcox", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
-  createDirectory = FALSE, directoryName = "dWilcox", bandColor = "black",
+  paired = FALSE, multipleCorrMethod = "hochberg",
+  densContour = TRUE, name = "dWilcox",
+  groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2], title = FALSE,
+  maxAbsPlottingValues, createDirectory = FALSE,
+  directoryName = "dWilcox", bandColor = "black",
   dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
@@ -59,11 +61,11 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=500)
+xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=50)
 
 #Now add three columns that will separate the first ten from 
 #the second ten individuals and merge the datasets
-xgroups <- generateBimodalData(samplings=2, ncols=3, observations=10000)
+xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=1000)
 colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
 x <- cbind(xindividuals[,1], xgroups[,1], 
 xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
@@ -74,15 +76,16 @@ colnames(x)[1:2] <- c("ids", "group")
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xDepecheObject <- depeche(x[3:ncol(x)])
+xDepecheObject <- depeche(x[3:ncol(x)], maxIter=20)
 clusterVector <- xDepecheObject[[1]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+xSNE <- Rtsne.multicore(x[3:ncol(x)], pca=FALSE)
 
 #Run the function
-dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, clusterVector=clusterVector)
+dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, 
+groupVector=x$group, clusterVector=clusterVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

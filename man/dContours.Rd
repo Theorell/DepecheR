@@ -21,23 +21,6 @@ A list of three components
 \description{
 Here, contour lines for two-dimensional data are construced. It is primarily thought to be used in the context of SNE plots in this package. This function is used both internally in other functions suchas sneFluoroPlot and sneDensityPlot, but also as a standalone function, as it increases speed greatly to generate the density curves only once per overall analysis.
 }
-\examples{
-#Generate a dataframe with two numeric, normally distributed vectors.
-#Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData(samplings=2)
-
-#Scale this datamframe
-x_scaled <- dScale(x[,2:ncol(x)], center=FALSE)
-#Run the function
-contour_result <- dContours(x_scaled[,1:2])
-
-#Plot the result
-contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, 
-xlim=c(-0.2, 1.2), 
-ylim=c(-0.2, 1.2), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
-xaxs="i", yaxs="i")
-
-}
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 }

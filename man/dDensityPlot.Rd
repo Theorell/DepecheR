@@ -5,10 +5,11 @@
 \title{Display density on 2D plot}
 \usage{
 dDensityPlot(xYData, color = c("blue", "rainbowCols", "a colorVector"),
-  commonName, plotEachIdSeparately = FALSE, idsVector, densContour = TRUE,
-  title = FALSE, createDirectory = TRUE,
+  commonName, plotEachIdSeparately = FALSE, idsVector,
+  densContour = TRUE, title = FALSE, createDirectory = TRUE,
   directoryName = paste("Density plots for ", commonName, "s", sep = ""),
-  scalingControl, bandColor = "black", dotSize = 400/sqrt(nrow(xYData)))
+  scalingControl, bandColor = "black",
+  dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
 \item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -57,14 +58,11 @@ Function to show density for a set of observations on a field created by two var
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-x <- generateBimodalData(samplings=5, observations=2000)
-
-#Scale the data 
-x_scaled <- dScale(x=x[2:ncol(x)])
+x <- generateBimodalData(samplings=5, observations=500)
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+xSNE <- Rtsne.multicore(x[,2:ncol(x)], pca=FALSE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
@@ -84,5 +82,5 @@ commonName="all samplings")
 
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
+\code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 }

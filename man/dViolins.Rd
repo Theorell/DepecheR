@@ -26,7 +26,7 @@ Here, violin plots of a specific cluster and the total population are created fo
 }
 \examples{
 #Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData(samplings=2, dataCols=8)
+x <- generateBimodalData(samplings=2, dataCols=8, observations=100)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
@@ -35,11 +35,11 @@ setwd("~/Desktop")
 xDepecheObject <- depeche(x[2:ncol(x)])
 
 #Create the plots of the variables that contribute to creating each cluster
-dViolins(xDepecheObject)
+dViolins(xDepecheObject, inDataFrame=x[2:ncol(x)])
 
 #Now create plots of all clusters, regardless of if they contributed or not
-dViolins(xDepecheObject, plotAll=TRUE)
+dViolins(xDepecheObject, inDataFrame=x[2:ncol(x)], plotAll=TRUE)
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{colorVector}}
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}
 }

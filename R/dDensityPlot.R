@@ -30,18 +30,15 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 
-#' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-#' x <- generateBimodalData(samplings=5, observations=2000)
-#'
-#' #Scale the data 
-#' x_scaled <- dScale(x=x[2:ncol(x)])
+#' x <- generateBimodalData(samplings=5, observations=500)
 #'
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+#' xSNE <- Rtsne.multicore(x[,2:ncol(x)], pca=FALSE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
@@ -133,7 +130,6 @@ dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector")
       
     }
         
-    
   }
 
   if(createDirectory==TRUE){
@@ -141,60 +137,4 @@ dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector")
   }
 
 }
-
-dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title){
-
-  if(multipleColors==FALSE){
-
-  x1 <- xYDataScaled[,1]
-  x2 <- xYDataScaled[,2]
-  df <- data.frame(x1,x2)
-
-  ## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
-  x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
-  df$dens <- col2rgb(x)[1,] + 1L
-  df$col <- cols[df$dens]
-
-  }
-
-  if(multipleColors==TRUE){
-
-  	#Divide the dataframe according to which color annotation the event has
-  	colors <- colorList[[length(colorList)-1]]
-  	color <- colorList[[length(colorList)]]
-  	dfList <- list()
-  	for(i in 1:length(colors)){
-
-  		x1 <- xYDataScaled[color==colors[i],1]
-  		x2 <- xYDataScaled[color==colors[i],2]
-  		df <- data.frame(x1,x2)
-  		cols <- colorList[[i]]
-  		## Use densCols() output to get density at each point. The colors here are only supporting the coming order of the rows further down the script.
-  		x <- densCols(x1,x2, colramp=colorRampPalette(c("black", "white")))
-  		df$dens <- col2rgb(x)[1,] + 1L
-  		df$col <- cols[df$dens]
-  		dfList[[i]] <- df
-  	}
-
-     df <- do.call("rbind", dfList)
-  }
-
-  png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  # Plot it, reordering rows so that densest points are plotted on top
-  if(title==TRUE){
-    plot(x2~x1, data=df[order(df$dens),], main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(title==FALSE){
-    plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-
-
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  } 
-  dev.off()
-
-}
-
 

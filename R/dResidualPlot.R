@@ -20,25 +20,22 @@
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
-#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcoxPlot}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
 #' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-#' x <- generateBimodalData(samplings=2, dataCols=7)
-#'
-#' #Scale the data 
-#' x_scaled <- dScale(x=x[2:ncol(x)])
+#' x <- generateBimodalData(samplings=2, dataCols=7, observations=500)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #' 
 #' #Optimize and run the clustering function.
-#' xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=1000, selectionSampleSize=1000)
+#' xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=500, selectionSampleSize=500, maxIter=20)
 #' clusterVector <- xDepecheObject[[1]]
 #' 
 #' #Run Barnes Hut tSNE on this. 
 #' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+#' xSNE <- Rtsne.multicore(x[2:ncol(x)], pca=FALSE)
 #'
 #' #And finally run the function
 #' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
@@ -127,7 +124,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
     contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
   } 
   dev.off()
-#Create a color legend with text
+ #Create a color legend with text
 
 	yname <- "Residual values"
 	topText <- paste(groupName1, " is more abundant", sep="")

@@ -5,30 +5,25 @@
 #' @importFrom MASS kde2d
 #' @param sneData A dataframe with two columns containing position information for each observation in the dataset. Typically, this is the raw result from the SNE analysis.
 #' @param n The number fo grid points. Default is 100.
-#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcoxPlot}}
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return A list of three components
 #' \describe{
 #'     \item{x, y}{The x and y coordinates of the grid points, vectors of length n.}
 #'     \item{z}{An n[1] by n[2] matrix of the estimated density: rows correspond to the value of x, columns to the value of y.}
 #' }
 #'
-#' @examples
-#' #Generate a dataframe with two numeric, normally distributed vectors.
-#' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData(samplings=2)
-#'
-#' #Scale this datamframe
-#' x_scaled <- dScale(x[,2:ncol(x)], center=FALSE)
-#' #Run the function
-#' contour_result <- dContours(x_scaled[,1:2])
-#'
-#' #Plot the result
-#' contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, 
-#' xlim=c(-0.2, 1.2), 
-#' ylim=c(-0.2, 1.2), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
-#' xaxs="i", yaxs="i")
-#'
-#' @export dContours
+# @examples
+# #Generate a default size dataframe with bimodally distributed data
+# x <- generateBimodalData()
+#
+# #Run the function
+# contour_result <- dContours(x[,2:3])
+#
+# #Plot the result
+# contour(x=contour_result$x, y=contour_result$y, z=contour_result$z, 
+# xlim=c(-0.2, 1.2),  ylim=c(-0.2, 1.2), nlevels=10, lwd=2, drawlabels = FALSE, axes=FALSE, 
+# xaxs="i", yaxs="i")
+#
 dContours <- function(sneData, n=100){
 
 	sneDataNorm <- dScale(x=sneData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)

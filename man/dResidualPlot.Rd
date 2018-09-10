@@ -6,8 +6,8 @@
 \usage{
 dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   name = "dResidualPlot", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE, maxAbsPlottingValues,
-  bandColor = "black", createDirectory = FALSE,
+  groupName2 = unique(groupVector)[2], title = FALSE,
+  maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE,
   directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
@@ -50,25 +50,22 @@ This function is used to compare groups of individuals from whom comparable cyto
 }
 \examples{
 #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-x <- generateBimodalData(samplings=2, dataCols=7)
-
-#Scale the data 
-x_scaled <- dScale(x=x[2:ncol(x)])
+x <- generateBimodalData(samplings=2, dataCols=7, observations=500)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Optimize and run the clustering function.
-xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=1000, selectionSampleSize=1000)
+xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=500, selectionSampleSize=500, maxIter=20)
 clusterVector <- xDepecheObject[[1]]
 
 #Run Barnes Hut tSNE on this. 
 library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x_scaled, pca=FALSE)
+xSNE <- Rtsne.multicore(x[2:ncol(x)], pca=FALSE)
 
 #And finally run the function
 dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcoxPlot}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
 }

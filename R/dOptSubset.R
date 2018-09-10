@@ -4,7 +4,6 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
-#' @export dOptSubset
 dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="default", k=30, maxIter=100, minARI=0.95, minARIImprovement=0.01, penalties, firstClusterNumber){
 
     dOptPenaltyResultList <- list()
@@ -92,9 +91,9 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	 #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
 	 if(nrow(inDataFrameScaled)<10000){
 	   penalty <- dOptPenaltyResultList[[length(dOptPenaltyResultList)]][[1]][1,1]
-	   dClustAllDataResult <- dClustAllData(inDataFrameScaled, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
-	   clusterVectorEquidistant <- dClustAllDataResult[[1]]
-	   reducedClusterCenters <- dClustAllDataResult[[2]]
+	   depecheAllDataResult <- depecheAllData(inDataFrameScaled, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
+	   clusterVectorEquidistant <- depecheAllDataResult[[1]]
+	   reducedClusterCenters <- depecheAllDataResult[[2]]
 	 } else {
 	   #Now, the best run amongst all the runs with the largest sample size is defined, by identifying the solution that gives the highest mean f-measure for all the others.
 	   
@@ -106,14 +105,8 @@ dOptSubset <- function(inDataFrameScaled, sampleSizes, selectionSampleSize="defa
 	   
 	   selectionDataSetMatrix <- data.matrix(selectionDataSet)
 	   
-	   #if(ncol(selectionDataSet)<500){
-	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% DepecheR:::removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	   #} #else {
-	     #cl <-  parallel::makeCluster((detectCores() - 1), type = "SOCK")
-	     #registerDoSNOW(cl)
-	     #allocationResultList <- foreach(i=1:length(allSolutions)) %dopar% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-	     #parallel::stopCluster(cl)	
-	   #}
+	     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
+
 	   
 	   #Here, the corrected Rand index with each allocationResult as the first vector vector and all the others as individual second vectors is identified
 	   n_cores <- detectCores() - 1

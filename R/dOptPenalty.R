@@ -3,7 +3,6 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
-#' @export dOptPenalty
 dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.99){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
