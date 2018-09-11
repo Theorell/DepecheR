@@ -11,10 +11,10 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
   groupName2 = unique(groupVector)[2], title = FALSE,
   maxAbsPlottingValues, createDirectory = FALSE,
   directoryName = "dWilcox", bandColor = "black",
-  dotSize = 400/sqrt(nrow(xYData)))
+  dotSize = 500/sqrt(nrow(xYData)))
 }
 \arguments{
-\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
+\item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
 
 \item{idsVector}{Vector with the same length as xYData containing information about the id of each observation.}
 
@@ -28,12 +28,7 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.}
 
-\item{densContour}{An object to create the density contours for the plot. Three possible values: 
-\describe{
-              \item{densContour}{A densContour object generated previously with dContours}
-              \item{TRUE}{a densContour object will be generated internally}
-              \item{FALSE}{No density contours will be displayed.}
-             }}
+\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -60,32 +55,41 @@ This function always returns a dataframe showing the Wilcoxon statistic and the 
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
 }
 \examples{
-#Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=50)
+#Load some data
+data(testData)
 
-#Now add three columns that will separate the first ten from 
-#the second ten individuals and merge the datasets
-xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=1000)
-colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
-x <- cbind(xindividuals[,1], xgroups[,1], 
-xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
-
-colnames(x)[1:2] <- c("ids", "group")
+#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
+#data is inluded
+#library(Rtsne)
+#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+data(testDataSNE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
-
-#Optimize and run the clustering function.
-xDepecheObject <- depeche(x[3:ncol(x)], maxIter=20)
-clusterVector <- xDepecheObject[[1]]
-
-#Run Barnes Hut tSNE on this. 
-library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x[3:ncol(x)], pca=FALSE)
+ 
+#Run the clustering function. For more rapid example execution, 
+#a depeche clustering of the data is inluded
+#testDataDepeche <- depeche(testData[,2:15]) 
+data(testDataDepeche)
 
 #Run the function
-dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, 
-groupVector=x$group, clusterVector=clusterVector)
+dWilcoxResult <- dWilcox(xYData=testDataSNE$Y, idsVector=testData$ids, 
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
+
+#Here is an example of how the display vector can be used.
+subsetVector <- sample(1:nrow(testData), size=10000)
+
+#Now, the SNE for this displayVector could be created
+#testDataSubset <- testData[subsetVector, 2:15]
+#testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
+#But we will just subset the testDataSNE immediately
+testDataSNESubset <- testDataSNE$Y[subsetVector,]
+
+#And now, this new SNE can be used for display, although all 
+#the data is used for the Wilcoxon calculations
+dWilcoxResult <- dWilcox(xYData=testDataSNESubset, idsVector=testData$ids, 
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
+
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

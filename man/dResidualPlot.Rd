@@ -2,7 +2,7 @@
 % Please edit documentation in R/dResidualPlot.R
 \name{dResidualPlot}
 \alias{dResidualPlot}
-\title{Showing the residuals when subtracting the values from one group from another on a sne plot}
+\title{Showing the residuals when subtracting the values from one group from another on a SNE plot}
 \usage{
 dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   name = "dResidualPlot", groupName1 = unique(groupVector)[1],
@@ -11,18 +11,13 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)))
 }
 \arguments{
-\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
+\item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
 
 \item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
-\item{densContour}{An object to create the density contours for the plot. Three possible values: 
-\describe{
-              \item{densContour}{A densContour object generated previously with dContours}
-              \item{TRUE}{a densContour object will be generated internally}
-              \item{FALSE}{No density contours will be displayed.}
-             }}
+\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -46,25 +41,29 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
 A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 }
 \description{
-This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated where the number of individuals does not allow any statistical comparisons.
+This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
 }
 \examples{
-#Generate a dataframe with bimodally distributed data and 2 subsamplings.
-x <- generateBimodalData(samplings=2, dataCols=7, observations=500)
+#Load some data
+data(testData)
+
+#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
+#data is inluded
+#library(Rtsne)
+#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+data(testDataSNE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
-
-#Optimize and run the clustering function.
-xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=500, selectionSampleSize=500, maxIter=20)
-clusterVector <- xDepecheObject[[1]]
-
-#Run Barnes Hut tSNE on this. 
-library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x[2:ncol(x)], pca=FALSE)
+ 
+#Run the clustering function. For more rapid example execution, 
+#a depeche clustering of the data is inluded
+#testDataDepeche <- depeche(testData[,2:15]) 
+data(testDataDepeche)
 
 #And finally run the function
-dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
+dResidualPlot(xYData=testDataSNE$Y, groupVector=testData[,16], 
+clusterVector=testDataDepeche$clusterVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}

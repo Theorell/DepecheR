@@ -1,4 +1,4 @@
-#' Test dataset
+#' A 14 color flow cytometry dataset for example execution and playing around
 #'
 #' This dataset is a 14 color pre-compensated, transformed flow cytometry dataset focusing 
 #' on cytotoxic lymphocytes, where dead cells have been removed. To make examples very 

@@ -2,19 +2,14 @@
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
-#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
+#' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
-#' @param densContour An object to create the density contours for the plot. Three possible values: 
-#' \describe{
-#'               \item{densContour}{A densContour object generated previously with dContours}
-#'               \item{TRUE}{a densContour object will be generated internally}
-#'               \item{FALSE}{No density contours will be displayed.}
-#'              }
+#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -27,34 +22,43 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
-#' #Generate a dataframe with bimodally distributed data and 20 subsamplings.
-#' xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=50)
-#'
-#' #Now add three columns that will separate the first ten from 
-#' #the second ten individuals and merge the datasets
-#' xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=1000)
-#' colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
-#' x <- cbind(xindividuals[,1], xgroups[,1], 
-#' xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
+#' #Load some data
+#' data(testData)
 #' 
-#' colnames(x)[1:2] <- c("ids", "group")
+#' #Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
+#' #data is inluded
+#' #library(Rtsne)
+#' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+#' data(testDataSNE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
-#' 
-#' #Optimize and run the clustering function.
-#' xDepecheObject <- depeche(x[3:ncol(x)], maxIter=20)
-#' clusterVector <- xDepecheObject[[1]]
-#'
-#' #Run Barnes Hut tSNE on this. 
-#' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x[3:ncol(x)], pca=FALSE)
+#'  
+#' #Run the clustering function. For more rapid example execution, 
+#' #a depeche clustering of the data is inluded
+#' #testDataDepeche <- depeche(testData[,2:15]) 
+#' data(testDataDepeche)
 #'
 #' #Run the function
-#' dWilcox(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, 
-#' groupVector=x$group, clusterVector=clusterVector)
+#' dWilcoxResult <- dWilcox(xYData=testDataSNE$Y, idsVector=testData$ids, 
+#' groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
+#' 
+#' #Here is an example of how the display vector can be used.
+#' subsetVector <- sample(1:nrow(testData), size=10000)
+#' 
+#' #Now, the SNE for this displayVector could be created
+#' #testDataSubset <- testData[subsetVector, 2:15]
+#' #testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
+#' #But we will just subset the testDataSNE immediately
+#' testDataSNESubset <- testDataSNE$Y[subsetVector,]
+#' 
+#' #And now, this new SNE can be used for display, although all 
+#' #the data is used for the Wilcoxon calculations
+#' dWilcoxResult <- dWilcox(xYData=testDataSNESubset, idsVector=testData$ids, 
+#' groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
+#' 
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=400/sqrt(nrow(xYData))){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -69,6 +73,10 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 
   if(length(unique(idsVector))<8){
     warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
+  }
+  
+  if(class(xYData)=="matrix"){
+    xYData <- as.data.frame(xYData)
   }
 
   #Here, the statistical evaluation is performed. First, the data is divided into each group.
@@ -160,7 +168,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
+  #Create the density matrix for xYData.
   if(densContour==TRUE){
     densContour <- dContours(xYData)
   }

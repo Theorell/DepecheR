@@ -5,29 +5,20 @@
 #' @importFrom viridis inferno magma plasma viridis
 #' @importFrom gplots rich.colors
 #' @importFrom grDevices rainbow
-#' @param x A vector, in most cases of identities of individuals or clusters ect.
+#' @param x A vector, in most cases of identities of individuals or clusters, et cetera.
 #' @param order The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @return A vector, the same length as x with each unique value substitutet with a color.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
 #' @examples
-#' #Generate a dataframe with bimodally distributed data and a few separate subsamplings
-#' x <- generateBimodalData(samplings=5, observations=500)
-#'
-#' #Run Barnes Hut tSNE on this. 
-#' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
-#'
-#' #Now use our function
-#' xColors <- dColorVector(x[,1])
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
-#'
-#' #Plot all ids together and use rainbowColors
-#' dDensityPlot(xYData=as.data.frame(xSNE$Y), idsVector=x[,1], commonName="All_samplings", 
-#' color=xColors, createDirectory=FALSE)
-#'
+#' #Load some data
+#' data(testData)
+#' 
+#' testColor <- dColorVector(testData$ids, colorScale="plasma")
+#' 
+#' #In this case, each of the 97 individual donors in the dataset has gotten their own color code: 
+#' table(testColor) 
+#' 
 #' @export dColorVector
 dColorVector <- function(x, order=unique(x), colorScale="viridis"){
 	if(class(x)=="factor"){

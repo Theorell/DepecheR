@@ -1,20 +1,20 @@
-#' Function to generate synthetic flow cytometry-like data
-#'
-#'
-#' This function creates a dataframe with any chose size with bimodally distributed data in each column. The probability of the sizes of the respective populations in the bimodal distributions is stochastic.
+# Function to generate synthetic flow cytometry-like data
+#
+#
+# This function creates a dataframe with any chose size with bimodally distributed data in each column. The probability of the sizes of the respective populations in the bimodal distributions is stochastic.
 #' @importFrom dplyr bind_rows
-#' @param samplings Number of individual probability samplings with identical standard deviation samplings, ie a simple simulated parallel to number of subjects.
-#' @param dataCols Number of columns in the generated dataframe. Default is 5.
-#' @param observations Number of rows per donor in the generated dataframe. Default is 10000.
-#' @return A dataframe with the specified numbers of columns and rows.
-#' @examples
-#' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData()
-#'
-#' #Plot the first two variables in this dataframe
-#' plot(x[,2], x[,3])
-#'
-#' @export generateBimodalData
+# @param samplings Number of individual probability samplings with identical standard deviation samplings, ie a simple simulated parallel to number of subjects.
+# @param dataCols Number of columns in the generated dataframe. Default is 5.
+# @param observations Number of rows per donor in the generated dataframe. Default is 10000.
+# @return A dataframe with the specified numbers of columns and rows.
+# @examples
+# #Generate a default size dataframe with bimodally distributed data
+# x <- generateBimodalData()
+#
+# #Plot the first two variables in this dataframe
+# plot(x[,2], x[,3])
+#
+# @export generateBimodalData
 generateBimodalData <- function(samplings=1, dataCols=5, observations=10000){
 
   stdevs1 <- sample(c(0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)

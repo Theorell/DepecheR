@@ -1,4 +1,4 @@
-#' Test dataset
+#' SNE of the testData set
 #'
 #' This is a t-distributed stochastic neighbor embedding of the testData dataset. It has  
 #' been generated with the Rtsne.multicore package.
@@ -8,7 +8,7 @@
 #'
 #' @usage data(testDataSNE)
 #'
-#' @format An object of class \code{"data.frame"}; 
+#' @format An object of class \code{"list"}; 
 #'
 #' @keywords datasets
 #' #'

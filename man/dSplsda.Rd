@@ -7,13 +7,12 @@
 dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
   displayVector, testSampleRows, densContour = TRUE, name = "dSplsda",
   groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE,
-  maxAbsPlottingValues, createDirectory = FALSE,
-  directoryName = "dSplsda", bandColor = "black",
-  dotSize = 400/sqrt(nrow(xYData)))
+  groupName2 = unique(groupVector)[2], maxAbsPlottingValues,
+  title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
+  bandColor = "black", dotSize = 500/sqrt(nrow(xYData)))
 }
 \arguments{
-\item{xYData}{A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.}
+\item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
 
 \item{idsVector}{Vector with the same length as xYData containing information about the id of each observation.}
 
@@ -21,18 +20,13 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
-\item{pairingVector}{If this vector is present, a multilevel spls-da will be performed, that considers the within-donor variation between different stimuli. Defaults to NULL.}
+\item{pairingVector}{Optionally, a vector with the same length as xYData. If included, a multilevel spls-da will be performed, that e.g. considers the within-donor variation between different stimuli.}
 
-\item{displayVector}{Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
+\item{displayVector}{Optionally, if the dataset is very large (>100 000 observations) and hence the SNE calculation becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
 
 \item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows.}
 
-\item{densContour}{An object to create the density contours for the plot. Three possible values: 
-\describe{
-              \item{densContour}{A densContour object generated previously with dContours}
-              \item{TRUE}{a densContour object will be generated internally}
-              \item{FALSE}{No density contours will be displayed.}
-             }}
+\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -40,9 +34,9 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{groupName2}{The name for the second group}
 
-\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
+\item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
 
-\item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum statistic that is generated in the analysis.}
+\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 
@@ -53,48 +47,73 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 }
 \value{
-This function returns the full result of the sPLS-DA. It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
+This function returns the full result of the sPLS-DA. It also returns a SNE based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 }
 \description{
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
 }
 \examples{
-#Generate a dataframe with bimodally distributed data and 20 subsamplings.
-xindividuals <- generateBimodalData(samplings=40, dataCols=7, observations=50)
+#Load some data
+data(testData)
 
-#Now add three columns that will separate the first ten from 
-#the second ten individuals and merge the datasets
-xgroups <- generateBimodalData(samplings=2, dataCols=3, observations=1000)
-colnames(xgroups)[2:4] <- c("X8", "X9", "X10")
-x <- cbind(xindividuals[,1], xgroups[,1], 
-xindividuals[,2:ncol(xindividuals)], xgroups[,2:ncol(xgroups)])
-
-colnames(x)[1:2] <- c("ids", "group")
+#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
+#data is inluded
+#library(Rtsne)
+#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+data(testDataSNE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
-
-#Optimize and run the clustering function.
-xDepecheObject <- depeche(x[3:ncol(x)], sampleSizes=100, selectionSampleSize=500, maxIter=20)
-clusterVector <- xDepecheObject[[1]]
-
-#Run Barnes Hut tSNE on this. 
-library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(x[3:ncol(x)], pca=FALSE)
+ 
+#Run the clustering function. For more rapid example execution, 
+#a depeche clustering of the data is inluded
+#testDataDepeche <- depeche(testData[,2:15]) 
+data(testDataDepeche)
 
 #Run the function. This time without pairing.
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, 
-groupVector=x$group, clusterVector=clusterVector)
+sPLSDAObject <- dSplsda(xYData=testDataSNE$Y, idsVector=testData$ids, 
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
 
 #Here, pairing is used
-#First, an artificial pairing vector, making the first donor amongst the first ten 
-#connected to the first donor among the second ten.
-pairingVector <- c(rep(1:20, each=50), rep(1:20, each=50))
+#First, an artificial pairing vector is introduced and a subset of the data is used, to make the 
+#number of donors identical. NB! Paired execution CAN ONLY BE USED 
+#in instances where true pairing is present, such as when identical individuals are 
+#compared across different treatments. This artificial example is only present to show how to
+#use the function, it is not good practive to set up artificial pairing vectors!
+pairingVector <- c(rep(rep(1:29, times=1000), times=2))
+xYDataPaired <- testDataSNE$Y[39001:nrow(testDataSNE$Y),]
+testDataPaired <- testData[39001:nrow(testData),]
+clusterVectorPaired <- testDataDepeche$clusterVector[39001:length(testDataDepeche$clusterVector)]
 
 #Then the actual multilevel sPLS-DA is run. 
-sPLSDAObject <- dSplsda(xYData=as.data.frame(xSNE$Y), idsVector=x$ids, groupVector=x$group, 
-clusterVector=clusterVector, pairingVector=pairingVector, name="d_sPLSDAPlot_paired", 
-groupName1="Stimulation 1", groupName2="Stimulation 2")
+sPLSDAObject <- dSplsda(xYData=xYDataPaired, idsVector=testDataPaired$ids, 
+groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, 
+pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
+groupName2="Stimulation 2")
+
+#Here is an example of how the display vector can be used.
+subsetVector <- sample(1:nrow(testData), size=10000)
+
+#Now, the SNE for this displayVector could be created
+#testDataSubset <- testData[subsetVector, 2:15]
+#testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
+#But we will just subset the testDataSNE immediately
+testDataSNESubset <- testDataSNE$Y[subsetVector,]
+
+#And now, this new SNE can be used for display, although all 
+#the data is used for the sPLS-DA calculations
+sPLSDAObject <- dSplsda(xYData=testDataSNESubset, idsVector=testData$ids, 
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
+
+#Finally, an example of a train-test set situation, where a random half the dataset 
+#is used for training and the second half is used for testing. It is naturally more
+#biologically interesting to use two independent datasets for training and testing 
+#in the real world.
+testDataRows <- sample(1:nrow(testData), size=48500)
+sPLSDAObject <- dSplsda(xYData=testDataSNE$Y, idsVector=testData$ids, 
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector,
+testSampleRows=testDataRows)
+
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

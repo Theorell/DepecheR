@@ -7,7 +7,7 @@
 dColorVector(x, order = unique(x), colorScale = "viridis")
 }
 \arguments{
-\item{x}{A vector, in most cases of identities of individuals or clusters ect.}
+\item{x}{A vector, in most cases of identities of individuals or clusters, et cetera.}
 
 \item{order}{The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.}
 
@@ -20,22 +20,13 @@ A vector, the same length as x with each unique value substitutet with a color.
 This function takes a vector x and a shorter ordering vector with all the unique values of the x vector in the specific order that the colors should be in and returns a vector of RGB colors the same length as the initial x vector.
 }
 \examples{
-#Generate a dataframe with bimodally distributed data and a few separate subsamplings
-x <- generateBimodalData(samplings=5, observations=500)
+#Load some data
+data(testData)
 
-#Run Barnes Hut tSNE on this. 
-library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
+testColor <- dColorVector(testData$ids, colorScale="plasma")
 
-#Now use our function
-xColors <- dColorVector(x[,1])
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
-
-#Plot all ids together and use rainbowColors
-dDensityPlot(xYData=as.data.frame(xSNE$Y), idsVector=x[,1], commonName="All_samplings", 
-color=xColors, createDirectory=FALSE)
+#In this case, each of the 97 individual donors in the dataset has gotten their own color code: 
+table(testColor) 
 
 }
 \seealso{

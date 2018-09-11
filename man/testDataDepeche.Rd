@@ -3,7 +3,7 @@
 \docType{data}
 \name{testDataDepeche}
 \alias{testDataDepeche}
-\title{Test dataset}
+\title{A depeche clustering of the testData set}
 \format{An object of class \code{"list"};}
 \usage{
 data(testDataDepeche)

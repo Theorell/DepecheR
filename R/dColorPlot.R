@@ -9,14 +9,8 @@
 #' @param colorData A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.
 #' @param controlData Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.
-#' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
-#' @param densContour An object to create the density contours for the plot. Three possible values: 
-#' \describe{
-#'               \item{densContour}{A densContour object generated previously with dContours}
-#'               \item{TRUE}{a densContour object will be generated internally}
-#'               \item{FALSE}{No density contours will be displayed.}
-#'              }
-#' If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.
+#' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
+#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param addLegend If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.
 #' @param idsVector If a legend is added, this argument controls the naming in the legend.
 #' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
@@ -30,33 +24,38 @@
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
-#' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData(samplings=3, observations=500)
+#' #Load some data
+#' data(testData)
 #' 
-#' #Run Barnes Hut tSNE on this. 
-#' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
+#' #Run Barnes Hut tSNE on this. For more rapid example execution, a pre-run SNE is inluded
+#' #library(Rtsne)
+#' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+#' data(testDataSNE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
 #'
 #' #Run the function for all the variables
-#' dColorPlot(colorData=x[2:ncol(x)], xYData=xSNE$Y, drawColorPalette=TRUE)
+#' dColorPlot(colorData=testData[2:15], xYData=testDataSNE$Y, drawColorPalette=TRUE)
 #'
-#' #Create a color vector and display it on the SNE field.
-#' xColor <- dColorVector(x[,1], colorScale="plasma")
-#' dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), 
-#' names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+#' #Create a color vector and display it on the SNE field. For this purpose,
+#' #four individual donors are extracted from the test dataset
+#' testDataSubset <- rbind(testData[1:2000,], testData[95001:97000,])
+#' testDataSNESubset <- rbind(testDataSNE$Y[1:2000,], testDataSNE$Y[95001:97000,])
+#' testColor <- dColorVector(testDataSubset$ids, colorScale="plasma")
+#' dColorPlot(colorData=testColor, xYData=testDataSNESubset, 
+#'            names="separate samplings", addLegend=TRUE, idsVector=testDataSubset$ids)
+#' 
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=400/sqrt(nrow(xYData)), multiCore="default"){
+dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=500/sqrt(nrow(xYData)), multiCore="default"){
 
   if(class(colorData)=="matrix"){
     colorData <- as.data.frame(colorData)
   }
   
   if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
-    stop("colorData needs to be either a numeric vector, a character vector of colors or a matrix or dataframe of numbers.")
+    stop("ColorData needs to be either a numeric vector, a character vector of colors or a matrix or dataframe of numbers.")
   }
 
   if(class(xYData)=="matrix"){
@@ -70,7 +69,6 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     workingDirectory <- getwd()
     dir.create(directoryName)
     setwd(paste(workingDirectory, directoryName, sep="/"))
-
   }
   if(names=="default" && class(colorData)=="numeric"){
     names <- "testVariable"
@@ -87,12 +85,10 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     controlData <- colorData
   }
 
-  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
-  if(is.logical(densContour)==TRUE){
+  #Create the density matrix for xYData.
     if(densContour==TRUE){
       densContour <- dContours(xYData)      
     }
-  }
   
   if(drawColorPalette==TRUE){
     pdf("palette.pdf")
@@ -113,7 +109,7 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(1:100))
     if(multiCore=="default"){
       if(nrow(colorData)>100000){
-        multiCore <- TRUExYDataFraction <- DepecheR:::dScale(as.data.frame(xSNE$Y), scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+        multiCore <- TRUExYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
       } else {
         multiCore <- FALSE

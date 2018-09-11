@@ -9,7 +9,7 @@ dColorPlot(colorData, controlData, xYData, names = "default",
   drawColorPalette = FALSE, title = FALSE, createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
   truncate = TRUE, bandColor = "black",
-  dotSize = 400/sqrt(nrow(xYData)), multiCore = "default")
+  dotSize = 500/sqrt(nrow(xYData)), multiCore = "default")
 }
 \arguments{
 \item{colorData}{A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.}
@@ -18,15 +18,9 @@ dColorPlot(colorData, controlData, xYData, names = "default",
 
 \item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.}
 
-\item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substitutet with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
+\item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
-\item{densContour}{An object to create the density contours for the plot. Three possible values: 
-\describe{
-              \item{densContour}{A densContour object generated previously with dContours}
-              \item{TRUE}{a densContour object will be generated internally}
-              \item{FALSE}{No density contours will be displayed.}
-             }
-If not present, it will be generated with the xYData. Useful when only a subfraction of a dataset is plotted, and a superimposition of the distribution of the whole dataset is of interest.}
+\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
 \item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.}
 
@@ -55,23 +49,28 @@ Plots showing the colorData displayed as color on the field created by xYData.
 Function to overlay one variable for a set of observations on a field created by two other variables known for the same observations. The plot is constructed primarily for displaying variables on 2D-stochastic neighbour embedding fields, but can be used for any sets of (two or) three variables known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become extremely big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 }
 \examples{
-#Generate a default size dataframe with bimodally distributed data
-x <- generateBimodalData(samplings=3, observations=500)
+#Load some data
+data(testData)
 
-#Run Barnes Hut tSNE on this. 
-library(Rtsne.multicore)
-xSNE <- Rtsne.multicore(as.matrix(x[2:ncol(x)]), pca=FALSE)
+#Run Barnes Hut tSNE on this. For more rapid example execution, a pre-run SNE is inluded
+#library(Rtsne)
+#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+data(testDataSNE)
 
 #Set a reasonable working directory, e.g.
 setwd("~/Desktop")
 
 #Run the function for all the variables
-dColorPlot(colorData=x[2:ncol(x)], xYData=xSNE$Y, drawColorPalette=TRUE)
+dColorPlot(colorData=testData[2:15], xYData=testDataSNE$Y, drawColorPalette=TRUE)
 
-#Create a color vector and display it on the SNE field.
-xColor <- dColorVector(x[,1], colorScale="plasma")
-dColorPlot(colorData=xColor, xYData=as.data.frame(xSNE$Y), 
-names="separate samplings", addLegend=TRUE, idsVector=x[,1])
+#Create a color vector and display it on the SNE field. For this purpose,
+#four individual donors are extracted from the test dataset
+testDataSubset <- rbind(testData[1:2000,], testData[95001:97000,])
+testDataSNESubset <- rbind(testDataSNE$Y[1:2000,], testDataSNE$Y[95001:97000,])
+testColor <- dColorVector(testDataSubset$ids, colorScale="plasma")
+dColorPlot(colorData=testColor, xYData=testDataSNESubset, 
+           names="separate samplings", addLegend=TRUE, idsVector=testDataSubset$ids)
+
 
 }
 \seealso{

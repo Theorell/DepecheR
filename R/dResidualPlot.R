@@ -1,16 +1,11 @@
-#' Showing the residuals when subtracting the values from one group from another on a sne plot
+#' Showing the residuals when subtracting the values from one group from another on a SNE plot
 #'
 #'
-#' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated where the number of individuals does not allow any statistical comparisons.
-#' @param xYData A dataframe with two columns. Each row contains information about the x and y positition in the field for that observation.
+#' This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
+#' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param densContour An object to create the density contours for the plot. Three possible values: 
-#' \describe{
-#'               \item{densContour}{A densContour object generated previously with dContours}
-#'               \item{TRUE}{a densContour object will be generated internally}
-#'               \item{FALSE}{No density contours will be displayed.}
-#'              }
+#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -23,22 +18,26 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
-#' #Generate a dataframe with bimodally distributed data and 2 subsamplings.
-#' x <- generateBimodalData(samplings=2, dataCols=7, observations=500)
+#' #Load some data
+#' data(testData)
+#' 
+#' #Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
+#' #data is inluded
+#' #library(Rtsne)
+#' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+#' data(testDataSNE)
 #'
 #' #Set a reasonable working directory, e.g.
 #' setwd("~/Desktop")
-#' 
-#' #Optimize and run the clustering function.
-#' xDepecheObject <- depeche(x[2:ncol(x)], sampleSizes=500, selectionSampleSize=500, maxIter=20)
-#' clusterVector <- xDepecheObject[[1]]
-#' 
-#' #Run Barnes Hut tSNE on this. 
-#' library(Rtsne.multicore)
-#' xSNE <- Rtsne.multicore(x[2:ncol(x)], pca=FALSE)
+#'  
+#' #Run the clustering function. For more rapid example execution, 
+#' #a depeche clustering of the data is inluded
+#' #testDataDepeche <- depeche(testData[,2:15]) 
+#' data(testDataDepeche)
 #'
 #' #And finally run the function
-#' dResidualPlot(xYData=as.data.frame(xSNE$Y), groupVector=x[,1], clusterVector=clusterVector)
+#' dResidualPlot(xYData=testDataSNE$Y, groupVector=testData[,16], 
+#' clusterVector=testDataDepeche$clusterVector)
 #' @export dResidualPlot
 dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
 
@@ -53,6 +52,11 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
     stop("More or less than two groups are present. Please correct this.")
   }
 
+  
+  if(class(xYData)=="matrix"){
+    xYData <- as.data.frame(xYData)
+  }
+  
   #Here, the residuals are identified.
   #A table with the percentage of cells in each cluster for each group is created in analogy with XXX pKMRun.
 
@@ -102,12 +106,10 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #If there is no matrix present to construct the contour lines and these are wanted, create the density matrix for xYData to make them.
-  if(is.logical(densContour)==TRUE){
+  #Create the density matrix for xYData.
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-  }
 
   if(title==TRUE){
   	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
