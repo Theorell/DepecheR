@@ -41,7 +41,7 @@
 # title(xlab = "Clusters")
 # title(ylab = "Fraction")
 # @export dAllocate
-dAllocate <- function(inDataFrame, clusterCenters, ids){
+dAllocate <- function(inDataFrameScaled, clusterCenters, ids){
 
   
   #If some variables have been excluded as they did not contribute to construction of any cluster, they are removed from the inData here
