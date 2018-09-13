@@ -4,11 +4,14 @@
 \alias{dViolins}
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
-dViolins(depecheObject, inDataFrame, order = unique(clusterVector),
-  colorScale = "viridis", plotAll = FALSE)
+dViolins(clusterVector, clusterCenters, inDataFrame,
+  order = unique(clusterVector), colorScale = "viridis",
+  plotAll = FALSE)
 }
 \arguments{
-\item{depecheObject}{A list object generated with the depeche function, containing a cluster vector and a cluster centers matrix.}
+\item{clusterVector}{Vector with the same length as inDataFrame containing information about the cluster identity of each observation.}
+
+\item{clusterCenters}{The cluster centers from the corresponding depeche run.}
 
 \item{inDataFrame}{The data used to generate the depecheObject}
 
@@ -37,7 +40,7 @@ setwd("~/Desktop")
 data(testDataDepeche)
 
 #Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche, inDataFrame=testData[,2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame=testData[,2:15])
 
 }
 \seealso{
