@@ -6,7 +6,7 @@ Authors@R: c(person("Jakob", "Theorell", email = "jakob.theorell@ki.se",
                   role = c("aut", "cre")),
            person("Axel", "Theorell", email = "a.theorell@fz-juelich.de",
                   role = "aut", "cre"))
-Author: 
+Author:
    Jakob Theorell [aut, cre],
    Axel Theorell [aut, cre]
 Maintainer: Jakob Theorell <jakob.theorell@ki.se>
@@ -19,4 +19,5 @@ Depends: R (>= 3.4.0)
 Imports:
   ggplot2 (>= 2.2.1), MASS (>= 7.3.47), Rcpp (>= 0.12.11), dplyr (>= 0.5.0), gplots (>= 3.0.1), viridis (>= 0.4.0), foreach (>= 1.4.3), doSNOW (>= 1.0.14), parallel (>= 3.2.3), mixOmics (>= 6.2.0), moments (>= 0.14)
 LinkingTo: Rcpp, RcppEigen
-Suggests: Rtsne
+Suggests: Rtsne,
+    testthat
