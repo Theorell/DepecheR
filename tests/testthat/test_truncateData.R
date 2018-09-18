@@ -1,10 +1,23 @@
 ######################
 #truncateData
 context('truncateData')
-x <- DepecheR:::generateBimodalData()[,-1]
-xTruncated <- DepecheR:::truncateData(x)
+
+
+#First normal version
+low <- 0.2
+x <- c(1,2,-5,10,20)
+xTruncated <- DepecheR:::truncateData(x, lowQuantile=low, highQuantile=1)
+quant <- quantile(x, low)
+x[3]<-quant
+test_that("truncateData expected output", {
+  expect_equal(x, xTruncated)
+})
 
 ######################
 #truncateDataCoFunction
-x <- DepecheR:::generateBimodalData()
-result <- DepecheR:::truncateDataCoFunction(x[,2], control=x[,2], lowQuantile=0.1, highQuantile=0.9)
+x<-c(1000,4000,-9,100,101)
+xTruncated <- DepecheR:::truncateDataCoFunction(x, control=c(0,100), lowQuantile=0, highQuantile=1)
+x[3]<-1
+test_that("truncateData expected output", {
+  expect_equal(c(100,100,0,100,100), xTruncated)
+})
