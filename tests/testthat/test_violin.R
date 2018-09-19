@@ -4,7 +4,7 @@ context('violin')
 data("testData")
 data("testDataDepeche")
 setwd("~/Desktop")
-dViolins(testDataDepeche, inDataFrame=testData[,2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame=testData[,2:15])
 
 ######################
 #dViolinsCoFunction1
