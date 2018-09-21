@@ -87,9 +87,39 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 
   #Now, a table with the percentage of cells in each cluster for each individual is created for both groups, in analogy with XXX pKMRun.
 
-  clusterTable1 <- table(clusterVectorGroup1, idsVectorGroup1)
-  clusterTable2 <- table(clusterVectorGroup2, idsVectorGroup2)
-
+  clusterTable1 <- as.matrix(as.data.frame.matrix(table(clusterVectorGroup1, idsVectorGroup1)))
+  clusterTable2 <- as.matrix(as.data.frame.matrix(table(clusterVectorGroup2, idsVectorGroup2)))
+  
+  #In the very unlikely event that there is not a single observation for one cluster from one of the groups, this cluster is substituted to that table with a row of zeros.
+  if(nrow(clusterTable1)<length(unique(clusterVector))){
+    zeroMat <- matrix(data=0, nrow=length(unique(clusterVector))-nrow(clusterTable1), ncol=ncol(clusterTable1))
+    
+    colnames(zeroMat) <- colnames(clusterTable1)
+    allRowNames <- as.character(sort(unique(clusterVector)))
+    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable1))]
+    #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
+    clusterTable1big <- rbind(clusterTable1, zeroMat)
+    
+    #The rows of the table are re-sorted
+    clusterTable1bigResorted <- clusterTable1big[order(as.numeric(row.names(clusterTable1big))),]
+    clusterTable1 <- clusterTable1bigResorted
+  } 
+  
+  #And the same procedure is done for the second group 
+  if(nrow(clusterTable2)<length(unique(clusterVector))){
+    zeroMat <- matrix(data=0, nrow=length(unique(clusterVector))-nrow(clusterTable2), ncol=ncol(clusterTable2))
+    
+    colnames(zeroMat) <- colnames(clusterTable2)
+    allRowNames <- as.character(sort(unique(clusterVector)))
+    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable2))]
+    #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
+    clusterTable2big <- rbind(clusterTable2, zeroMat)
+    
+    #The rows of the table are re-sorted
+    clusterTable2bigResorted <- clusterTable2big[order(as.numeric(row.names(clusterTable2big))),]
+    clusterTable2 <- clusterTable2bigResorted
+  } 
+  
   countTable1 <- table(idsVectorGroup1)
   countTable2 <- table(idsVectorGroup2)
 
