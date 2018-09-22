@@ -84,10 +84,10 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
       inDataFrame <- log2(inDataFrame+1)
     } else {
       #First, the data needs to be reasonably log transformed to not too extreme values, but still without loosing resolution.
-      inDataFrameLog <- log2((inDataFrame-quantile(inDataFrame, 0.01))+1)
+      inDataMatrixLog <- log2(apply(inDataFrame, 2, function(x) x-(quantile(x, 0.01)))+1)
       #Then, the extreme negative values will be replaced by 0, as they give rise to artefacts.
-      inDataFrameLog[which(is.nan(inDataFrameLog))] <- 0
-      inDataFrame <- inDataFrameLog
+      inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
+      inDataFrame <- as.data.frame(inDataMatrixLog)
       rm(inDataFrameLog)
     }
     
