@@ -88,7 +88,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
       #Then, the extreme negative values will be replaced by 0, as they give rise to artefacts.
       inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
       inDataFrame <- as.data.frame(inDataMatrixLog)
-      rm(inDataFrameLog)
+      rm(inDataMatrixLog)
     }
     
     kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
