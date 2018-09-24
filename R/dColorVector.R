@@ -54,7 +54,7 @@ dColorVector <- function(x, order=unique(x), colorScale="viridis"){
 
   	#Here, a vector with the same length as the x vector is generated, but where the x info has been substituted with a color.
   	dColorVector <- x
-  		for(i in 1:length(order)){
+  		for(i in 0:length(order)){
     	dColorVector[x==order[i]] <- 	orderColors[i]
   	}
 

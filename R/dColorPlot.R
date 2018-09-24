@@ -101,12 +101,12 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   
   if(class(colorData)=="numeric"){
     colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
-    colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(1:100))
+    colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(0:100))
     dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
   }
   if(class(colorData)=="data.frame"){
     colorDataPercent <- dScale(x=colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
-    colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(1:100))
+    colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(0:100))
     if(multiCore=="default"){
       if(nrow(colorData)>100000){
         multiCore <- TRUExYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
@@ -141,10 +141,8 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     dev.off()
   }
   
-  
   if(createDirectory==TRUE){
     setwd(workingDirectory)
   }
 
 }
-
