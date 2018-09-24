@@ -134,9 +134,9 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
       penaltyList <- list(penalties, penalties)
     }
     if(missing(ids)==TRUE){
-    depecheResultFirst <- depecheCoFunction(inDataFrameFirst, penalties=penaltyList[[1]], sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter)
+    depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penaltyList[[1]], sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE)
     } else {
-      depecheResultFirst <- depecheCoFunction(inDataFrameFirst, penalties=penalties, sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids)
+      depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penalties, sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids, createDirectory=TRUE)
     }
     
     print(paste("Done with level one clustering where ", length(unique(depecheResultFirst$clusterVector)), " clusters were created. Now initiating level two.", sep=""))
@@ -154,8 +154,11 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
       rightNumberSize <- 100*i
       firstClusterNumberList[[i]] <- rightNumberSize+1
     }
+    
+    #Here, a list of cluster names are created, so that the results are sorted in a correct manner
+    directoryNames <- lapply(c(1:length(unique(depecheResultFirst$clusterVector))), function(x) paste("Cluster", x, "level_two_depeche", sep="_"))
     #Here, the secondary clusters are generated for each subframe created by the primary clusters
-    depecheResultSecondList <- mapply(depecheCoFunction, inDataFrameSecondList, firstClusterNumberList, MoreArgs=list(penalties=penaltyList[[2]], sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter), SIMPLIFY=FALSE)
+    depecheResultSecondList <- mapply(depecheCoFunction, inDataFrameSecondList, firstClusterNumberList, directoryNames, MoreArgs=list(penalties=penaltyList[[2]], sampleSizes=sampleSizes, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE), SIMPLIFY=FALSE)
 
     #Now, all the clustering data is recompiled to one long cluster vector
     complexClusterVector <- inDataFrameScaled[,1]

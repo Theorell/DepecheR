@@ -1,7 +1,13 @@
 #' @importFrom dplyr sample_n
 #' @importFrom gplots heatmap.2
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers){
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers, createDirectory=FALSE){
+
+    if(createDirectory==TRUE){
+    workingDirectory <- getwd()
+    dir.create(directoryName)
+    setwd(paste(workingDirectory, directoryName, sep="/"))
+    }
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
   if(nrow(inDataFrameScaled)>1000000){
@@ -60,6 +66,10 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, penalties
     pdf("Cluster centers.pdf")
     heatmap.2(as.matrix(reducedClusterCentersColRow),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, trace="none", na.color="#A2A2A2")
     dev.off()    
+  }
+  
+  if(createDirectory==TRUE){
+    setwd(workingDirectory)
   }
   
   return(depecheResult)
