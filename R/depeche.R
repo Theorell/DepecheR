@@ -129,7 +129,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
   #Here, the dual cluster setup is created
   if(missing(dualDepecheSetup)==FALSE){
     inDataColumns <- dualDepecheSetup[,2]
-    inDataFrameFirst <- inDataFrameScaled[as.character(inDataColumns[which(dualDepecheSetup[,1]==1)])]
+    inDataFrameFirst <- inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1]==1)]]
     if(is.list(penalties)==FALSE){
       penaltyList <- list(penalties, penalties)
     }
@@ -142,7 +142,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
     print(paste("Done with level one clustering where ", length(unique(depecheResultFirst$clusterVector)), " clusters were created. Now initiating level two.", sep=""))
     
     #After this first step, clustering is performed within each of the clusters produced by the depecheResultFirst
-    inDataFrameSecond <- inDataFrameScaled[as.character(inDataColumns[which(dualDepecheSetup[,1]==2)])]
+    inDataFrameSecond <- inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1]==2)]]
     inDataFrameSecondList <- list()
     for(i in 1:length(unique(depecheResultFirst$clusterVector))){
       inDataFrameSecondList[[i]] <- inDataFrameSecond[which(depecheResultFirst$clusterVector==i),]
