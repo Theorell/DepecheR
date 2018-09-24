@@ -4,9 +4,9 @@
 \alias{dDensityPlot}
 \title{Display density on 2D plot}
 \usage{
-dDensityPlot(xYData, color = c("blue", "rainbowCols", "a colorVector"),
-  commonName, plotEachIdSeparately = FALSE, idsVector,
-  densContour = TRUE, title = FALSE, createDirectory = TRUE,
+dDensityPlot(xYData, color = "blue", commonName = "All_density",
+  plotEachIdSeparately = FALSE, idsVector, densContour = TRUE,
+  title = FALSE, createDirectory = TRUE,
   directoryName = paste("Density plots for ", commonName, "s", sep = ""),
   scalingControl, bandColor = "black",
   dotSize = 500/sqrt(nrow(xYData)))

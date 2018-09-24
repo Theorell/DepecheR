@@ -57,7 +57,7 @@
 #' commonName="all samplings")
 #'
 #' @export dDensityPlot
-dDensityPlot <- function(xYData, color=c("blue", "rainbowCols", "a colorVector"), commonName, plotEachIdSeparately=FALSE, idsVector, densContour=TRUE, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEachIdSeparately=FALSE, idsVector, densContour=TRUE, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=500/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
