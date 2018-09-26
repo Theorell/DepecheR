@@ -15,7 +15,7 @@
 #' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
-#' @param thresholdMisclassRate If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. THe visualization value corresponds to the usefulness of the model in separating the groups: the default 0.05 corresponds to dividing all sPLS-DA loadings  with the inverse log10 of 
+#' @param thresholdMisclassRate If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. The threshold corresponds to the usefulness of the model in separating the groups: a misclassification rate of the default 0.05 means that 5% of the individuals are on the wrong side of the theoretical robust middle line between the groups along the sPLS-DA axis, created by finding the middle position between the medians of both populations.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
