@@ -13,7 +13,7 @@
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
-#' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.
+#' @param lowestPlottedP If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. A p-value that determines this can be added here. Default is a p-value of 0.05. In cases where no datapoints have any lower p-values than this, a Wilcoxon-statistic corresponding as closely as possible to 0.05 will be identified with iterations of datasets with the same size as indicated by hte group vector. If one value is lowerthan 0.05, the wilcoxon statistic from this comparison is used instead.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -58,7 +58,7 @@
 #' groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
 #' 
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, maxAbsPlottingValues, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, lowestPlottedP=0.05, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -158,46 +158,99 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   #If a displayVector has been included, it is used here, to subset the clusterVector
   if(missing(displayVector)==FALSE){
-    statisticVector <- clusterVector[displayVector]
+    pVector <- clusterVector[displayVector]
     clusterVectorUsed <- clusterVector[displayVector]
   } else {
-    statisticVector <- clusterVector
+    pVector <- clusterVector
     clusterVectorUsed <- clusterVector
   }
-  for(i in 1:nrow(result)){
-    statisticVector[clusterVectorUsed==result$Cluster[i]] <- result$Wilcoxon_statistic[i]
+  
+  #Here, the p-values are transformed to be useful for plotting
+  medianClustDiff <- median1-median2
+  p_adjusted_log <- log10(p_adjusted)
+  p_adjusted_log_inv <- p_adjusted_log
+  for(i in 1:length(p_adjusted_log)){
+    if(medianClustDiff[i]>0){
+      p_adjusted_log_inv[i] <- -p_adjusted_log[i]
+    }
+    pVector[clusterVectorUsed==result$Cluster[i]] <- p_adjusted_log_inv[i]
   }
 
-  #Here the data that will be used for plotting are scaled.
+  #Here the data that will be used for plotting is scaled.
   xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
-  statistic.df <- as.data.frame(statisticVector)
+  #statistic.df <- as.data.frame(statisticVector)
 
   #Make a breaks vector to define each bin for the colors. 
   #To do this, the Wilcoxon statistic that corresponds to a p-value of 1 needs to be obtained. This is done by running a perfectly overlapping Wilcoxon.
   
-  nullWilcox <- wilcox.test(rep(c(1,2), length=ncol(clusterFractionsForAllIds1)), rep(c(2,1), length=ncol(clusterFractionsForAllIds2)), paired=paired, exact=FALSE)
+  #nullWilcox <- wilcox.test(rep(c(1,2), length=ncol(clusterFractionsForAllIds1)), rep(c(2,1), length=ncol(clusterFractionsForAllIds2)), paired=paired, exact=FALSE)
 
-  centerWilcoxStatistic <- nullWilcox$statistic
+  #centerWilcoxStatistic <- nullWilcox$statistic
   
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
-  if(missing(maxAbsPlottingValues)){
-    maxValue <- max(statistic)-centerWilcoxStatistic
-    minValue <- centerWilcoxStatistic-min(statistic)
-    maxAbsPlottingValues <- max(c(maxValue, minValue))
-  }
-    
-  #And here, the lower border 
+
+    if(min(p_adjusted)<lowestPlottedP){
+      print(paste("NB!, The lowest p-value with this dataset was ", min(p_adjusted), ". Therefore, this p-value will define the color scale instead than the chosen value of ", lowestPlottedP, ".", sep=""))
+      lowestPlottedP <- min(p_adjusted)
+    } #else {
+      #Here, the wilcoxon statistic corresponding to about a p-value of 0.05 is defined. 
+      #We run  through a large number of variants, getting closer and closer to the right answer. 
+      #The start point is the configuration generating the lowest p-value in the list.
+      #length1 <- ncol(clusterFractionsForAllIds1)
+      #length2 <- ncol(clusterFractionsForAllIds2)
+      #data1 <- rep(1, length.out=length1)
+      #data2 <- rep(1, length.out=length2)
+      #i <- 1
+      #statistic0_05 <- 1
+      #while(statistic0_05>0.05){
+      #  data1 <- c(rep(1, length.out=length1-i), rep(2, length.out=i))
+                
+      #  whileResult1 <- wilcox.test(data1, data2, exact=FALSE)
+      #  pForCorrection <- unlist(c(whileResult1[3], rep(1, length.out=(nrow(result)-1))))
+      #  whileCorrectedP <- p.adjust(pForCorrection, method=multipleCorrMethod)[1]
+      #  statistic0_05 <- whileCorrectedP
+        
+      #  i <- i+1
+      #}
+      
+      #i <- 1
+      #data1 <- rep(1, length.out=length1)
+      #statistic0_05 <- 1
+      #while(statistic0_05>0.05){
+      #  data2 <- c(rep(1, length.out=length2-i), rep(2, length.out=i))
+        
+      #  whileResult2 <- wilcox.test(data1, data2, exact=FALSE)
+      #  pForCorrection <- unlist(c(whileResult2[3], rep(1, length.out=(nrow(result)-1))))
+      #  whileCorrectedP <- p.adjust(pForCorrection, method=multipleCorrMethod)[1]
+      #  statistic0_05 <- whileCorrectedP
+        
+      #  i <- i+1
+      #}
+      #Define the value most far away from the center
+      #minMaxRaw <- c(whileResult1[[1]], whileResult2[[1]])
+      #maxValue <- max(minMaxRaw)-centerWilcoxStatistic
+      #minValue <- centerWilcoxStatistic-min(minMaxRaw)
+      #maxDistFromCenter <- max(c(maxValue, minValue))
+    #}
+
+
+  #Now, the lowest value is log-transformed
+  lowestPlottedPLog <- log10(lowestPlottedP)
+  #Here, the breaks for the color interpretation are created
+  brks <- seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 10)
   
-  brks <- with(statistic.df, seq(centerWilcoxStatistic-maxAbsPlottingValues, centerWilcoxStatistic+maxAbsPlottingValues, length.out = 22))
-
   #assign each value to a bin
-  grps <- with(statistic.df, cut(statistic.df[,1], breaks = brks, include.lowest = TRUE))
-  colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
-  xYDataScaled$col <- rev(colors)[grps]
+  grps <- cut(pVector, breaks = brks, include.lowest = TRUE)
+  colors <- colorRampPalette(c("#FF0000",  "white", "#0000FF"))(9)
+  xYDataScaled$col <- colors[grps]
 
+  #Here the scale is created
+  scaleHighPart <- 10^seq(0, lowestPlottedPLog, len=3)
+  scaleLowPart <- rev(scaleHighPart[2:3])
+  plotScale <- c(scaleLowPart, scaleHighPart)
   #Create the density matrix for xYData.
   if(densContour==TRUE){
     densContour <- dContours(xYData)
@@ -219,20 +272,24 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   dev.off()
 #Create a color legend with text
 
-	yname <- "Wilcoxon values"
+	yname <- paste(multipleCorrMethod, " corrected p-values", sep="")
 	topText <- paste(groupName1, " is more abundant", sep="")
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
 
   pdf(legendTitle)
   par(fig=c(0.35,0.65,0,1), xpd=NA)
-  z=matrix(1:21,nrow=1)
+  z=matrix(1:9,nrow=1)
   x=1
-  y=seq(centerWilcoxStatistic-maxAbsPlottingValues, centerWilcoxStatistic+maxAbsPlottingValues,len=21)
-  image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
-  axis(2)
-  text(1,centerWilcoxStatistic+maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
-  text(1,centerWilcoxStatistic-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
+  y=seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 9)
+  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
+  text(0.32, -lowestPlottedPLog, labels=(round(plotScale[5], digits=5)))
+  text(0.32, -lowestPlottedPLog/2, labels=(round(plotScale[4], digits=5)))
+  text(x=0.32, y=0, labels=1)
+  text(0.32, lowestPlottedPLog/2, labels=(round(plotScale[2], digits=5)))
+  text(0.32, lowestPlottedPLog, labels=(round(plotScale[1], digits=5)))
+  text(1,-lowestPlottedPLog*1.2, labels=topText, cex=1.1)
+  text(1,lowestPlottedPLog*1.2, labels=bottomText, cex=1.1)
 
   box()
   dev.off()

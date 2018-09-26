@@ -15,7 +15,7 @@
 #' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
-#' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.
+#' @param thresholdMisclassRate If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. THe visualization value corresponds to the usefulness of the model in separating the groups: the default 0.05 corresponds to dividing all sPLS-DA loadings  with the inverse log10 of 
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -86,7 +86,7 @@
 #' testSampleRows=testDataRows)
 #'
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, testSampleRows, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], maxAbsPlottingValues, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, testSampleRows, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -156,6 +156,48 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   #Retrieve the sparse loadings
   sPLSDALoadings <- sPLSDAObject$loadings$X
   
+  #Here, the maximum values for the plotting are defined. If not added by the user, they are related to the overlap between the populations. Furthermore, the data is re-scaled in here, to be more visually understandable. 
+  group1SplsDa <- densityHist$sPLSDA_vector[which(densityHist$Group==groupName1)]
+  group2SplsDa <- densityHist$sPLSDA_vector[which(densityHist$Group==groupName2)]
+  
+  #Now, the border between the populations is defined
+  groupBorder <- (median(group1SplsDa)+median(group2SplsDa))/2
+  if(min(group1SplsDa)>min(group2SplsDa)){
+    lowGroup <- group2SplsDa
+    highGroup <- group1SplsDa
+  } else {
+    lowGroup <- group1SplsDa
+    highGroup <- group2SplsDa
+  }
+  lowErrors <- length(which(highGroup<groupBorder))
+  highErrors <- length(which(lowGroup>groupBorder))
+  misclassRate <- (lowErrors+highErrors)/sum(length(highGroup), length(lowGroup))
+  if(misclassRate<=thresholdMisclassRate){
+    print(paste("The separation of the datasets was very clear, with the misclassification rate being ", misclassRate, sep=""))
+    lowestPlottedOverlap <- overlapFraction
+    absSPLSDALoadings <- abs(sPLSDALoadings)
+  } else {
+    print(paste("The separation of the datasets was not clear, with the misclassification rate being ", misclassRate, sep=""))
+    scalingValue <- lowestPlottedOverlap/overlapFraction
+    absSPLSDALoadings <- sPLSDALoadings*scalingValue
+  }
+  
+  #Now, the sign is changed of the splsda-loadings, to make the function generate a similar visual output to the dWilcox function. 
+  #Now the median for each group and cluster is calculated
+  group1Data <- dSplsdaInData[[1]][,which(as.character(dSplsdaInData[[2]])==groupName1)]
+  group2Data <- dSplsdaInData[[1]][,which(as.character(dSplsdaInData[[2]])==groupName2)]
+  
+  median1 <- apply(group1Data, 1, median)
+  median2 <- apply(group2Data, 1, median)
+  correctSPLSDALoadings <- absSPLSDALoadings
+  for(i in 1:nrow(group1Data)){
+    if(median1[i]>=median2[i]){
+      correctSPLSDALoadings[i] <- absSPLSDALoadings[i]
+    } else {
+      correctSPLSDALoadings[i] <- -absSPLSDALoadings[i]
+    }
+  }
+  
   #Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
   #If a displayVector has been included, it is used here, to subset the clusterVector
   if(missing(displayVector)==FALSE){
@@ -165,34 +207,25 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     statisticVector <- clusterVector
     clusterVectorUsed <- clusterVector
   }
-    
-  for(i in 1:nrow(sPLSDALoadings)){
-    statisticVector[clusterVectorUsed==rownames(sPLSDALoadings)[i]] <- sPLSDALoadings[i]
+  
+  for(i in 1:nrow(correctSPLSDALoadings)){
+    statisticVector[clusterVectorUsed==rownames(correctSPLSDALoadings)[i]] <- correctSPLSDALoadings[i]
   }
-
-  #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
-  if(missing(maxAbsPlottingValues)){
-    maxAbsPlottingValues <- max(abs(sPLSDALoadings))
-  }
-
+  
   #Here the data that will be used for plotting is scaled.
   xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
-  #Make a color vector with the same length as the data
-  statistic.df <- as.data.frame(statisticVector)
-
-  #make a breaks vector to define each bin for the colors
-  brks <- with(statistic.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, length.out = 22))
-
+  brks <- seq(-1, 1, length.out = 10)
+  
   #assign each value to a bin
-  grps <- with(statistic.df, cut(statistic.df[,1], breaks = brks, include.lowest = TRUE))
-  colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
+  grps <- cut(statisticVector, breaks = brks, include.lowest = TRUE)
+  colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(9)
   xYDataScaled$col <- colors[grps]
 
   #Create the density matrix for xYData.
     if(densContour==TRUE){
-      densContour <- dContours(xYData)
+      densContour <- DepecheR:::dContours(xYData)
     }
 
   if(title==TRUE){
@@ -211,25 +244,23 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   dev.off()
 #Create a color legend with text
 
-	yname <- "sPLS-DA values"
+	yname <- "Misclass-corrected sPLS-DA loadings"
 	topText <- paste(groupName1, " is more abundant", sep="")
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
 
   pdf(legendTitle)
   par(fig=c(0.35,0.65,0,1), xpd=NA)
-  z=matrix(1:21,nrow=1)
+  z=matrix(1:9,nrow=1)
   x=1
-  y=seq(0,maxAbsPlottingValues,len=21)
-  image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
+  y=seq(-1,1,len=9)
+  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
   axis(2)
-  text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
-  text(1,maxAbsPlottingValues-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
-
+  text(1,1*1.2, labels=topText, cex=1.1)
+  text(1,-1*1.2, labels=bottomText, cex=1.1)
   box()
   dev.off()
 
-  
   #Return data from the sPLS-DA that was needed for the generation of the graphs
   
   write.csv(sPLSDALoadings, "sPLSDALoadings.csv")

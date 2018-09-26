@@ -9,7 +9,7 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
   densContour = TRUE, name = "dWilcox",
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], title = FALSE,
-  maxAbsPlottingValues, createDirectory = FALSE,
+  lowestPlottedP = 0.05, createDirectory = FALSE,
   directoryName = "dWilcox", bandColor = "black",
   dotSize = 500/sqrt(nrow(xYData)))
 }
@@ -38,7 +38,7 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
-\item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
+\item{lowestPlottedP}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. A p-value that determines this can be added here. Default is a p-value of 0.05. In cases where no datapoints have any lower p-values than this, a Wilcoxon-statistic corresponding as closely as possible to 0.05 will be identified with iterations of datasets with the same size as indicated by hte group vector. If one value is lowerthan 0.05, the wilcoxon statistic from this comparison is used instead.}
 
 \item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
 

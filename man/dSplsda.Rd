@@ -7,7 +7,7 @@
 dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
   displayVector, testSampleRows, densContour = TRUE, name = "dSplsda",
   groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], maxAbsPlottingValues,
+  groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
   title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
   bandColor = "black", dotSize = 500/sqrt(nrow(xYData)))
 }
@@ -34,7 +34,7 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{groupName2}{The name for the second group}
 
-\item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
+\item{thresholdMisclassRate}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. THe visualization value corresponds to the usefulness of the model in separating the groups: the default 0.05 corresponds to dividing all sPLS-DA loadings  with the inverse log10 of}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
