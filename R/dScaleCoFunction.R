@@ -48,7 +48,12 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
   
   if(center=="peak"){
     #The peak of the data is defined
-    histdata <- hist(responseVector, breaks=length(x)/50, plot=FALSE)
+    if(length(x)<500){
+      nBreaks <- 10
+    } else {
+      nBreaks <- length(x)/50
+    }
+    histdata <- hist(responseVector, breaks=nBreaks, plot=FALSE)
     zeroPosition <- histdata$mids[match(max(histdata$counts), histdata$counts)]
     
     #And the position for this this peak is subtracted from all points
