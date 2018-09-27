@@ -34,7 +34,7 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{groupName2}{The name for the second group}
 
-\item{thresholdMisclassRate}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same statistical value. Such a value can be added here. The threshold corresponds to the usefulness of the model in separating the groups: a misclassification rate of the default 0.05 means that 5% of the individuals are on the wrong side of the theoretical robust middle line between the groups along the sPLS-DA axis, created by finding the middle position between the medians of both populations.}
+\item{thresholdMisclassRate}{This threshold corresponds to the usefulness of the model in separating the groups: a misclassification rate of the default 0.05 means that 5 percent of the individuals are on the wrong side of the theoretical robust middle line between the groups along the sPLS-DA axis, defined as the middle point between the 3:rd quartile of the lower group and the 1:st quartile of the higher group.}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
