@@ -173,7 +173,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   lowErrors <- length(which(highGroup<groupBorder))
   highErrors <- length(which(lowGroup>groupBorder))
   misclassRate <- (lowErrors+highErrors)/sum(length(highGroup), length(lowGroup))
-  if(max(lowGroup<min(highGroup))){
+  if(max(lowGroup)<min(highGroup)){
     print("The separation of the datasets was perfect, with no overlap between the groups")
     lowestPlottedOverlap <- 0
     absSPLSDALoadings <- abs(sPLSDALoadings)

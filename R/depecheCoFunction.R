@@ -1,7 +1,13 @@
 #' @importFrom dplyr sample_n
 #' @importFrom gplots heatmap.2
+#' @importFrom graphics box
+#' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
+#' @importFrom dplyr sample_n
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW 
+#' @importFrom foreach foreach %do% %dopar%
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties=c(0,2,4,8,16,32,64,128), sampleSizes="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, newNumbers, createDirectory=FALSE){
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties, sampleSize, selectionSampleSize, k, minARIImprovement, minARI, maxIter, ids, newNumbers, createDirectory=FALSE){
 
     if(createDirectory==TRUE){
     workingDirectory <- getwd()
@@ -17,19 +23,91 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   }
   
   #Here, the sampleSize is set in cases it is "default".
-  if(length(sampleSizes)==1){
-    if(sampleSizes=="default"){
+  if(length(sampleSize)==1){
+    if(sampleSize=="default"){
       if(nrow(inDataFrameScaled)<=10000){
-        sampleSizes <- nrow(inDataFrameScaled)
+        sampleSize <- nrow(inDataFrameScaled)
       } else {
-        sampleSizes <- 10000
+        sampleSize <- 10000
       }
     }
   }
 
-  depecheResult <- dOptSubset(inDataFrameScaled=inDataFrameUsed, firstClusterNumber=firstClusterNumber, sampleSizes=sampleSizes, k=k, maxIter=maxIter, minARI=minARI, minARIImprovement=minARIImprovement, penalties=penalties, selectionSampleSize=selectionSampleSize)
+  dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=TRUE, minARI=minARI)
+  
+  #Now over to creating the final solution
+  #Here, the selectionDataSet is created
+  if(selectionSampleSize=="default"){
+    selectionSampleSize <- sampleSize
+  }
+  if(nrow(inDataFrameScaled)<=selectionSampleSize){
+      selectionDataSet <- inDataFrameScaled
+    } else {
+      selectionDataSet <- sample_n(inDataFrameScaled, selectionSampleSize, replace=TRUE)
+  }
+  
+  #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
+  if(nrow(inDataFrameScaled)<10000){
+    penalty <- dOptPenaltyResult[[1]][1,1]
+    depecheAllDataResult <- depecheAllData(inDataFrameScaled, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
+    clusterVectorEquidistant <- depecheAllDataResult[[1]]
+    reducedClusterCenters <- depecheAllDataResult[[2]]
+  } else {
+    #Now, the best run amongst all the runs with the largest sample size is defined, by identifying the solution that gives the highest mean f-measure for all the others.
     
-  #
+    #First, all solutions are retrieved
+    allSolutions <- dOptPenaltyResult[[3]]
+    
+    #Now, all clusterCenters are used to allocate the selectionDataSet.
+    allocationResultList <- list()
+    
+    selectionDataSetMatrix <- data.matrix(selectionDataSet)
+    
+    allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
+    
+    
+    #Here, the corrected Rand index with each allocationResult as the first vector vector and all the others as individual second vectors is identified
+    n_cores <- detectCores() - 1
+    cl <-  parallel::makeCluster(n_cores, type = "SOCK")
+    registerDoSNOW(cl)
+    meanARIList <- foreach(i=1:length(allocationResultList)) %dopar% mean(sapply(allocationResultList, rand_index, inds2=allocationResultList[[i]], k=k))
+    parallel::stopCluster(cl)	
+    meanARIVector <- unlist(meanARIList)
+    
+    #Now the solution being the most similar to all the others is retrieved
+    optimalClusterCenters <- unlist(allSolutions[[which(meanARIVector==max(meanARIVector))[1]]])
+    
+    #And here, the optimal solution is created with the full dataset
+    optimalClusterVector <- allocate_points(data.matrix(inDataFrameScaled, rownames.force = NA), optimalClusterCenters, no_zero=1)[[1]]
+    
+    #And here, the optimal results are made more dense by removing empty rows and columns, etc.
+    #Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
+    clusterVectorEquidistant <- turnVectorEquidistant(optimalClusterVector, startValue=firstClusterNumber)			
+    colnames(optimalClusterCenters) <- colnames(inDataFrameScaled)
+    
+    #Remove all rows and columns that do not contain any information
+    reducedClusterCenters <- optimalClusterCenters[which(rowSums(optimalClusterCenters)!=0),which(colSums(optimalClusterCenters)!=0)]
+    
+    #In the specific case that only one row is left, due to a high penalty, the data needs to be converted back to a matrix from a vector. The same is done if the number of informative variables is just one.
+    if(length(which(rowSums(optimalClusterCenters)!=0))==1){
+      reducedClusterCenters <- t(reducedClusterCenters)
+    } else if(length(which(colSums(optimalClusterCenters)!=0)==1)){
+      reducedClusterCenters <- as.matrix(reducedClusterCenters)
+    }
+    
+    
+    #Make the row names the same as the cluster names in the clusterVectorEquidistant
+    rownames(reducedClusterCenters) <- rep(firstClusterNumber:(firstClusterNumber+(nrow(reducedClusterCenters))-1))
+    
+  }
+  
+  #Here, the optPenalty information is retrieved from the optimal sample size run. 
+  optPenalty <- list(dOptPenaltyResult[[1]],dOptPenaltyResult[[2]])
+  
+  depecheResult <- list(clusterVectorEquidistant, reducedClusterCenters, optPenalty)
+  names(depecheResult) <- c("clusterVector", "clusterCenters", "penaltyOptList")
+  
+  
   #Here the data is added back, in the cases where very large datasets are used
   
   if(nrow(inDataFrameScaled)>1000000){

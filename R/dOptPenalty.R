@@ -3,10 +3,10 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, bootstrapObservations=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.99){
+dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, sampleSize=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.99){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
-  penaltyConstant <- ((bootstrapObservations*sqrt(ncol(inDataFrameScaled)))/1450)
+  penaltyConstant <- ((sampleSize*sqrt(ncol(inDataFrameScaled)))/1450)
   realPenalties <- penalties*penaltyConstant
   roundPenalties <- round(penalties, digits=1)
 
@@ -28,7 +28,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   
   while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,bootstrapObservations,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,sampleSize,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
@@ -170,10 +170,10 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   if(disableWarnings==FALSE){
   
     if(penaltyOpt.df$bestPenalty==lowestPenalty){
-      warning("The lowest penalty was the most optimal in the range. It might be a good idea to run with a few lower penalty values to make sure that the most optimal has been found")
+      warning("The lowest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
     }
     if(penaltyOpt.df$bestPenalty==highestPenalty){
-      warning("The highest penalty was the most optimal in the range. It might be a good idea to run with a few higher penalty values to make sure that the most optimal has been found")
+      warning("The highest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
     }
   
   }
