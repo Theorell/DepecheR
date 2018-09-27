@@ -19,6 +19,7 @@
 #' @param ids Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.
 #' @param returnProcessedInData If the scaled and centered data should be returned. Defaults to FALSE.
 #' @param log2Off In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.  
+#' @param center If centering should be performed. Alternatives are "default", "mean" and "peak". "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. 
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{
 #'    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
@@ -63,7 +64,7 @@
 #' }
 #' 
 #' @export depeche
-depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSize="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE){
+depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSize="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE, center="default"){
 
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
@@ -91,16 +92,24 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
 
   #Scaling is performed
   if(ncol(inDataFrame)<100){
-    print("As the dataset has less than 100 columns, peak centering is applied.")
-
-    inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak")
+    if(center=="mean"){
+      print("Mean centering is applied although the data has less than 100 columns")
+      inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="mean")
+    } else{
+      print("As the dataset has less than 100 columns, peak centering is applied.")
+      inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak")
+    }
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
   } else {
-    print("As the dataset has more than 100 columns, mean centering is applied.")
+    if(center="peak"){
+      print("Peak centering is applied although the data has more than 100 columns")
+      inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak")
+    } else {
+      print("As the dataset has more than 100 columns, mean centering is applied.")
       inDataFramePreScaled <- scale(inDataFrame, scale=FALSE)
-
+    }
     #Here, all the data is divided by the standard deviation of the full dataset
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- as.data.frame(inDataFramePreScaled/sdInDataFramePreScaled)
