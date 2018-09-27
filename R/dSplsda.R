@@ -178,13 +178,13 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     lowestPlottedOverlap <- 0
     absSPLSDALoadings <- abs(sPLSDALoadings)
   } else if(misclassRate<=thresholdMisclassRate){
-    print(paste("The separation of the datasets was very clear, with the misclassification rate being ", misclassRate, sep=""))
-    lowestPlottedOverlap <- overlapFraction
+    print(paste("The separation of the datasets was very clear, with the misclassification rate being ", round(100*misclassRate), " percent", sep=""))
+    lowestPlottedOverlap <- misclassRate
     absSPLSDALoadings <- abs(sPLSDALoadings)
   } else {
-    print(paste("The separation of the datasets was not clear, with the misclassification rate being ", misclassRate, sep=""))
-    scalingValue <- lowestPlottedOverlap/overlapFraction
-    absSPLSDALoadings <- sPLSDALoadings*scalingValue
+    print(paste("The separation of the datasets was not clear, with the misclassification rate being ", round(100*misclassRate), " percent", sep=""))
+    scalingValue <- thresholdMisclassRate/misclassRate
+    absSPLSDALoadings <- abs(sPLSDALoadings*scalingValue)
   }
   
   

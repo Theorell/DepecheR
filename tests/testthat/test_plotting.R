@@ -31,7 +31,7 @@ testColor <- dColorVector(testData$ids, colorScale="plasma")
 #####################
 #dContours
 x <- DepecheR:::generateBimodalData()
-xContours <- DepecheR:::dContours(x[,2:ncol(x)])
+xContours <- DepecheR:::dContours(x[[1]][,2:3])
 
 ######################
 #dDensityPlot

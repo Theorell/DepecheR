@@ -44,6 +44,10 @@
 # summary(y_df)
 dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
 
+  if(class(x)=="matrix"){
+    x <- as.data.frame(x)
+  }
+
   if(class(x)!="numeric" && class(x)!="integer" && class(x)!="data.frame"){
     stop("The data is incorrectly formatted, as it is not a vector, a matrix or a dataframe. Change this and try again.")
   }
@@ -51,6 +55,9 @@ dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", t
   if(missing("control")){
     control <- x
   } else {
+    if(class(control)=="matrix"){
+      control <- as.data.frame(control)
+    }
     control <- rbind(x, control)
   }
 
