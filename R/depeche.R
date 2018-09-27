@@ -103,7 +103,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
     sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
     inDataFrameScaled <- inDataFramePreScaled/sdInDataFramePreScaled
   } else {
-    if(center="peak"){
+    if(center=="peak"){
       print("Peak centering is applied although the data has more than 100 columns")
       inDataFramePreScaled <- dScale(inDataFrame, scale=FALSE, center="peak")
     } else {

@@ -8,7 +8,7 @@ depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
   2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5),
   sampleSize = "default", selectionSampleSize = "default", k = 30,
   minARIImprovement = 0.01, minARI = 0.95, maxIter = 100, ids,
-  returnProcessedInData = FALSE, log2Off = FALSE)
+  returnProcessedInData = FALSE, log2Off = FALSE, center = "default")
 }
 \arguments{
 \item{inDataFrame}{A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations should to be performed for all data if not all data has been acquired on the same run. Scaling, etc, is on the other hand performed within the function.}
@@ -34,6 +34,8 @@ depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
 \item{returnProcessedInData}{If the scaled and centered data should be returned. Defaults to FALSE.}
 
 \item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
+
+\item{center}{If centering should be performed. Alternatives are "default", "mean" and "peak". "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used.}
 }
 \value{
 A nested list with varying components depending on the setup above:
