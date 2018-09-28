@@ -16,7 +16,6 @@
 #'     \item{When "plotEachIdSeparately"=TRUE}{Provides information about which rows that belong to which id and the names for the individual plots.}
 #'     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
 #' }
-
 #' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
@@ -24,7 +23,7 @@
 #' @param scalingControl A dataframeor matrix with two columns. This argument is only necessary if the xYData should be scaled to another range than its internal maximum and minimum values.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-
+#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no output is generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
 #' @examples
@@ -35,9 +34,6 @@
 #' #library(Rtsne)
 #' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'
 #' #Plot all ids together and use a fixed color
 #' dDensityPlot(xYData=testDataSNE$Y, commonName="All_samplings", 
@@ -57,7 +53,7 @@
 #' commonName="all samplings")
 #'
 #' @export dDensityPlot
-dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEachIdSeparately=FALSE, idsVector, densContour=TRUE, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEachIdSeparately=FALSE, idsVector, densContour=TRUE, title=FALSE, createDirectory=TRUE, directoryName=paste("Density plots for ", commonName, "s", sep=""), scalingControl,  bandColor="black", dotSize=500/sqrt(nrow(xYData)), createPlot=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -90,14 +86,14 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
                                                              "#FCFF00", "#FF9400", "#FF3100"))(256), cols <- colorRampPalette(c("black", "grey", color))(256))
 
     if(plotEachIdSeparately==FALSE){
-      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, cols=cols, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, cols=cols, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title, createPlot=createPlot)
     }   
 
     if(plotEachIdSeparately==TRUE){
       uniqueIds <- unique(idsVector)
       
       for (i in 1:length(uniqueIds)){
-        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=cols, name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=cols, name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title, createPlot=createPlot)
       }
       
     }
@@ -115,23 +111,27 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
     colorList[[length(colors)+2]] <- color
   
     if(plotEachIdSeparately==FALSE && length(color)>1){
-      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+      dDensityPlotCoFunction(xYDataScaled=xYDataScaled, multipleColors=TRUE, colorList=colorList, name=commonName, densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title, createPlot=createPlot)
 
       #Some preparations for the legend
       #Create a dataframe from the ids and the color vectors
       colorIdsDataFrame <- data.frame(unique(color), unique(idsVector), stringsAsFactors = FALSE)
       colorIdsDataFrame <- colorIdsDataFrame[order(colorIdsDataFrame[,2]),]
-      pdf(paste("Legend for ", commonName, ".pdf", sep=""))
-      plot.new()
-      legend("center",legend = colorIdsDataFrame[,2], col=colorIdsDataFrame[,1], cex=15/length(unique(idsVector)), pch=19)
-      dev.off()
+      
+      if(createPlot==TRUE){
+        pdf(paste("Legend for ", commonName, ".pdf", sep=""))
+        plot.new()
+        legend("center",legend = colorIdsDataFrame[,2], col=colorIdsDataFrame[,1], cex=15/length(unique(idsVector)), pch=19)
+        dev.off()
+      }
+      
     }
 
     if(plotEachIdSeparately==TRUE){
       uniqueIds <- unique(idsVector)
       
       for (i in 1:length(uniqueIds)){
-        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=colorList[[i]], name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title)
+        dDensityPlotCoFunction(xYDataScaled=xYDataScaled[idsVector==uniqueIds[i],], cols=colorList[[i]], name=paste(commonName, uniqueIds[i], "density", sep = " "), densContour=densContour, bandColor=bandColor, dotSize=dotSize, title=title, createPlot=createPlot)
       }
       
     }
@@ -142,5 +142,6 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
     setwd(workingDirectory)
   }
 
+  print(paste0("Files were saved at ", getwd()))
 }
 

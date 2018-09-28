@@ -21,6 +21,7 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.
+#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
@@ -32,11 +33,8 @@
 #' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
 #'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
-#'
-#' #Run the function for all the variables
-#' dColorPlot(colorData=testData[2:15], xYData=testDataSNE$Y, drawColorPalette=TRUE)
+#' #Run the function for two of the variables
+#' dColorPlot(colorData=testData[2:3], xYData=testDataSNE$Y, drawColorPalette=TRUE)
 #'
 #' #Create a color vector and display it on the SNE field. For this purpose,
 #' #four individual donors are extracted from the test dataset
@@ -48,7 +46,7 @@
 #' 
 #' 
 #' @export dColorPlot
-dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=500/sqrt(nrow(xYData)), multiCore="default"){
+dColorPlot <- function(colorData, controlData, xYData,  names="default", densContour=TRUE, addLegend=FALSE, idsVector, drawColorPalette=FALSE, title=FALSE, createDirectory=TRUE, directoryName="Variables displayed as color on SNE field", truncate=TRUE, bandColor="black", dotSize=500/sqrt(nrow(xYData)), multiCore="default", createPlot=TRUE){
 
   if(class(colorData)=="matrix"){
     colorData <- as.data.frame(colorData)
@@ -90,7 +88,7 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
       densContour <- dContours(xYData)      
     }
   
-  if(drawColorPalette==TRUE){
+  if(drawColorPalette==TRUE && createPlot==TRUE){
     pdf("palette.pdf")
     palette(rev(rich.colors(100, plot=TRUE)))
     dev.off()
@@ -102,7 +100,7 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   if(class(colorData)=="numeric"){
     colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(0:100))
-    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
   }
   if(class(colorData)=="data.frame"){
     colorDataPercent <- dScale(x=colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
@@ -119,17 +117,17 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
       no_cores <- detectCores() - 1
       cl = makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
-      foreach(i=1:ncol(colorVectors), .inorder=FALSE) %dopar% dColorPlotCoFunction(colorVariable=colorVectors[,i], name=names[i], xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+      foreach(i=1:ncol(colorVectors), .inorder=FALSE) %dopar% dColorPlotCoFunction(colorVariable=colorVectors[,i], name=names[i], xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
       stopCluster(cl)
     } else {
-       mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, stringsAsFactors =FALSE), names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize))
+       mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, stringsAsFactors =FALSE), names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot))
     }
   }
   if(class(colorData)=="character"){
-    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize)
+    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
   }
 
-  if(addLegend==TRUE){
+  if(addLegend==TRUE && createPlot==TRUE){
 
     #Some preparations for the legend
     #Create a dataframe from the ids and the color vectors
@@ -145,4 +143,5 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     setwd(workingDirectory)
   }
 
+  print(paste0("Files were saved at ", getwd()))
 }

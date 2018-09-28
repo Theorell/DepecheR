@@ -7,7 +7,7 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties, sampleSize, selectionSampleSize, k, minARIImprovement, minARI, maxIter, ids, newNumbers, createDirectory=FALSE){
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties, sampleSize, selectionSampleSize, k, minARIImprovement, minARI, maxIter, ids, newNumbers, createDirectory=FALSE, createOutput){
 
     if(createDirectory==TRUE){
     workingDirectory <- getwd()
@@ -33,7 +33,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
     }
   }
 
-  dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=TRUE, minARI=minARI)
+  dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=createOutput, minARI=minARI)
   
   #Now over to creating the final solution
   #Here, the selectionDataSet is created
@@ -141,9 +141,11 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1){
     reducedClusterCentersColRow[reducedClusterCentersColRow==0] <- NA
     colorLadder <- colorRampPalette(c("blue", "white", "red"))(21)
-    pdf("Cluster centers.pdf")
-    heatmap.2(as.matrix(reducedClusterCentersColRow),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, trace="none", na.color="#A2A2A2")
-    dev.off()    
+    if(createOutput==TRUE){
+      pdf("Cluster centers.pdf")
+      heatmap.2(as.matrix(reducedClusterCentersColRow),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, trace="none", na.color="#A2A2A2")
+      dev.off()  
+    }
   }
   
   if(createDirectory==TRUE){

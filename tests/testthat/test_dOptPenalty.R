@@ -3,7 +3,7 @@
 context('dOptPenatly')
 x <- DepecheR:::generateBimodalData(observations = 50,dataCols = 150)
 x_scaled <- DepecheR:::dScale(as.data.frame(x$samples))
-dOPR <- DepecheR:::dOptPenalty(x_scaled, k=30, maxIter=10, disableWarnings=TRUE, minARI=0.95)
+dOPR <- DepecheR:::dOptPenalty(x_scaled, k=30, maxIter=10, disableWarnings=TRUE, minARI=0.95, makeGraph=FALSE)
 
 ARI <- dOPR[[2]][,1]
 nClust <- dOPR[[2]][,2]

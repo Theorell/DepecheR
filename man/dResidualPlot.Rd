@@ -8,7 +8,8 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   name = "dResidualPlot", groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], title = FALSE,
   maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE,
-  directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)))
+  directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)),
+  createPlot = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -36,6 +37,8 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
 \item{directoryName}{The name of the created directory, if it should be created.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+
+\item{createPlot}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }
 \value{
 A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
@@ -52,9 +55,6 @@ data(testData)
 #library(Rtsne)
 #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
  
 #Run the clustering function. For more rapid example execution, 
 #a depeche clustering of the data is inluded

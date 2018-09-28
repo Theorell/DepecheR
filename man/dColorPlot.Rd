@@ -9,7 +9,8 @@ dColorPlot(colorData, controlData, xYData, names = "default",
   drawColorPalette = FALSE, title = FALSE, createDirectory = TRUE,
   directoryName = "Variables displayed as color on SNE field",
   truncate = TRUE, bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)), multiCore = "default")
+  dotSize = 500/sqrt(nrow(xYData)), multiCore = "default",
+  createPlot = TRUE)
 }
 \arguments{
 \item{colorData}{A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.}
@@ -41,6 +42,8 @@ dColorPlot(colorData, controlData, xYData, names = "default",
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 
 \item{multiCore}{If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.}
+
+\item{createPlot}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }
 \value{
 Plots showing the colorData displayed as color on the field created by xYData.
@@ -57,11 +60,8 @@ data(testData)
 #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
 
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
-
-#Run the function for all the variables
-dColorPlot(colorData=testData[2:15], xYData=testDataSNE$Y, drawColorPalette=TRUE)
+#Run the function for two of the variables
+dColorPlot(colorData=testData[2:3], xYData=testDataSNE$Y, drawColorPalette=TRUE)
 
 #Create a color vector and display it on the SNE field. For this purpose,
 #four individual donors are extracted from the test dataset

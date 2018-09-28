@@ -9,7 +9,8 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
   title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
-  bandColor = "black", dotSize = 500/sqrt(nrow(xYData)))
+  bandColor = "black", dotSize = 500/sqrt(nrow(xYData)),
+  createOutput = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -45,6 +46,8 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no output is generated.}
 }
 \value{
 This function returns the full result of the sPLS-DA. It also returns a SNE based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
@@ -61,9 +64,6 @@ data(testData)
 #library(Rtsne)
 #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
  
 #Run the clustering function. For more rapid example execution, 
 #a depeche clustering of the data is inluded

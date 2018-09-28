@@ -21,6 +21,7 @@
 #' @param directoryName The name of the created directory, if it should be created.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no output is generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function returns the full result of the sPLS-DA. It also returns a SNE based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 #' @examples
@@ -32,9 +33,6 @@
 #' #library(Rtsne)
 #' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'  
 #' #Run the clustering function. For more rapid example execution, 
 #' #a depeche clustering of the data is inluded
@@ -86,7 +84,7 @@
 #' testSampleRows=testDataRows)
 #'
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, testSampleRows, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, testSampleRows, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -151,7 +149,9 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("red", "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
     theme (line = element_blank(),
            panel.background = element_rect(fill = "white"))
-  ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
+  if(createOutput==TRUE){
+    ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
+  }
   
   #Retrieve the sparse loadings
   sPLSDALoadings <- sPLSDAObject$loadings$X
@@ -231,21 +231,22 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
 
   #Create the density matrix for xYData.
     if(densContour==TRUE){
-      densContour <- DepecheR:::dContours(xYData)
+      densContour <- dContours(xYData)
     }
-
-  if(title==TRUE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-
-  if(title==FALSE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+  
+  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  if(createOutput==TRUE){
+    if(title==TRUE){
+      plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    
+    if(title==FALSE){
+      plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(length(densContour)>1){
+      par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+    }
   }
   dev.off()
 #Create a color legend with text
@@ -255,23 +256,26 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
 
-  pdf(legendTitle)
-  par(fig=c(0.35,0.65,0,1), xpd=NA)
-  z=matrix(1:9,nrow=1)
-  x=1
-  y=seq(-1,1,len=9)
-  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
-  axis(2)
-  text(1,1*1.2, labels=topText, cex=1.1)
-  text(1,-1*1.2, labels=bottomText, cex=1.1)
-  box()
-  dev.off()
-
+	if(createOutput==TRUE){
+	  pdf(legendTitle)
+	  par(fig=c(0.35,0.65,0,1), xpd=NA)
+	  z=matrix(1:9,nrow=1)
+	  x=1
+	  y=seq(-1,1,len=9)
+	  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
+	  axis(2)
+	  text(1,1*1.2, labels=topText, cex=1.1)
+	  text(1,-1*1.2, labels=bottomText, cex=1.1)
+	  box()
+	  dev.off()
+	}
+  
   #Return data from the sPLS-DA that was needed for the generation of the graphs
+	if(createOutput==TRUE){
+	  write.csv(sPLSDALoadings, "sPLSDALoadings.csv")
+	  write.csv(sPLSDAX, "sPLSDAVariatesX.csv")
+	}
   
-  write.csv(sPLSDALoadings, "sPLSDALoadings.csv")
-  
-  write.csv(sPLSDAX, "sPLSDAVariatesX.csv")
   
   if(createDirectory==TRUE){
     setwd(workingDirectory)
@@ -297,8 +301,14 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
     ggplot(densityHist, aes(x=sPLSDA_vector, fill=Group)) + geom_density(adjust=0.2, alpha=.4)+scale_fill_manual(values = c("red", "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector)-abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3, max(densityHist$sPLSDA_vector)+abs(max(densityHist$sPLSDA_vector)-min(densityHist$sPLSDA_vector))*0.3)) +
       theme (line = element_blank(),
              panel.background = element_rect(fill = "white"))
-    ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
+    if(createOutput==TRUE){
+      ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", dpi=300)
+      
+    }
   }
+  
+  print(paste0("Files were saved at ", getwd()))
+  
   if(missing(testSampleRows)==TRUE){
     return(sPLSDAObject)
   } else {

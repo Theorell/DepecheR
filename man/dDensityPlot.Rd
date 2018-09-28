@@ -9,7 +9,7 @@ dDensityPlot(xYData, color = "blue", commonName = "All_density",
   title = FALSE, createDirectory = TRUE,
   directoryName = paste("Density plots for ", commonName, "s", sep = ""),
   scalingControl, bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)))
+  dotSize = 500/sqrt(nrow(xYData)), createPlot = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -44,6 +44,8 @@ dDensityPlot(xYData, color = "blue", commonName = "All_density",
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+
+\item{createPlot}{For testing purposes. Defaults to TRUE. If FALSE, no output is generated.}
 }
 \value{
 Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
@@ -59,9 +61,6 @@ data(testData)
 #library(Rtsne)
 #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
 
 #Plot all ids together and use a fixed color
 dDensityPlot(xYData=testDataSNE$Y, commonName="All_samplings", 

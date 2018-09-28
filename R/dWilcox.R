@@ -19,6 +19,7 @@
 #' @param directoryName The name of the created directory, if it should be created.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
@@ -30,9 +31,6 @@
 #' #library(Rtsne)
 #' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'  
 #' #Run the clustering function. For more rapid example execution, 
 #' #a depeche clustering of the data is inluded
@@ -58,7 +56,7 @@
 #' groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
 #' 
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, lowestPlottedP=0.05, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData))){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, lowestPlottedP=0.05, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -180,62 +178,12 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
   colnames(xYDataScaled) <- c("V1", "V2")
 
-  #Make a color vector with the same length as the data
-  #statistic.df <- as.data.frame(statisticVector)
-
-  #Make a breaks vector to define each bin for the colors. 
-  #To do this, the Wilcoxon statistic that corresponds to a p-value of 1 needs to be obtained. This is done by running a perfectly overlapping Wilcoxon.
-  
-  #nullWilcox <- wilcox.test(rep(c(1,2), length=ncol(clusterFractionsForAllIds1)), rep(c(2,1), length=ncol(clusterFractionsForAllIds2)), paired=paired, exact=FALSE)
-
-  #centerWilcoxStatistic <- nullWilcox$statistic
-  
   #Here, the maximum values for the plotting are defined. If not added by the user, they are obtained from the data.
 
     if(min(p_adjusted)<lowestPlottedP){
       print(paste("NB!, The lowest p-value with this dataset was ", min(p_adjusted), ". Therefore, this p-value will define the color scale instead than the chosen value of ", lowestPlottedP, ".", sep=""))
       lowestPlottedP <- min(p_adjusted)
-    } #else {
-      #Here, the wilcoxon statistic corresponding to about a p-value of 0.05 is defined. 
-      #We run  through a large number of variants, getting closer and closer to the right answer. 
-      #The start point is the configuration generating the lowest p-value in the list.
-      #length1 <- ncol(clusterFractionsForAllIds1)
-      #length2 <- ncol(clusterFractionsForAllIds2)
-      #data1 <- rep(1, length.out=length1)
-      #data2 <- rep(1, length.out=length2)
-      #i <- 1
-      #statistic0_05 <- 1
-      #while(statistic0_05>0.05){
-      #  data1 <- c(rep(1, length.out=length1-i), rep(2, length.out=i))
-                
-      #  whileResult1 <- wilcox.test(data1, data2, exact=FALSE)
-      #  pForCorrection <- unlist(c(whileResult1[3], rep(1, length.out=(nrow(result)-1))))
-      #  whileCorrectedP <- p.adjust(pForCorrection, method=multipleCorrMethod)[1]
-      #  statistic0_05 <- whileCorrectedP
-        
-      #  i <- i+1
-      #}
-      
-      #i <- 1
-      #data1 <- rep(1, length.out=length1)
-      #statistic0_05 <- 1
-      #while(statistic0_05>0.05){
-      #  data2 <- c(rep(1, length.out=length2-i), rep(2, length.out=i))
-        
-      #  whileResult2 <- wilcox.test(data1, data2, exact=FALSE)
-      #  pForCorrection <- unlist(c(whileResult2[3], rep(1, length.out=(nrow(result)-1))))
-      #  whileCorrectedP <- p.adjust(pForCorrection, method=multipleCorrMethod)[1]
-      #  statistic0_05 <- whileCorrectedP
-        
-      #  i <- i+1
-      #}
-      #Define the value most far away from the center
-      #minMaxRaw <- c(whileResult1[[1]], whileResult2[[1]])
-      #maxValue <- max(minMaxRaw)-centerWilcoxStatistic
-      #minValue <- centerWilcoxStatistic-min(minMaxRaw)
-      #maxDistFromCenter <- max(c(maxValue, minValue))
-    #}
-
+    } 
 
   #Now, the lowest value is log-transformed
   lowestPlottedPLog <- log10(lowestPlottedP)
@@ -255,20 +203,20 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   if(densContour==TRUE){
     densContour <- dContours(xYData)
   }
-
-  if(title==TRUE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+  
+  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  if(createOutput==TRUE){
+    if(title==TRUE){
+      plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(title==FALSE){
+      plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(length(densContour)>1){
+      par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+    } 
   }
-
-  if(title==FALSE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-  plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  } 
   dev.off()
 #Create a color legend with text
 
@@ -277,29 +225,35 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
 
-  pdf(legendTitle)
-  par(fig=c(0.35,0.65,0,1), xpd=NA)
-  z=matrix(1:9,nrow=1)
-  x=1
-  y=seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 9)
-  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
-  text(0.32, -lowestPlottedPLog, labels=(round(plotScale[5], digits=5)))
-  text(0.32, -lowestPlottedPLog/2, labels=(round(plotScale[4], digits=5)))
-  text(x=0.32, y=0, labels=1)
-  text(0.32, lowestPlottedPLog/2, labels=(round(plotScale[2], digits=5)))
-  text(0.32, lowestPlottedPLog, labels=(round(plotScale[1], digits=5)))
-  text(1,-lowestPlottedPLog*1.2, labels=topText, cex=1.1)
-  text(1,lowestPlottedPLog*1.2, labels=bottomText, cex=1.1)
+	if(createOutput==TRUE){
+	  pdf(legendTitle)
+	  par(fig=c(0.35,0.65,0,1), xpd=NA)
+	  z=matrix(1:9,nrow=1)
+	  x=1
+	  y=seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 9)
+	  image(x,y,z,col=colors,axes=FALSE,xlab="",ylab=yname)
+	  text(0.32, -lowestPlottedPLog, labels=(round(plotScale[5], digits=5)))
+	  text(0.32, -lowestPlottedPLog/2, labels=(round(plotScale[4], digits=5)))
+	  text(x=0.32, y=0, labels=1)
+	  text(0.32, lowestPlottedPLog/2, labels=(round(plotScale[2], digits=5)))
+	  text(0.32, lowestPlottedPLog, labels=(round(plotScale[1], digits=5)))
+	  text(1,-lowestPlottedPLog*1.2, labels=topText, cex=1.1)
+	  text(1,lowestPlottedPLog*1.2, labels=bottomText, cex=1.1)
+	  box()
+	  dev.off()
+	}
+  
 
-  box()
-  dev.off()
-
-  write.csv(result, "dWilcoxResult.csv", row.names=FALSE)
-
+	if(createOutput==TRUE){
+	  write.csv(result, "dWilcoxResult.csv", row.names=FALSE)
+	}
+  
   if(createDirectory==TRUE){
     setwd(workingDirectory)
   }
 
+  print(paste0("Files were saved at ", getwd()))
+  
   return(result)
 
 }

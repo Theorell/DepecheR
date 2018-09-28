@@ -1,4 +1,4 @@
-dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title){
+dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, colorList, name, densContour, bandColor, dotSize, title, createPlot=TRUE){
   
   if(multipleColors==FALSE){
     
@@ -37,18 +37,18 @@ dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, col
   
   png(paste(name, ".png", sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   # Plot it, reordering rows so that densest points are plotted on top
-  if(title==TRUE){
-    plot(x2~x1, data=df[order(df$dens),], main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+  if(createPlot==TRUE){
+    if(title==TRUE){
+      plot(x2~x1, data=df[order(df$dens),], main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(title==FALSE){
+      plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(length(densContour)>1){
+      par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+    } 
   }
-  if(title==FALSE){
-    plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  
-  
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  } 
   dev.off()
   
 }

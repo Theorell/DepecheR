@@ -15,6 +15,7 @@
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
+#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
@@ -26,9 +27,6 @@
 #' #library(Rtsne)
 #' #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'  
 #' #Run the clustering function. For more rapid example execution, 
 #' #a depeche clustering of the data is inluded
@@ -39,7 +37,7 @@
 #' dResidualPlot(xYData=testDataSNE$Y, groupVector=testData[,16], 
 #' clusterVector=testDataDepeche$clusterVector)
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData))){
+dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData)), createPlot=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -110,21 +108,22 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-
-  if(title==TRUE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-    plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-
+  
+  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  if(createPlot==TRUE){
+    if(title==TRUE){
+      plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+      
+    }
+    
+    if(title==FALSE){
+      plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+    }
+    if(length(densContour)>1){
+      par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
+      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+    } 
   }
-
-  if(title==FALSE){
-  	png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
-    plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-  }
-  if(length(densContour)>1){
-    par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-    contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
-  } 
   dev.off()
  #Create a color legend with text
 
@@ -133,21 +132,26 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
 	bottomText <- paste(groupName2, " is more abundant", sep="")
 	legendTitle <- paste("Color scale for", name, "residual analysis.pdf", sep=" ")
 
-  pdf(legendTitle)
-  par(fig=c(0.35,0.65,0,1), xpd=NA)
-  z=matrix(1:21,nrow=1)
-  x=1
-  y=seq(-maxAbsPlottingValues,maxAbsPlottingValues,len=21)
-  image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
-  axis(2)
-  text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
-  text(1,-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
-
-  box()
-  dev.off()
+  
+  if(createPlot==TRUE){
+    pdf(legendTitle)
+    par(fig=c(0.35,0.65,0,1), xpd=NA)
+    z=matrix(1:21,nrow=1)
+    x=1
+    y=seq(-maxAbsPlottingValues,maxAbsPlottingValues,len=21)
+    image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
+    axis(2)
+    text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
+    text(1,-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
+    box()
+    dev.off()
+  }
+  
+  
 
   if(createDirectory==TRUE){
     setwd(workingDirectory)
   }
-
+  print(paste0("Files were saved at ", getwd()))
+  
 }

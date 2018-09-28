@@ -6,7 +6,7 @@
 \usage{
 dViolins(clusterVector, clusterCenters, inDataFrame,
   order = unique(clusterVector), colorScale = "viridis",
-  plotAll = FALSE)
+  plotAll = FALSE, createOutput = TRUE)
 }
 \arguments{
 \item{clusterVector}{Vector with the same length as inDataFrame containing information about the cluster identity of each observation.}
@@ -20,6 +20,8 @@ dViolins(clusterVector, clusterCenters, inDataFrame,
 \item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.}
 
 \item{plotAll}{If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.}
+
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }
 \value{
 One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
@@ -30,9 +32,6 @@ Here, violin plots of a specific cluster and the total population are created fo
 \examples{
 #Load some data
 data(testData)
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
 
 #Run the clustering function. For more rapid example execution, 
 #a depeche clustering of the data is inluded

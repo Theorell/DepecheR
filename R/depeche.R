@@ -5,8 +5,8 @@
 #' @importFrom moments kurtosis
 #' @importFrom grDevices col2rgb colorRampPalette densCols dev.off palette pdf png
 #' @importFrom graphics axis contour hist image legend mtext par plot plot.new text
-#' @importFrom stats median p.adjust predict quantile rnorm sd var wilcox.test
-#' @importFrom utils write.csv
+#' @importFrom stats median p.adjust predict quantile rnorm sd var wilcox.test runif
+#' @importFrom utils write.csv tail
 #' @param inDataFrame A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations should to be performed for all data if not all data has been acquired on the same run. Scaling, etc, is on the other hand performed within the function. 
 #' @param penalties This argument decides whether a single penalty will be used for clustering, or if multiple penalties will be evaluated to identify the optimal one. A single value, a vector of values, or possibly a list of two vectors, if dual clustering is performed can be given here. The suggested default values are empirically defined and might not be optimal for a specific dataset, but the algorithm will warn if the most optimal values are on the borders of the range. Note that when the penalty is 0, there is no penalization, which means that the algorithm runs standard K-means clustering.
 #' @param sampleSize This controls what fraction of the dataset that will be used to run the penalty optimization. "default" results in the full file in files up to 10000 events. In cases where the sampleSize argument is larger than 10000, default leads to the generation of a random subset to the same size also for the selectionSampleSize. A user specified number is also accepted.
@@ -20,6 +20,7 @@
 #' @param returnProcessedInData If the scaled and centered data should be returned. Defaults to FALSE.
 #' @param log2Off In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.  
 #' @param center If centering should be performed. Alternatives are "default", "mean" and "peak". "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. 
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{
 #'    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
@@ -37,9 +38,6 @@
 #' @examples
 #' #Load some data
 #' data(testData)
-#' 
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'
 #' #First, just run with the standard settings
 #' \dontrun{
@@ -64,8 +62,10 @@
 #' }
 #' 
 #' @export depeche
-depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSize="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE, center="default"){
+depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5), sampleSize="default", selectionSampleSize="default", k=30, minARIImprovement=0.01, minARI=0.95, maxIter=100, ids, returnProcessedInData=FALSE, log2Off=FALSE, center="default", createOutput=TRUE){
 
+  print(paste0("Files will be saved to ", getwd()))
+  
   if(class(inDataFrame)=="matrix"){
     inDataFrame <- as.data.frame.matrix(inDataFrame)
   }
@@ -117,9 +117,9 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
   
   if(missing(dualDepecheSetup)==TRUE){
     if(missing(ids)==TRUE){
-      depecheResult <- depecheCoFunction(inDataFrameScaled, firstClusterNumber=1, penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter)
+      depecheResult <- depecheCoFunction(inDataFrameScaled, firstClusterNumber=1, penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createOutput=createOutput)
     } else {
-      depecheResult <- depecheCoFunction(inDataFrameScaled, firstClusterNumber=1, penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids)
+      depecheResult <- depecheCoFunction(inDataFrameScaled, firstClusterNumber=1, penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids, createOutput=createOutput)
     }
     if(returnProcessedInData==TRUE){
       resultLengt <- length(depecheResult)+1
@@ -136,9 +136,9 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
       penaltyList <- list(penalties, penalties)
     }
     if(missing(ids)==TRUE){
-    depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penaltyList[[1]], sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE)
+    depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penaltyList[[1]], sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE, createOutput=createOutput)
     } else {
-      depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids, createDirectory=TRUE)
+      depecheResultFirst <- depecheCoFunction(inDataFrameFirst, directoryName="Level_one_depeche", penalties=penalties, sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, ids=ids, createDirectory=TRUE, createOutput=createOutput)
     }
     
     print(paste("Done with level one clustering where ", length(unique(depecheResultFirst$clusterVector)), " clusters were created. Now initiating level two.", sep=""))
@@ -160,7 +160,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
     #Here, a list of cluster names are created, so that the results are sorted in a correct manner
     directoryNames <- lapply(c(1:length(unique(depecheResultFirst$clusterVector))), function(x) paste("Cluster", x, "level_two_depeche", sep="_"))
     #Here, the secondary clusters are generated for each subframe created by the primary clusters
-    depecheResultSecondList <- mapply(depecheCoFunction, inDataFrameSecondList, firstClusterNumberList, directoryNames, MoreArgs=list(penalties=penaltyList[[2]], sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE), SIMPLIFY=FALSE)
+    depecheResultSecondList <- mapply(depecheCoFunction, inDataFrameSecondList, firstClusterNumberList, directoryNames, MoreArgs=list(penalties=penaltyList[[2]], sampleSize=sampleSize, selectionSampleSize=selectionSampleSize, k=k, minARIImprovement=minARIImprovement, minARI=minARI, maxIter=maxIter, createDirectory=TRUE, createOutput=createOutput), SIMPLIFY=FALSE)
 
     #Now, all the clustering data is recompiled to one long cluster vector
     complexClusterVector <- inDataFrameScaled[,1]
@@ -250,7 +250,6 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
     
     return(depecheResult)
   }
-  
 
 }
   

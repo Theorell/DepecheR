@@ -11,7 +11,7 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
   groupName2 = unique(groupVector)[2], title = FALSE,
   lowestPlottedP = 0.05, createDirectory = FALSE,
   directoryName = "dWilcox", bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)))
+  dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -47,6 +47,8 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }
 \value{
 This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
@@ -63,9 +65,6 @@ data(testData)
 #library(Rtsne)
 #testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
-
-#Set a reasonable working directory, e.g.
-setwd("~/Desktop")
  
 #Run the clustering function. For more rapid example execution, 
 #a depeche clustering of the data is inluded

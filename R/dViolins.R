@@ -11,14 +11,12 @@
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}
 #' @examples
 #' #Load some data
 #' data(testData)
-#'
-#' #Set a reasonable working directory, e.g.
-#' setwd("~/Desktop")
 #'
 #' #Run the clustering function. For more rapid example execution, 
 #' #a depeche clustering of the data is inluded
@@ -29,7 +27,7 @@
 #' dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame=testData[,2:15])
 #' 
 #' @export dViolins
-dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE){
+dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE, createOutput=TRUE){
   percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 
   if(length(colorScale)>1){
@@ -60,10 +58,12 @@ dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(cl
 
   #Here, a directory for all the subdirectories for each cluster is made
   directoryName <- "Cluster expressions"
-  dir.create(directoryName)
   workingDirectory <- getwd()
-  setwd(paste(workingDirectory, directoryName, sep="/"))
-
+  if(createOutput==TRUE){
+    dir.create(directoryName)
+    setwd(paste(workingDirectory, directoryName, sep="/"))
+  }
+  
   #Here, the columns in the inDataFrame that are not selected as contributing are excluded from further analysis, if plotAll is not TRUE
   if(plotAll==FALSE){
     inDataFocused <- subset(inDataFrame, select=colnames(clusterCenters)) 
@@ -76,11 +76,13 @@ dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(cl
 
     #Here, a specific directory for the graphics are made.
     directoryName <- paste("Cluster", order[i])
-    dir.create(directoryName)
     workingDirectoryClusters <- getwd()
-    setwd(paste(workingDirectoryClusters, directoryName, sep="/"))
-
-
+    
+    if(createOutput==TRUE){
+      dir.create(directoryName)
+      setwd(paste(workingDirectoryClusters, directoryName, sep="/"))
+    }
+    
     #This code is an efficient way of giving all rows in the "Clusters" column the same name, except for the rows with the cluster of interest.
 
     clustIndicesSpecific <- sapply(clusterVector, dViolinsCoFunction1, n=order[i])
@@ -100,13 +102,15 @@ dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(cl
     #Then a list is created that contains the objects for the plot creation
     oneClustAllVarList <- mapply(dViolinsCoFunction2, inDataFocused, oneClustAllMu, allVarNames, MoreArgs=list(clust=clustIndicesSpecific, cols=clustColorsSpecific, clustNum=order[i]), SIMPLIFY=FALSE)
     #And then the plots are created
-    sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll=plotAll)
+    sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll=plotAll, createOutput=createOutput)
 
+    
     setwd(workingDirectoryClusters)
 
   }
 
   setwd(workingDirectory)
 
+  print(paste0("Files were saved at ", getwd()))
 }
 
