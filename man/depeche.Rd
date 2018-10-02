@@ -36,7 +36,7 @@ depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
 
 \item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
 
-\item{center}{If centering should be performed. Alternatives are "default", "mean" and "peak". "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used.}
+\item{center}{If centering should be performed. Alternatives are "default", "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. FALSE results in no centering, mainly for testing purposes.}
 
 \item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }
