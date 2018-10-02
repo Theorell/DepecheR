@@ -34,21 +34,37 @@ generateBimodalData <- function(centers, prop =0.3, dataCols=5, observations=100
   names(result)<- c('samples','ids')
   
   return(result)
-#   
-#   stdevs1 <- sample(c(0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
-#   stdevs2 <- sample(c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
-#   stdevs <- cbind(stdevs1, stdevs2)
-# 
-#     sampleList <- list()
-#     for(i in 1:samplings){
-#     probabilities1 <- sample(c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), size=dataCols, replace=TRUE)
-#     probabilities <- cbind(probabilities1, 1-probabilities1)
-#     result <- data.frame(mapply(generateBimodalDataCoFunction, data.frame(t(probabilities)), data.frame(t(stdevs)), MoreArgs=list(observations=observations)))
-#     Sampling <- rep(i, times=observations)
-#     result <- cbind(Sampling, result)
-#     sampleList[[i]] <- result
-#   }
-# resultDf <- bind_rows(sampleList)
-#   return(resultDf)
+
+}
+
+generateSparseData <- function(modeN=5, dataCols=100, observations=10000){
+  #Check if input ok
+  if((observations/modeN) %% 1 != 0){
+    print("observations has to be divisible by modeN")
+    stop()
+  }
+  obsPerMode <- observations/modeN
+  
+  #generate the centers numbers
+  
+  randInts <- sample(c(-100,100), dataCols*modeN, replace = TRUE)
+  centers <- matrix(randInts, nrow = modeN, byrow = TRUE)
+  # put in sparsity
+  for(i in 1:modeN){
+    inds <- sample(1:dataCols,i)
+    centers[i,inds]<-0
+  }
+  
+  # generate the data
+  samples <- matrix(0, nrow= observations, ncol = dataCols)
+  ids <-matrix(0, nrow= observations, ncol =1)
+  for(i in 1:modeN){
+    temp <- matrix( rnorm(observations*dataCols,mean=0,sd=1), obsPerMode, dataCols)
+    samples[seq((1+obsPerMode*(i-1)),obsPerMode*(i)),] <- temp+rep(centers[i,],each = obsPerMode)
+    ids[seq((1+obsPerMode*(i-1)),obsPerMode*(i)),] <- i
+  }
+  result <- list(samples,ids, centers)
+  names(result)<- c('samples','ids', 'centers')
+  return(result)
 }
 
