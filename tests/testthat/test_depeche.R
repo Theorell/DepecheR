@@ -7,3 +7,16 @@ test_that("depeche expected output", {
   expect_true(max(out$clusterVector)==2)
   expect_true(all(x$ids ==out$clusterVector) ||all(x$ids %% 2 +1 ==out$clusterVector))
 })
+
+#sparsity test
+
+x <- DepecheR:::generateSparseData(observations=100)
+out <- depeche(x$samples, maxIter=8, createOutput=FALSE, center = FALSE)
+binCenters <- x$centers == 0 
+binClCenters <- out$clusterCenters ==0
+test_that("depeche expected sparsity", {
+  for(i in 1:5){
+    expect_true(all(binCenters[i,]==binClCenters[which(rowSums(binClCenters)==i),]))
+    
+  }
+})
