@@ -97,11 +97,11 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   residual.df <- as.data.frame(residualVectorLong)
 
   #make a breaks vector to define each bin for the colors
-  brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, length.out = 22))
+  brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, length.out = 12))
 
   #assign each value to a bin
   grps <- with(residual.df, cut(residual.df[,1], breaks = brks, include.lowest = TRUE))
-  colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(21)
+  colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(11)
   xYDataScaled$col <- rev(colors)[grps]
 
   #Create the density matrix for xYData.
@@ -136,9 +136,9 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   if(createPlot==TRUE){
     pdf(legendTitle)
     par(fig=c(0.35,0.65,0,1), xpd=NA)
-    z=matrix(1:21,nrow=1)
+    z=matrix(1:11,nrow=1)
     x=1
-    y=seq(-maxAbsPlottingValues,maxAbsPlottingValues,len=21)
+    y=seq(-maxAbsPlottingValues,maxAbsPlottingValues,len=11)
     image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
     axis(2)
     text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)

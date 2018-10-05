@@ -25,7 +25,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   #Here, the sampleSize is set in cases it is "default".
   if(length(sampleSize)==1){
     if(sampleSize=="default"){
-      if(nrow(inDataFrameScaled)<=10000){
+      if(nrow(inDataFrameUsed)<=10000){
         sampleSize <- nrow(inDataFrameScaled)
       } else {
         sampleSize <- 10000
@@ -33,23 +33,23 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
     }
   }
 
-  dOptPenaltyResult <- dOptPenalty(inDataFrameScaled, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=createOutput, minARI=minARI)
+  dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=createOutput, minARI=minARI)
   
   #Now over to creating the final solution
   #Here, the selectionDataSet is created
   if(selectionSampleSize=="default"){
     selectionSampleSize <- sampleSize
   }
-  if(nrow(inDataFrameScaled)<=selectionSampleSize){
-      selectionDataSet <- inDataFrameScaled
+  if(nrow(inDataFrameUsed)<=selectionSampleSize){
+      selectionDataSet <- inDataFrameUsed
     } else {
-      selectionDataSet <- sample_n(inDataFrameScaled, selectionSampleSize, replace=TRUE)
+      selectionDataSet <- sample_n(inDataFrameUsed, selectionSampleSize, replace=TRUE)
   }
   
   #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
-  if(nrow(inDataFrameScaled)<10000){
+  if(nrow(inDataFrameUsed)<10000){
     penalty <- dOptPenaltyResult[[1]][1,1]
-    depecheAllDataResult <- depecheAllData(inDataFrameScaled, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
+    depecheAllDataResult <- depecheAllData(inDataFrameUsed, penalty=penalty, k=k, firstClusterNumber=firstClusterNumber)
     clusterVectorEquidistant <- depecheAllDataResult[[1]]
     reducedClusterCenters <- depecheAllDataResult[[2]]
   } else {
@@ -138,12 +138,25 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   
   #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
   reducedClusterCentersColRow <- depecheResult[[2]]
-  if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1){
-    reducedClusterCentersColRow[reducedClusterCentersColRow==0] <- NA
-    colorLadder <- colorRampPalette(c("blue", "white", "red"))(21)
+  if(ncol(reducedClusterCentersColRow)>500){
+    print("as the number of variables in the result exceeds 500, it is not meaningful to produce a cluster center heatmap, so it is omitted")
+  }
+  if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)<500){
+    #First, each column is divided by the 5:th and the 95:th percentile, if the cluster centers are not more extremely located, in which case they are used instead
+    inDataPercentiles <- subset(inDataFrameUsed, select=colnames(reducedClusterCentersColRow))
+    percentileMat <- apply(inDataPercentiles, 2, quantile, probs=c(0.01, 0.99))
+    graphicClusterCenters <- reducedClusterCentersColRow
+    for(i in 1:ncol(percentileMat)){
+      graphicClusterCenters[,i] <- reducedClusterCentersColRow[,i]/max(abs(percentileMat[,i]))
+    }      
+    #Now, if any values are above 1 or below -1, they are truncated
+    graphicClusterCenters[graphicClusterCenters>1] <- 1
+    graphicClusterCenters[graphicClusterCenters<-1] <- -1
+    graphicClusterCenters[graphicClusterCenters==0] <- NA
+    colorLadder <- colorRampPalette(c("blue", "white", "red"))(11)
     if(createOutput==TRUE){
       pdf("Cluster centers.pdf")
-      heatmap.2(as.matrix(reducedClusterCentersColRow),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, trace="none", na.color="#A2A2A2")
+      heatmap.2(as.matrix(graphicClusterCenters),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, breaks=seq(-1, 1, length.out=12), trace="none", density.info="none", na.color="#A2A2A2")
       dev.off()  
     }
   }
