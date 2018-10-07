@@ -11,20 +11,20 @@ depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=2
   
   #Here the number of iterations is chosen. Very many are not needed, but a few will make the clustering even better than if just one was chosen.
   n_cores <- detectCores() - 1
-  #if(n_cores>=7){
-  #  if(n_cores<=21){
- #     iterations <- n_cores
- #   } else {
- #     iterations <- 21
- #   }
- # } else {
- #   iterations <- 7
- # }
+  if(n_cores>=7){
+    if(n_cores<=21){
+      iterations <- n_cores
+    } else {
+      iterations <- 21
+    }
+  } else {
+    iterations <- 7
+  }
   
   
   cl <-  parallel::makeCluster(n_cores, type = "SOCK")
   registerDoSNOW(cl)
-  return_all <- foreach(i=1:7, .packages="DepecheR") %dopar% sparse_k_means(dataMat,round(k*3),penaltyForRightSize,1, i)
+  return_all <- foreach(i=1:iterations, .packages="DepecheR") %dopar% sparse_k_means(dataMat,round(k*3),penaltyForRightSize,1, i)
 
   #Here, the best iteration is retrieved, if this is not one with only 1 cluster
   
