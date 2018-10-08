@@ -10,7 +10,7 @@
 #' @param controlData Optional. A numeric/integer vector or dataframe of values that could be used to define the range of the colorData. If no control data is present, the function defaults to using the colorData as control data.
 #' @param xYData These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.
 #' @param names The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.
-#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. a
 #' @param addLegend If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.
 #' @param idsVector If a legend is added, this argument controls the naming in the legend.
 #' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
@@ -84,9 +84,11 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   }
 
   #Create the density matrix for xYData.
+  if(logial(densContour)){
     if(densContour==TRUE){
-      densContour <- dContours(xYData)      
+      densContour <- dContours(xYData)
     }
+  }  
   
   if(drawColorPalette==TRUE && createPlot==TRUE){
     pdf("palette.pdf")

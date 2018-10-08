@@ -31,7 +31,7 @@ dDensityPlot(xYData, color = "blue", commonName = "All_density",
     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
 }}
 
-\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 

@@ -21,7 +21,7 @@ dColorPlot(colorData, controlData, xYData, names = "default",
 
 \item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
-\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
 
 \item{addLegend}{If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.}
 

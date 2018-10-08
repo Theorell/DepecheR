@@ -27,7 +27,7 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
 
 \item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in the second group and so forth, so make sure the order is correct!}
 
-\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
 
 \item{name}{The main name for the graph and the analysis.}
 

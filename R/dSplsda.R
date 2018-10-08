@@ -12,7 +12,7 @@
 #' @param testSampleRows Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows. 
 #' @param paired Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in the second group and so forth, so make sure the order is correct!
 #' @param name The main name for the graph and the analysis.
-#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. a
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
 #' @param thresholdMisclassRate This threshold corresponds to the usefulness of the model in separating the groups: a misclassification rate of the default 0.05 means that 5 percent of the individuals are on the wrong side of the theoretical robust middle line between the groups along the sPLS-DA axis, defined as the middle point between the 3:rd quartile of the lower group and the 1:st quartile of the higher group.
@@ -243,10 +243,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   xYDataScaled$col <- colors[grps]
 
   #Create the density matrix for xYData.
+  if(logial(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-  
+  }  
   png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createOutput==TRUE){
     if(title==TRUE){

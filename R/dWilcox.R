@@ -9,7 +9,7 @@
 #' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param paired Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in hte second group and so forth.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
-#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. a
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -200,10 +200,11 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   scaleLowPart <- rev(scaleHighPart[2:3])
   plotScale <- c(scaleLowPart, scaleHighPart)
   #Create the density matrix for xYData.
-  if(densContour==TRUE){
-    densContour <- dContours(xYData)
-  }
-  
+  if(logial(densContour)){
+    if(densContour==TRUE){
+      densContour <- dContours(xYData)
+    }
+  }  
   png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createOutput==TRUE){
     if(title==TRUE){

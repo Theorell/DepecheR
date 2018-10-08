@@ -28,7 +28,7 @@ dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.}
 
-\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
 
 \item{name}{The main name for the graph and the analysis.}
 

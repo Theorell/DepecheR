@@ -5,7 +5,7 @@
 #' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. 
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
@@ -104,16 +104,18 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(11)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #Create the density matrix for xYData.
+  #Create the density matrix for xYData if it should be produced.
+  if(logial(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
+  }  
+
   
   png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createPlot==TRUE){
     if(title==TRUE){
       plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
-      
     }
     
     if(title==FALSE){
@@ -147,8 +149,6 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
     dev.off()
   }
   
-  
-
   if(createDirectory==TRUE){
     setwd(workingDirectory)
   }

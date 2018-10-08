@@ -16,7 +16,7 @@
 #'     \item{When "plotEachIdSeparately"=TRUE}{Provides information about which rows that belong to which id and the names for the individual plots.}
 #'     \item{When "color" is a vector of colors}{The ids are used to create the legend.}
 #' }
-#' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. a
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -76,9 +76,11 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
   xYDataScaled <- dScale(xYData, scalingControl, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
   #Create the density matrix for xYData.
-  if(densContour==TRUE){
+  if(logial(densContour)){
+    if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
+  }  
 
   if(length(color)==1){
     #Here, the colors are defined

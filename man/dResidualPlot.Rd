@@ -18,7 +18,7 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
-\item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
 \item{name}{The main name for the graph and the analysis.}
 

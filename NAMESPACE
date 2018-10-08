@@ -2,6 +2,7 @@
 
 export(dColorPlot)
 export(dColorVector)
+export(dContours)
 export(dDensityPlot)
 export(dResidualPlot)
 export(dSplsda)
