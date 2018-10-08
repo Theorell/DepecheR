@@ -8,9 +8,9 @@
 #' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param pairingVector Optionally, a vector with the same length as xYData. If included, a multilevel spls-da will be performed, that e.g. considers the within-donor variation between different stimuli.
 #' @param displayVector Optionally, if the dataset is very large (>100 000 observations) and hence the SNE calculation becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
 #' @param testSampleRows Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows. 
+#' @param paired Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in the second group and so forth, so make sure the order is correct!
 #' @param name The main name for the graph and the analysis.
 #' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param groupName1 The name for the first group
@@ -84,7 +84,7 @@
 #' testSampleRows=testDataRows)
 #'
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector, displayVector, testSampleRows, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector, testSampleRows, paired=FALSE, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -99,7 +99,20 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, pairingVector
   if(length(unique(idsVector))<8){
     warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
   }
-
+  
+  if(paired==TRUE){
+    #As the algorithm does not like repeated ids, if the id vector contains the same values for the first group and the second, a new id vector is introduced here
+    if(identical(unique(idsVector[groupVector==unique(groupVector)[1]]),unique(idsVector[groupVector==unique(groupVector)[2]]))){
+      pairingVector <- idsVector
+      idsVector <- paste0(idsVector, groupVector)
+    } else if(length(unique(idsVector[groupVector==unique(groupVector)[1]]))==length(unique(idsVector[groupVector==unique(groupVector)[2]]))){
+      pairingVector1 <- idsVector[groupVector==unique(groupVector)[1]]
+      pairingVector2 <- idsVector[groupVector==unique(groupVector)[2]]
+      pairingVector <- rbind(pairingVector1, pairingVector2)
+    }
+    
+  }
+  
   if(class(xYData)=="matrix"){
     xYData <- as.data.frame(xYData)
   }

@@ -7,7 +7,7 @@
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
 #' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
 #' @param displayVector Optionally, if the dataset is very large and the SNE calculation hence becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData. 
-#' @param paired If the data is paired, so that Wilcoxon signed rank test instead of Wilcoxon rank-sum test/Mann_Whitney test can be used. Defaults to false, i.e. no assumption of pairing is made and Wilcoxon rank sum-test.
+#' @param paired Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in hte second group and so forth.
 #' @param multipleCorrMethod Which method that should be used for adjustment ofmultiple comparisons. Defaults to Benjamini-Hochberg, but all other methods available in \code{\link{p.adjust}} can be used.
 #' @param densContour Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.
 #' @param name The main name for the graph and the analysis.

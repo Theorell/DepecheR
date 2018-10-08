@@ -67,13 +67,13 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector, groupVector, pairin
     pairingShortGroup1 <- clusterFractionsForAllIds1[1,]
     
     for(i in 1:ncol(clusterFractionsForAllIds1)){
-      pairingShortGroup1[i] <- pairingVectorGroup1[which(as.numeric(colnames(clusterFractionsForAllIds1)[i])==idsVectorGroup1)[1]]
+      pairingShortGroup1[i] <- pairingVectorGroup1[which(colnames(clusterFractionsForAllIds1)[i]==idsVectorGroup1)[1]]
     }
     
     pairingShortGroup2 <- clusterFractionsForAllIds2[1,]
     
     for(i in 1:ncol(clusterFractionsForAllIds2)){
-      pairingShortGroup2[i] <- pairingVectorGroup2[which(as.numeric(colnames(clusterFractionsForAllIds2)[i])==idsVectorGroup2)[1]]
+      pairingShortGroup2[i] <- pairingVectorGroup2[which(colnames(clusterFractionsForAllIds2)[i]==idsVectorGroup2)[1]]
     }
     
     pairingAll <- c(pairingShortGroup1, pairingShortGroup2)

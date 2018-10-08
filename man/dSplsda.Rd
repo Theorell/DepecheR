@@ -4,9 +4,9 @@
 \alias{dSplsda}
 \title{Sparse partial least squares discriminant analysis with paired and unpaired data}
 \usage{
-dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
-  displayVector, testSampleRows, densContour = TRUE, name = "dSplsda",
-  groupName1 = unique(groupVector)[1],
+dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
+  testSampleRows, paired = FALSE, densContour = TRUE,
+  name = "dSplsda", groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
   title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
   bandColor = "black", dotSize = 500/sqrt(nrow(xYData)),
@@ -21,11 +21,11 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, pairingVector,
 
 \item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
 
-\item{pairingVector}{Optionally, a vector with the same length as xYData. If included, a multilevel spls-da will be performed, that e.g. considers the within-donor variation between different stimuli.}
-
 \item{displayVector}{Optionally, if the dataset is very large (>100 000 observations) and hence the SNE calculation becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
 
 \item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows.}
+
+\item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in the second group and so forth, so make sure the order is correct!}
 
 \item{densContour}{Logical. If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
