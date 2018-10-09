@@ -22,10 +22,10 @@
 #' @export dContours
 dContours <- function(xYData, n=100){
 
-	sneDataNorm <- dScale(x=sneData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+	xYDataNorm <- dScale(x=xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
-	V1 <- sneDataNorm[,1]
-	V2 <- sneDataNorm[,2]
+	V1 <- xYDataNorm[,1]
+	V2 <- xYDataNorm[,2]
 
 #Construct the third dimension with smooth kernel density estimate
 den3d <- kde2d(V1, V2, n=n, lims=c(-0.05,1.05, -0.05,1.05))

@@ -84,7 +84,7 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   }
 
   #Create the density matrix for xYData.
-  if(logial(densContour)){
+  if(is.logical(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }

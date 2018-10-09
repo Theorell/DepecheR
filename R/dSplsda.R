@@ -243,11 +243,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   xYDataScaled$col <- colors[grps]
 
   #Create the density matrix for xYData.
-  if(logial(densContour)){
+  if(is.logical(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-  }  
+  } 
   png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createOutput==TRUE){
     if(title==TRUE){

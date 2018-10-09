@@ -104,12 +104,12 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(11)
   xYDataScaled$col <- rev(colors)[grps]
 
-  #Create the density matrix for xYData if it should be produced.
-  if(logial(densContour)){
+  #Create the density matrix for xYData.
+  if(is.logical(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-  }  
+  } 
 
   
   png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")

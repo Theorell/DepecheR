@@ -76,11 +76,11 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
   xYDataScaled <- dScale(xYData, scalingControl, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
   #Create the density matrix for xYData.
-  if(logial(densContour)){
+  if(is.logical(densContour)){
     if(densContour==TRUE){
       densContour <- dContours(xYData)
     }
-  }  
+  }   
 
   if(length(color)==1){
     #Here, the colors are defined
