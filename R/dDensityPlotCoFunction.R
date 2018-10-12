@@ -42,7 +42,7 @@ dDensityPlotCoFunction <- function(xYDataScaled, multipleColors=FALSE, cols, col
       plot(x2~x1, data=df[order(df$dens),], main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
     }
     if(title==FALSE){
-      plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+      plot(x2~x1, data=df[order(df$dens),], main=NULL, pch=20, cex=dotSize, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
     }
     if(length(densContour)>1){
       par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)

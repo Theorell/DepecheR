@@ -5,7 +5,7 @@ Title: Determination of essential phenotypic elements of clusters in high-dimens
 Authors@R: c(person("Jakob", "Theorell", email = "jakob.theorell@ki.se",
                   role = c("aut", "cre")),
            person("Axel", "Theorell", email = "a.theorell@fz-juelich.de",
-                  role = "aut", "cre"))
+		  role = "aut", "cre"))
 Author:
    Jakob Theorell [aut, cre],
    Axel Theorell [aut, cre]
