@@ -15,27 +15,27 @@
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
 #' @examples
-#' #Generate a default size dataframe with bimodally distributed data
-#' x <- generateBimodalData()
+#' #Load some data
+#' data(testData)
 #'
 #' #Retrieve the first column
-#' x2 <- x[,2]
+#' x <- testData[,1]
 #'
 #' #The maximum and minimum values are
-#' max(x2)
-#' min(x2)
+#' max(x)
+#' min(x)
 #'
 #' #Run the function without mean centering and with the quantiles set to 0 and 1.
-#' y2 <- dScale(x2, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+#' y <- dScale(x, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 #'
 #' #And the data has been scaled to the range between 0 and 1.
-#' max(y2)
-#' min(y2)
+#' max(y)
+#' min(y)
 #'
 #' #Now run the default function for a dataframe
-#' summary(x[,2:ncol(x)])
+#' summary(testData[,2:15])
 #'
-#' y_df <- dScale(x[,2:ncol(x)])
+#' y_df <- dScale(testData[,2:15])
 #'
 #' #Here, the data has first been truncated to the default percentiles, then scaled 
 #' #to the standard deviation in the remaining interval and finally the center has been
