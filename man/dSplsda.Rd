@@ -80,7 +80,6 @@ groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
 #in instances where true pairing is present, such as when identical individuals are 
 #compared across different treatments. This artificial example is only present to show how to
 #use the function, it is not good practive to set up artificial pairing vectors!
-pairingVector <- c(rep(rep(1:29, times=1000), times=2))
 xYDataPaired <- testDataSNE$Y[39001:nrow(testDataSNE$Y),]
 testDataPaired <- testData[39001:nrow(testData),]
 clusterVectorPaired <- testDataDepeche$clusterVector[39001:length(testDataDepeche$clusterVector)]
@@ -88,7 +87,7 @@ clusterVectorPaired <- testDataDepeche$clusterVector[39001:length(testDataDepech
 #Then the actual multilevel sPLS-DA is run. 
 sPLSDAObject <- dSplsda(xYData=xYDataPaired, idsVector=testDataPaired$ids, 
 groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, 
-pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
+paired=TRUE, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
 groupName2="Stimulation 2")
 
 #Here is an example of how the display vector can be used.

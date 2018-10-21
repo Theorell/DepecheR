@@ -49,7 +49,6 @@
 #' #in instances where true pairing is present, such as when identical individuals are 
 #' #compared across different treatments. This artificial example is only present to show how to
 #' #use the function, it is not good practive to set up artificial pairing vectors!
-#' pairingVector <- c(rep(rep(1:29, times=1000), times=2))
 #' xYDataPaired <- testDataSNE$Y[39001:nrow(testDataSNE$Y),]
 #' testDataPaired <- testData[39001:nrow(testData),]
 #' clusterVectorPaired <- testDataDepeche$clusterVector[39001:length(testDataDepeche$clusterVector)]
@@ -57,7 +56,7 @@
 #' #Then the actual multilevel sPLS-DA is run. 
 #' sPLSDAObject <- dSplsda(xYData=xYDataPaired, idsVector=testDataPaired$ids, 
 #' groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, 
-#' pairingVector=pairingVector, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
+#' paired=TRUE, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
 #' groupName2="Stimulation 2")
 #' 
 #' #Here is an example of how the display vector can be used.
@@ -106,9 +105,9 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
       pairingVector <- idsVector
       idsVector <- paste0(idsVector, groupVector)
     } else if(length(unique(idsVector[groupVector==unique(groupVector)[1]]))==length(unique(idsVector[groupVector==unique(groupVector)[2]]))){
-      pairingVector1 <- idsVector[groupVector==unique(groupVector)[1]]
-      pairingVector2 <- idsVector[groupVector==unique(groupVector)[2]]
-      pairingVector <- rbind(pairingVector1, pairingVector2)
+      pairingVector <- c(idsVector[groupVector==unique(groupVector)[1]], idsVector[groupVector==unique(groupVector)[1]])
+    } else {
+      print("Pairing cannot be performed, as the first and second datasets contain different number of individual Ids") 
     }
     
   }
@@ -126,7 +125,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
     idsVectorTest <- idsVector[testSampleRows]
     groupVectorTest <- groupVector[testSampleRows]
     
-    if(missing(pairingVector)==FALSE){
+    if(paired==TRUE){
       pairingVectorTrain <- pairingVector[-testSampleRows]
       pairingVectorTest <- pairingVector[testSampleRows]
     }
@@ -134,12 +133,12 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
     clusterVectorTrain <- clusterVector
     idsVectorTrain <- idsVector
     groupVectorTrain <- groupVector
-    if(missing(pairingVector)==FALSE){
+    if(paired==TRUE){
       pairingVectorTrain <- pairingVector
     }
   }
   
-  if(missing(pairingVector)){
+  if(paired==FALSE){
     dSplsdaInData <- dSplsdaPreCalculations(clusterVectorTrain, idsVectorTrain, groupVectorTrain, groupName1=groupName1, groupName2=groupName2)
   } else {
     dSplsdaInData <- dSplsdaPreCalculations(clusterVectorTrain, idsVectorTrain, groupVectorTrain, groupName1=groupName1, groupName2=groupName2, pairingVector=pairingVectorTrain)
@@ -297,7 +296,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 
   #Now, prediction is performed, if the setup is train-test.
   if(missing(testSampleRows)==FALSE){
-    if(missing(pairingVector)){
+    if(paired==FALSE){
       dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, idsVectorTest, groupVectorTest, groupName1=groupName1, groupName2=groupName2)
     } else {
       dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, idsVectorTest, groupVectorTest, groupName1=groupName1, groupName2=groupName2, pairingVector=pairingVectorTest)
