@@ -1,5 +1,6 @@
 ######################
 #depeche
+
 context('depeche')
 x<- DepecheR:::generateBimodalData(observations = 20,dataCols = 150)
 out <- depeche(x$samples, maxIter=8, createOutput=FALSE)
@@ -10,7 +11,7 @@ test_that("depeche expected output", {
 
 #sparsity test
 
-x <- DepecheR:::generateSparseData(observations=100)
+x <- DepecheR:::generateSparseData(observations=500)
 out <- depeche(x$samples, maxIter=8, createOutput=FALSE, center = FALSE)
 binCenters <- x$centers == 0 
 binClCenters <- out$clusterCenters ==0
