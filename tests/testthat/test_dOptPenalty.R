@@ -1,8 +1,8 @@
 ######################
 #dOptPenalty
 context('dOptPenatly')
-x <- DepecheR:::generateBimodalData(observations = 50,dataCols = 150)
-x_scaled <- DepecheR:::dScale(as.data.frame(x$samples))
+x <- DepecheR:::generateBimodalData(observations = 100,dataCols = 10)
+x_scaled <- DepecheR:::dScale(as.data.frame(x$samples), center = FALSE)
 dOPR <- DepecheR:::dOptPenalty(x_scaled, k=30, maxIter=10, disableWarnings=TRUE, minARI=0.95, makeGraph=FALSE)
 
 ARI <- dOPR[[2]][,1]
