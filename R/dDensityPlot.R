@@ -78,7 +78,7 @@ dDensityPlot <- function(xYData, color="blue", commonName="All_density", plotEac
   #Create the density matrix for xYData.
   if(is.logical(densContour)){
     if(densContour==TRUE){
-      densContour <- dContours(xYData)
+      densContour <- dContours(xYData, control=scalingControl)
     }
   }   
 

@@ -4,6 +4,7 @@
 #' Here, contour lines for two-dimensional data are construced. It is primarily thought to be used in the context of SNE plots in this package. This function is used both internally in other functions suchas sneFluoroPlot and sneDensityPlot, but also as a standalone function, as it increases speed greatly to generate the density curves only once per overall analysis.
 #' @importFrom MASS kde2d
 #' @param xYData A dataframe with two columns containing position information for each observation in the dataset. Typically, this is the raw result from the SNE analysis.
+#' @param control A numeric/integer vector or dataframe of values that could be used to define the range in the internal dScale. If no control data is present, the function defaults to using the indata as control data.
 #' @param n The number fo grid points. Default is 100.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return A list of three components
@@ -20,9 +21,13 @@
 #' contour_result <- dContours(testDataSNE)
 #'
 #' @export dContours
-dContours <- function(xYData, n=100){
+dContours <- function(xYData, control, n=100){
 
-	xYDataNorm <- dScale(x=xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+  if(missing(control)){
+    control <- xYData
+  }
+  
+	xYDataNorm <- dScale(x=xYData, control=control, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
 	V1 <- xYDataNorm[,1]
 	V2 <- xYDataNorm[,2]

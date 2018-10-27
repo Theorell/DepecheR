@@ -4,10 +4,12 @@
 \alias{dContours}
 \title{Create density contours for two-dimensional data.}
 \usage{
-dContours(xYData, n = 100)
+dContours(xYData, control, n = 100)
 }
 \arguments{
 \item{xYData}{A dataframe with two columns containing position information for each observation in the dataset. Typically, this is the raw result from the SNE analysis.}
+
+\item{control}{A numeric/integer vector or dataframe of values that could be used to define the range in the internal dScale. If no control data is present, the function defaults to using the indata as control data.}
 
 \item{n}{The number fo grid points. Default is 100.}
 }

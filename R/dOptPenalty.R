@@ -28,7 +28,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   
   while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,sampleSize,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% DepecheR:::grid_search(dataMat,k,interestingPenalties,1,sampleSize,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
@@ -162,7 +162,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   optimalPenalties <- roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-minARI))]
 
   #The best penalty is defined as the mean penalty or the optimal penalty just below the mean, in the case of an even number.
-  penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[round(mean(c(1:length(optimalPenalties))))], k)
+  penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[floor(mean(c(1:length(optimalPenalties))))], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]
