@@ -133,7 +133,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties=c(2^0, 2^0.5, 2^1, 
   
   #Here, the dual cluster setup is created
   if(missing(dualDepecheSetup)==FALSE){
-    inDataColumns <- dualDepecheSetup[,2]
+    inDataColumns <- as.character(dualDepecheSetup[,2])
     inDataFrameFirst <- inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1]==1)]]
     if(is.list(penalties)==FALSE){
       penaltyList <- list(penalties, penalties)
