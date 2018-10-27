@@ -47,7 +47,7 @@ generateSparseData <- function(modeN=5, dataCols=100, observations=10000){
   
   #generate the centers numbers
   
-  randInts <- sample(c(-10,10), dataCols*modeN, replace = TRUE)
+  randInts <- sample(c(-50,50), dataCols*modeN, replace = TRUE)
   centers <- matrix(randInts, nrow = modeN, byrow = TRUE)
   # put in sparsity
   for(i in 1:modeN){
