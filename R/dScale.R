@@ -13,13 +13,14 @@
 #' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation. 
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
-#' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
+#' @param returnCenter Boolean. If center=TRUE, should the value at the center be returned?
+#' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled. In addition, if returnCenter=TRUE, a value, or a vector if x is a matrix or a data frame
 #' @examples
 #' #Load some data
 #' data(testData)
 #'
 #' #Retrieve the first column
-#' x <- testData[,1]
+#' x <- testData[,2]
 #'
 #' #The maximum and minimum values are
 #' max(x)
@@ -43,7 +44,7 @@
 #' #been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export dScale
-dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE){
+dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", truncate=FALSE, multiplicationFactor=1, multiCore=FALSE, returnCenter=FALSE){
 
   if(class(x)=="matrix"){
     x <- as.data.frame(x)
@@ -58,8 +59,12 @@ dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", t
   } else {
     if(class(control)=="matrix"){
       control <- as.data.frame(control)
-    }
+    } 
+    if(class(x)=="data.frame"){
     control <- rbind(x, control)
+    } else {
+      control <- c(x, control)
+    }
   }
 
   if(is.logical(scale)==TRUE && scale==TRUE){
@@ -75,18 +80,32 @@ dScale <- function(x, control, scale=TRUE, robustVarScale=TRUE, center="peak", t
   }
   
   if(class(x)!="data.frame"){
-    result <- dScaleCoFunction(x, control=control, scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor)
+    result <- dScaleCoFunction(x, control=control, scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor, returnCenter=returnCenter)
   }
   if(class(x)=="data.frame"){
     if(multiCore==TRUE){
       no_cores <- detectCores() - 1
-      cl = parallel::makeCluster(no_cores, type = "SOCK")
+      cl = makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
+      if(returnCenter==FALSE){
       result <- as.data.frame(foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor))
-      parallel::stopCluster(cl)
+      } else {
+        resultComplex <- foreach(i=1:ncol(x), .inorder=TRUE) %dopar% dScaleCoFunction(x[,i], control=control[,i], scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor, returnCenter=TRUE)
+        resultDf <- as.data.frame(do.call("cbind", lapply(resultComplex, "[[", 1)))
+        resultCenters <- unlist(lapply(resultComplex, "[[", 2))
+        result <- list(resultDf, resultCenters)
+      }
+      stopCluster(cl)
       colnames(result) <- colnames(x)
     } else {
-      result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
+      if(returnCenter==FALSE){
+        result <- as.data.frame(mapply(dScaleCoFunction, x, control, MoreArgs=list(scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor), SIMPLIFY = FALSE))
+      } else {
+        resultComplex <- mapply(dScaleCoFunction, x, control, MoreArgs=list(scale=scale, robustVarScale=robustVarScale, truncate=truncate, center=center, multiplicationFactor=multiplicationFactor, returnCenter=TRUE), SIMPLIFY = FALSE)
+        resultDf <- as.data.frame(do.call("cbind", lapply(resultComplex, "[[", 1)))
+        resultCenters <- unlist(lapply(resultComplex, "[[", 2))
+        result <- list(resultDf, resultCenters)
+      }
     }
       }
  return(result)

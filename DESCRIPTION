@@ -1,10 +1,10 @@
 Package: DepecheR
-Version: 1.0.0
-Date: 2018-05-02
+Version: 1.1.0
+Date: 2018-12-04
 Title: Determination of essential phenotypic elements of clusters in high-dimensional entities 
-Authors@R: c(person("Jakob", "Theorell", email = "jakob.theorell@ki.se",
+Authors@R: c(person(given='Jakob', family='Theorell', email = "jakob.theorell@ki.se",
                   role = c("aut", "cre")),
-           person("Axel", "Theorell", email = "a.theorell@fz-juelich.de",
+           person(given='Axel', family='Theorell', email = "a.theorell@fz-juelich.de",
 		  role = "aut", "cre"))
 Author:
    Jakob Theorell [aut, cre],
@@ -14,7 +14,7 @@ Description: The purpose of this package is to identify traits in a dataset that
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Depends: R (>= 3.4.0)
 Imports:
   ggplot2 (>= 2.2.1), MASS (>= 7.3.47), Rcpp (>= 0.12.11), dplyr (>= 0.5.0), gplots (>= 3.0.1), viridis (>= 0.4.0), foreach (>= 1.4.3), doSNOW (>= 1.0.14), parallel (>= 3.2.3), mixOmics (>= 6.2.0), moments (>= 0.14)

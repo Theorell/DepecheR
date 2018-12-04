@@ -1,4 +1,3 @@
-#' @importFrom dplyr sample_n
 #' @importFrom gplots heatmap.2
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
@@ -7,7 +6,7 @@
 #' @importFrom doSNOW registerDoSNOW 
 #' @importFrom foreach foreach %do% %dopar%
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties, sampleSize, selectionSampleSize, k, minARIImprovement, minARI, maxIter, ids, newNumbers, createDirectory=FALSE, createOutput){
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directoryName, penalties, sampleSize, selectionSampleSize, k, minARIImprovement, optimARI, maxIter, newNumbers, createDirectory=FALSE, createOutput, logCenterSd){
 
     if(createDirectory==TRUE){
     workingDirectory <- getwd()
@@ -17,13 +16,13 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   
   #First, if the dataset is very, very big, a subset of it is used to subset from. Otherwise the system memory needed to just perform the boot strapping becomes so consuming, that the process stalls.
   if(nrow(inDataFrameScaled)>1000000){
-    inDataFrameUsed <- sample_n(inDataFrameScaled, 1000000)
+    sampleRows <- sample(1:nrow(inDataFrameScaled), 1000000)
+    inDataFrameUsed <- inDataFrameScaled[sampleRows,]
   } else {
     inDataFrameUsed <- inDataFrameScaled
   }
   
   #Here, the sampleSize is set in cases it is "default".
-  if(length(sampleSize)==1){
     if(sampleSize=="default"){
       if(nrow(inDataFrameUsed)<=10000){
         sampleSize <- nrow(inDataFrameScaled)
@@ -31,9 +30,8 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
         sampleSize <- 10000
       }
     }
-  }
 
-  dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=createOutput, minARI=minARI)
+  dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, k=k, maxIter=maxIter, sampleSize=sampleSize, penalties=penalties, makeGraph=createOutput, minARIImprovement=minARIImprovement, optimARI=optimARI)
   
   #Now over to creating the final solution
   #Here, the selectionDataSet is created
@@ -43,7 +41,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
   if(nrow(inDataFrameUsed)<=selectionSampleSize){
       selectionDataSet <- inDataFrameUsed
     } else {
-      selectionDataSet <- sample_n(inDataFrameUsed, selectionSampleSize, replace=TRUE)
+      selectionDataSet <- inDataFrameUsed[sample(1:nrow(inDataFrameUsed), selectionSampleSize, replace=TRUE),]
   }
   
   #If the dataset is small, a new set of seven clusterings are performed (on all the data or on a subsample, depending on the sample size), and the maximum likelihood solution is returned as the result
@@ -54,37 +52,25 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
     reducedClusterCenters <- depecheAllDataResult[[2]]
   } else {
     #Now, the best run amongst all the runs with the largest sample size is defined, by identifying the solution that gives the highest mean f-measure for all the others.
-    
     #First, all solutions are retrieved
     allSolutions <- dOptPenaltyResult[[3]]
     
     #Now, all clusterCenters are used to allocate the selectionDataSet.
     allocationResultList <- list()
-    
     selectionDataSetMatrix <- data.matrix(selectionDataSet)
-    
     allocationResultList <- foreach(i=1:length(allSolutions)) %do% removeEmptyVariablesAndAllocatePoints(selectionDataSet=selectionDataSetMatrix, clusterCenters=allSolutions[[i]])
-    
     
     #Here, the corrected Rand index with each allocationResult as the first vector vector and all the others as individual second vectors is identified
     n_cores <- detectCores() - 1
-    cl <-  parallel::makeCluster(n_cores, type = "SOCK")
+    cl <-  makeCluster(n_cores, type = "SOCK")
     registerDoSNOW(cl)
     meanARIList <- foreach(i=1:length(allocationResultList)) %dopar% mean(sapply(allocationResultList, rand_index, inds2=allocationResultList[[i]], k=k))
-    parallel::stopCluster(cl)	
+    stopCluster(cl)	
     meanARIVector <- unlist(meanARIList)
     
     #Now the solution being the most similar to all the others is retrieved
     optimalClusterCenters <- unlist(allSolutions[[which(meanARIVector==max(meanARIVector))[1]]])
-    
-    #And here, the optimal solution is created with the full dataset
-    optimalClusterVector <- allocate_points(data.matrix(inDataFrameScaled, rownames.force = NA), optimalClusterCenters, no_zero=1)[[1]]
-    
-    #And here, the optimal results are made more dense by removing empty rows and columns, etc.
-    #Here, the numbers of the removed clusters are removed as well, and only the remaining clusters are retained. As the zero-cluster is not included, the first cluster gets the denomination 1.
-    clusterVectorEquidistant <- turnVectorEquidistant(optimalClusterVector, startValue=firstClusterNumber)			
-    colnames(optimalClusterCenters) <- colnames(inDataFrameScaled)
-    
+    colnames(optimalClusterCenters) <- colnames(inDataFrameUsed)
     #Remove all rows and columns that do not contain any information
     reducedClusterCenters <- optimalClusterCenters[which(rowSums(optimalClusterCenters)!=0),which(colSums(optimalClusterCenters)!=0)]
     
@@ -95,70 +81,75 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber=1, directory
       reducedClusterCenters <- as.matrix(reducedClusterCenters)
     }
     
-    
-    #Make the row names the same as the cluster names in the clusterVectorEquidistant
+    #Make the row names nice
     rownames(reducedClusterCenters) <- rep(firstClusterNumber:(firstClusterNumber+(nrow(reducedClusterCenters))-1))
     
+    #And here, the optimal solution is created with the full dataset
+    clusterVectorEquidistant <-dAllocate(inDataFrameScaled, reducedClusterCenters)
+
   }
   
   #Here, the optPenalty information is retrieved from the optimal sample size run. 
   optPenalty <- list(dOptPenaltyResult[[1]],dOptPenaltyResult[[2]])
   
-  depecheResult <- list(clusterVectorEquidistant, reducedClusterCenters, optPenalty)
-  names(depecheResult) <- c("clusterVector", "clusterCenters", "penaltyOptList")
-  
-  
-  #Here the data is added back, in the cases where very large datasets are used
-  
-  if(nrow(inDataFrameScaled)>1000000){
-    depecheResult$clusterVector <- dAllocate(inDataFrameScaled, depecheResult$clusterCenters)
-  }
-  ######################################
-  
-  #Provided that a viable Id vector is added, a table with the percentage of cells in each cluster for each individual is created
-  
-  if(missing(ids)==FALSE && length(ids)==nrow(inDataFrameScaled)){
-    
-    clusterTable <- table(depecheResult$clusterVector, ids)
-    
-    countTable <- table(ids)
-    
-    clusterFractionsForAllIds <- clusterTable
-    
-    for(i in 1:length(countTable)){
-      x <- clusterTable[,i]/countTable[i]
-      clusterFractionsForAllIds[,i] <- x
+  #Here, a cluster center matrix is created that relates its values to the original, indata variables, which increases the interpretability vastly.
+  #First, the cluster centers are multiplied by the standar deviation of the data
+  clusterCentersMultSd <- reducedClusterCenters*logCenterSd[[3]]
+
+  #Then, the center term is added to all variables separately
+  if(is.logical(logCenterSd[[2]])==FALSE){
+    correctClusterCentersList <- list()
+    for(i in 1:ncol(clusterCentersMultSd)){
+      focusMean <- logCenterSd[[2]][which(names(logCenterSd[[2]])%in%colnames(clusterCentersMultSd)[i])]
+      correctClusterCentersList[[i]] <- clusterCentersMultSd[,i]+focusMean
     }
-    
-    nextClustResultPosition <- length(depecheResult)+1
-    depecheResult[[nextClustResultPosition]] <- as.data.frame.matrix(clusterFractionsForAllIds)
-    names(depecheResult)[[length(depecheResult)]] <- "idClusterFractions"
-    
+    correctClusterCenters <- do.call("cbind", correctClusterCentersList)
+    colnames(correctClusterCenters) <- colnames(reducedClusterCenters)
+  } else {
+    correctClusterCenters <- clusterCentersMultSd
+    colnames(correctClusterCenters) <- colnames(reducedClusterCenters)
   }
+  
+  #Here, a sparsity matrix is generated, as the sparsed out variables will seem like they are situated in the middle, when they are in fact pushed to the center of the variable in question.
+  sparsityMatrix <- reducedClusterCenters
+  sparsityMatrix[sparsityMatrix!=0] <- 1
   
   #Here, a heatmap over the cluster centers is saved. Only true if the number of clusters exceeds one.
-  reducedClusterCentersColRow <- depecheResult[[2]]
-  if(ncol(reducedClusterCentersColRow)>500){
+  if(ncol(reducedClusterCenters)>500){
     print("as the number of variables in the result exceeds 500, it is not meaningful to produce a cluster center heatmap, so it is omitted")
-  }
-  if(nrow(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)>1 && ncol(reducedClusterCentersColRow)<500){
-    #First, each column is divided by the 5:th and the 95:th percentile, if the cluster centers are not more extremely located, in which case they are used instead
-    inDataPercentiles <- subset(inDataFrameUsed, select=colnames(reducedClusterCentersColRow))
-    percentileMat <- apply(inDataPercentiles, 2, quantile, probs=c(0.01, 0.99))
-    graphicClusterCenters <- reducedClusterCentersColRow
-    for(i in 1:ncol(percentileMat)){
-      graphicClusterCenters[,i] <- reducedClusterCentersColRow[,i]/max(abs(percentileMat[,i]))
-    }      
-    #Now, if any values are above 1 or below -1, they are truncated
-    graphicClusterCenters[graphicClusterCenters>1] <- 1
-    graphicClusterCenters[graphicClusterCenters<-1] <- -1
-    graphicClusterCenters[graphicClusterCenters==0] <- NA
-    colorLadder <- colorRampPalette(c("blue", "white", "red"))(11)
-    if(createOutput==TRUE){
-      pdf("Cluster centers.pdf")
-      heatmap.2(as.matrix(graphicClusterCenters),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, breaks=seq(-1, 1, length.out=12), trace="none", density.info="none", na.color="#A2A2A2")
-      dev.off()  
+  } else if(nrow(reducedClusterCenters)>1 && ncol(reducedClusterCenters)>1){
+    
+    graphicClusterCenters <- reducedClusterCenters
+    #Here we scale each center value to the range between the lowest and highest permille of the observations in the inDataScaled for that variable
+    for(i in 1:ncol(graphicClusterCenters)){
+      scaledFocus <- inDataFrameUsed[,colnames(inDataFrameUsed)==colnames(graphicClusterCenters)[i]]
+      graphicClusterCenters[,i] <- dScale(reducedClusterCenters[,i], scaledFocus, robustVarScale = FALSE, center=FALSE, truncate=TRUE)
     }
+    
+    graphicClusterCenters[sparsityMatrix==0] <- NA
+    
+    colorLadder <- dColorVector(1:11, colorScale=c("#0D0887FF", "#6A00A8FF", "#900DA4FF", "#B12A90FF", "#CC4678FF", "#E16462FF", "#F1844BFF", "#FCA636FF", "#FCCE25FF"))
+    
+    if(createOutput==TRUE){
+      if(logCenterSd[1]==FALSE){
+        pdf("Cluster centers.pdf")
+        heatmap.2(as.matrix(graphicClusterCenters),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, breaks=seq(0, 1, length.out=12), trace="none", keysize = 1.5, density.info="none", key.xlab="0=no expression, 1=high expression\ngrey=penalized",na.color="#A2A2A2")
+        dev.off() 
+      } else {
+        pdf("Log2 transformed cluster centers.pdf")
+        heatmap.2(as.matrix(graphicClusterCenters),Rowv=FALSE, Colv=FALSE, dendrogram="none", scale="none", col=colorLadder, breaks=seq(0, 1, length.out=12), trace="none", keysize = 1.5, density.info="none", key.xlab="0=no expression, 1=high expression\ngrey=penalized",na.color="#A2A2A2")
+        dev.off() 
+      }
+       
+    }
+  }
+  
+  #And now, the result that should be returned is compiled
+  depecheResult <- list(clusterVectorEquidistant, correctClusterCenters, sparsityMatrix, optPenalty)
+  if(logCenterSd[1]==FALSE){
+    names(depecheResult) <- c("clusterVector", "clusterCenters", "sparsityMatrix", "penaltyOptList")
+  } else {
+    names(depecheResult) <- c("clusterVector", "log2ClusterCenters", "sparsityMatrix", "penaltyOptList")
   }
   
   if(createDirectory==TRUE){

@@ -25,7 +25,7 @@ dColorVector <- function(x, order=unique(x), colorScale="viridis"){
 	  x <- as.character(x)
 	  order <- as.character(order)
 	}
-  
+
   if(length(colorScale)>1){
     orderColors <- colorRampPalette(colorScale)(length(order)) 
   } else {

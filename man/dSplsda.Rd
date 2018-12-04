@@ -80,15 +80,14 @@ groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
 #in instances where true pairing is present, such as when identical individuals are 
 #compared across different treatments. This artificial example is only present to show how to
 #use the function, it is not good practive to set up artificial pairing vectors!
-xYDataPaired <- testDataSNE$Y[39001:nrow(testDataSNE$Y),]
-testDataPaired <- testData[39001:nrow(testData),]
-clusterVectorPaired <- testDataDepeche$clusterVector[39001:length(testDataDepeche$clusterVector)]
+xYDataPaired <- as.data.frame(testDataSNE$Y)[c(1:30000,  67001:nrow(testDataSNE$Y)),]
+testDataPaired <- testData[c(1:30000,  67001:nrow(testDataSNE$Y)),]
+clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000,  67001:nrow(testDataSNE$Y))]
 
 #Then the actual multilevel sPLS-DA is run. 
 sPLSDAObject <- dSplsda(xYData=xYDataPaired, idsVector=testDataPaired$ids, 
-groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, 
-paired=TRUE, name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", 
-groupName2="Stimulation 2")
+groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, paired=TRUE, 
+name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
 
 #Here is an example of how the display vector can be used.
 subsetVector <- sample(1:nrow(testData), size=10000)
@@ -102,7 +101,8 @@ testDataSNESubset <- testDataSNE$Y[subsetVector,]
 #And now, this new SNE can be used for display, although all 
 #the data is used for the sPLS-DA calculations
 sPLSDAObject <- dSplsda(xYData=testDataSNESubset, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
+groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, 
+displayVector=subsetVector)
 
 #Finally, an example of a train-test set situation, where a random half the dataset 
 #is used for training and the second half is used for testing. It is naturally more

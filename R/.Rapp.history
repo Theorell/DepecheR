@@ -10,3 +10,6 @@ which(df[,1:2]==min(df[,1:2]), arr.ind=TRUE)
 df
 test <- which(df[,1:2]==min(df[,1:2]), arr.ind=TRUE)
 df[test]
+install.packages("cba")
+library(cba)
+?subset

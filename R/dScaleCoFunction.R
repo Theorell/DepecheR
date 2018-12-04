@@ -1,4 +1,4 @@
-dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center, multiplicationFactor){
+dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center, multiplicationFactor, returnCenter=FALSE){
 
   if(is.logical(scale)==TRUE && scale==FALSE){
     if(is.logical(truncate)==TRUE){
@@ -43,7 +43,13 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
   }
 
   if(center=="mean"){
-    responseVector <- responseVector-mean(responseVector)
+    meanValue <- mean(responseVector)
+    responseVector <- responseVector-meanValue
+    if(returnCenter==TRUE){
+      options(digits=14)
+      responseList <- list(responseVector, meanValue)
+      options(digits=7)
+    }
   }
   
   if(center=="peak"){
@@ -58,9 +64,19 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, center
     
     #And the position for this this peak is subtracted from all points
     responseVector <- responseVector-zeroPosition
+    if(returnCenter==TRUE){
+      options(digits=14)
+      responseList <- list(responseVector, zeroPosition)
+      options(digits=7)
+    }
   }
   
 
-  return(responseVector)
+  if(returnCenter==FALSE){
+    return(responseVector)
+  } else {
+    return(responseList)
+  }
+  
 
 }

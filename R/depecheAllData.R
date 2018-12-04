@@ -4,14 +4,14 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
-depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=20){
+depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k){
   penaltyForRightSize <- penalty*((nrow(inDataFrameScaled)*sqrt(ncol(inDataFrameScaled)))/1450)
 
   dataMat<-data.matrix(inDataFrameScaled)
   
   n_cores <- detectCores()-1
   
-  cl <-  parallel::makeCluster(n_cores, type = "SOCK")
+  cl <-  makeCluster(n_cores, type = "SOCK")
   registerDoSNOW(cl)
   return_all <- foreach(i=1:21, .packages="DepecheR") %dopar% sparse_k_means(dataMat,round(k*3),penaltyForRightSize,1, i)
 
@@ -24,7 +24,7 @@ depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber=1, k=2
   returnLowest <- return_all[[which(logMaxLik==maxN)[1]]]
   
 
-  parallel::stopCluster(cl)	
+  stopCluster(cl)	
 
   #And here, the optimal results, given if an origo cluster should be included or not, are retrieved further
   clusterVector <- returnLowest$i

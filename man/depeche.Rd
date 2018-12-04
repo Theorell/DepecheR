@@ -7,9 +7,8 @@
 depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
   2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5),
   sampleSize = "default", selectionSampleSize = "default", k = 30,
-  minARIImprovement = 0.01, minARI = 0.95, maxIter = 100, ids,
-  returnProcessedInData = FALSE, log2Off = FALSE, center = "default",
-  createOutput = TRUE)
+  minARIImprovement = 0.01, optimARI = 0.95, maxIter = 100,
+  log2Off = FALSE, center = "default", createOutput = TRUE)
 }
 \arguments{
 \item{inDataFrame}{A dataframe or matrix with the data that will be used to create the clustering. Cytometry data should be transformed using biexponential, arcsinh transformation or similar, and day-to-day normalizations should to be performed for all data if not all data has been acquired on the same run. Scaling, etc, is on the other hand performed within the function.}
@@ -24,17 +23,13 @@ depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
 
 \item{k}{Number of initial cluster centers. The higher the number, the greater the precision of the clustering, but the computing time also increases linearly with the number of starting points. Default is 30. If penalties=0, k-means clustering with k clusters will be performed.}
 
-\item{minARIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01 (1 percent).}
+\item{minARIImprovement}{This is the stop criterion for the penalty optimization algorithm: the more iterations that are run, the smaller will the improvement of the corrected Rand index be, and this sets the threshold when the inner iterations stop. Defaults to 0.01.}
 
-\item{minARI}{This is the stop criterion for the iterative optimization of the sample size: the maximum corrected Rand index that is acceptable. Defaults to 0.05, or 5 percent difference between sets of two full dataset allocations based on clusterings of a certain sample size.}
+\item{optimARI}{Above this level of ARI, all solutions are considered equally valid, and the median solution is selected among them.}
 
 \item{maxIter}{The maximal number of iterations that are performed in the penalty optimization.}
 
-\item{ids}{Optionally, a vector of the same length as rows in the inDataFrameScaled can be included. If so, it is used to generate a final analysis, where a table of the fraction of observations for each individual and each cluster is created.}
-
-\item{returnProcessedInData}{If the scaled and centered data should be returned. Defaults to FALSE.}
-
-\item{log2Off}{In cases with extreme tails, the clustering algorithm log2-transforms the data by default. This can be turned off using this command.}
+\item{log2Off}{If the automatic detection for high kurtosis, and followingly, the log2 transformation, should be turned off.}
 
 \item{center}{If centering should be performed. Alternatives are "default", "mean", "peak" and FALSE. "peak" results in centering around the highest peak in the data, which is useful in most cytometry situations. "mean" results in mean centering. "default" gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. FALSE results in no centering, mainly for testing purposes.}
 
@@ -44,15 +39,14 @@ depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
 A nested list with varying components depending on the setup above:
 \describe{
    \item{clusterVector}{A vector with the same length as number of rows in the inDataFrameUsed, where the cluster identity of each observation is noted.}
-   \item{clusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term. Is used by dAllocate.}
+   \item{clusterCenters/log2ClusterCenters}{A matrix containing information about where the centers are in all the variables that contributed to creating the cluster with the given penalty term. Is used by dAllocate. If a variable is penalized, its value will appear at the center of the data with the centering scheme used in the depeche run, to make dAllocate function runs possible. If the data was log2-transformed, the cluster centers will reflect the log2 transformed positions and the cluter center matrix wil be named accordingly, not to introduce any unnecessary roundoff errors.}
+   \item{sparsityMatrix}{A binary matrix containing information about which variables that were sparsed out for each cluster. 1 means that the variable was used, 0 that it was discarded.}
    \item{penaltyOptList}{A list of two dataframes:
    \describe{
              \item{penaltyOpt.df}{A one row dataframe with the settings for the optimal penalty.}
              \item{meanOptimDf}{A dataframe with the information about the results with all tested penalty values.}
            }
     }
-    \item{idClusterFractions}{If a valid ids vector is included, this dataframe is returned that contains the what fraction of each id that is present in each cluster. Calculated on a per id basis.}
-    \item{scaledInData}{If returnProcessedInData is TRUE, this slot will contain the scaled and centered indata.}
 } If a dual setup is used, the result will be a nested list, where the first sublist with the information above of the result of the primary clustering and the following list components are the result of all the secondary clusterings combined.
 }
 \description{
@@ -76,7 +70,7 @@ str(testDataDepecheResult)
 \dontrun{
 testDataDepecheResultDual <- depeche(testData[,2:15], dualDepecheSetup=data.frame(rep(1:2, each=7), 
 colnames(testData[,2:15])), penalties=c(64, 128), sampleSize=500, selectionSampleSize=500, 
-maxIter=20, ids=testData$ids)
+maxIter=20)
 }
 
 #Look at the result

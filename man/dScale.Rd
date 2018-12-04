@@ -6,7 +6,7 @@
 \usage{
 dScale(x, control, scale = TRUE, robustVarScale = TRUE,
   center = "peak", truncate = FALSE, multiplicationFactor = 1,
-  multiCore = FALSE)
+  multiCore = FALSE, returnCenter = FALSE)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -24,9 +24,11 @@ dScale(x, control, scale = TRUE, robustVarScale = TRUE,
 \item{multiplicationFactor}{A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.}
 
 \item{multiCore}{If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
+
+\item{returnCenter}{Boolean. If center=TRUE, should the value at the center be returned?}
 }
 \value{
-A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled.
+A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled. In addition, if returnCenter=TRUE, a value, or a vector if x is a matrix or a data frame
 }
 \description{
 This is a scaling function with a number of alternatives. This method for scaling takes the shape of the data into somewhat more of a consideration than minMaxScale does, but still gives less influence of outliers than more conventional scalin alternatives, such as unit variance scaling.
@@ -36,7 +38,7 @@ This is a scaling function with a number of alternatives. This method for scalin
 data(testData)
 
 #Retrieve the first column
-x <- testData[,1]
+x <- testData[,2]
 
 #The maximum and minimum values are
 max(x)

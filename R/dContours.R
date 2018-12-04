@@ -18,7 +18,7 @@
 #' data(testDataSNE)
 #' 
 #' #Run the function
-#' contour_result <- dContours(testDataSNE)
+#' contour_result <- dContours(testDataSNE$Y)
 #'
 #' @export dContours
 dContours <- function(xYData, control, n=100){

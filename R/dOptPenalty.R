@@ -3,7 +3,8 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
-dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=0.01, sampleSize=10000, penalties=c(0,2,4,8,16,32,64,128), makeGraph=TRUE, graphName="Distance as a function of penalty values.pdf", disableWarnings=FALSE, returnClusterCenters=TRUE, minARI=0.99){
+
+dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement, sampleSize, penalties, makeGraph, disableWarnings=FALSE, optimARI){
 
   #The constant k is empirically identified by running a large number of penalty values for a few datasets.
   penaltyConstant <- ((sampleSize*sqrt(ncol(inDataFrameScaled)))/1450)
@@ -20,7 +21,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   #distanceBetweenMinAndBestPrevious=-1
   iterTimesChunkSize <- 1
   allClusterCentersPenaltySorted <- list()
-  cl <-  parallel::makeCluster(chunkSize, type = "SOCK")
+  cl <-  makeCluster(chunkSize, type = "SOCK")
   registerDoSNOW(cl)  
   
   interestingPenalties <- realPenalties
@@ -28,7 +29,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   
   while(iterTimesChunkSize< 20 || (iterTimesChunkSize<maxIter && (std>=minARIImprovement || distanceBetweenMaxAndSecond>0))){
     ptm <- proc.time()
-    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% DepecheR:::grid_search(dataMat,k,interestingPenalties,1,sampleSize,i)
+    optimList <- foreach(i=1:chunkSize, .packages="DepecheR") %dopar% grid_search(dataMat,k,interestingPenalties,1,sampleSize,i)
     
     #Before any further analyses are performed, any penalty that can result in a trivial solution are practically eliminated. 
     optimListNonTrivial <- optimList
@@ -101,13 +102,13 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
       
       #And now, the interesting positions are defined. These are the ones that either overlap with uncertainity with the optimal solution, or that are very similar to it. In the first iterations, the critera are more inclusive.
       if(iter==1){
-        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-(2*stdOptimVector[maxPos])) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*4))) 
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-(2*stdOptimVector[maxPos])) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-optimARI)*4))) 
         
       } else if(iter==2){
-        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-stdOptimVector[maxPos]) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*3))) 
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=(meanMinus2StdMax-stdOptimVector[maxPos]) | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-optimARI)*3))) 
         
       } else {
-        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-minARI)*2))) 
+        usedPositions <- which(realPenalties %in% interestingPenalties & (meanPlus2StdAll>=meanMinus2StdMax | meanOptimDf[,1]>=max(meanOptimDf[,1])-((1-optimARI)*2))) 
         
       }
       
@@ -121,7 +122,6 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	  std <- stdOptimVector[maxPos]
 	  iterTimesChunkSize <- iter*chunkSize
 
-	  if(returnClusterCenters==TRUE){
 	    #Here, the cluster center information for each run is saved:
 	    #First all cluster center information is saved in one place.
 	    allClusterCenters <- sapply(optimListNonTrivial, "[", 5)
@@ -139,7 +139,6 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	        allClusterCentersPenaltySorted[[i]] <- c(allClusterCentersPenaltySorted[[i]], tempClusterCenters)
 	      }
 	    }
-	  }
 
 	  fullTime <- proc.time()-ptm
 	  print(paste("Set ", iter, " with ", chunkSize, " iterations completed in ", round(fullTime[3]), " seconds.", sep=""))
@@ -147,7 +146,7 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
 	  	  
   }
 	
-  parallel::stopCluster(cl)	
+  stopCluster(cl)	
   
   print(paste("The optimization was iterated ", (iter-1)*chunkSize, " times.", sep=""))
 
@@ -159,28 +158,26 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
   colnames(meanOptimDf) <- c("ARI", "nClust")
 
   #Here, the optimal penalty is selected. This is defined as the lowest penalty that yields an ARI that is not lower than 0.01 less than the best ARI. 
-  optimalPenalties <- roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-minARI))]
+  optimalPenalties <- roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-optimARI))]
 
-  #The best penalty is defined as the mean penalty or the optimal penalty just below the mean, in the case of an even number.
+  #The best penalty is defined as the median penalty or the optimal penalty just below the median, in the case of an even number.
   penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[floor(mean(c(1:length(optimalPenalties))))], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]
 
-  if(disableWarnings==FALSE){
-  
+  if(length(penalties)>1){
     if(penaltyOpt.df$bestPenalty==lowestPenalty){
       warning("The lowest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
     }
     if(penaltyOpt.df$bestPenalty==highestPenalty){
       warning("The highest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
     }
-  
   }
-
+  
   #Here, the optimization is plotted if wanted.
   if(makeGraph==TRUE){
-    pdf(graphName)
+    pdf("Distance as a function of penalty values.pdf")
     par(mar=c(5, 4, 4, 6) + 0.1)
     #Plot the data
     plot(log10(roundPenalties), meanOptimDf[,1], pch=16, axes=FALSE, ylim=c(0,1), xlab="", ylab="", type="b",col="black", main="Distance between bootstraps as a function of penalties values")
@@ -199,17 +196,11 @@ dOptPenalty <- function(inDataFrameScaled, k=30, maxIter=100, minARIImprovement=
     dev.off() 
   }
 
-  if(returnClusterCenters==TRUE){
-    #Here, the list of solutions with the best penalty is exported
-    bestClusterCenters <- allClusterCentersPenaltySorted[[which(roundPenalties==penaltyOpt.df$bestPenalty)]]
-  }
+  #Here, the list of solutions with the best penalty is exported
+  bestClusterCenters <- allClusterCentersPenaltySorted[[which(roundPenalties==penaltyOpt.df$bestPenalty)]]
 
-  #Return the list, that changes depending on the preference 
-  if(returnClusterCenters==TRUE){
-    penaltyOptList <- list(penaltyOpt.df, meanOptimDf, bestClusterCenters)
-  } else{
-    penaltyOptList <- list(penaltyOpt.df, meanOptimDf)
-  }
+  penaltyOptList <- list(penaltyOpt.df, meanOptimDf, bestClusterCenters)
+
 
 	return(penaltyOptList)
 }
