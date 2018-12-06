@@ -161,7 +161,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement, sample
   optimalPenalties <- roundPenalties[which(meanOptimDf[,1]>=max(meanOptimDf[,1])-(1-optimARI))]
 
   #The best penalty is defined as the median penalty or the optimal penalty just below the median, in the case of an even number.
-  penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[floor(mean(c(1:length(optimalPenalties))))], k)
+  penaltyOpt.df <- data.frame("bestPenalty"=optimalPenalties[round(mean(c(1:length(optimalPenalties))))], k)
 
   lowestPenalty <- roundPenalties[1]
   highestPenalty <- roundPenalties[length(roundPenalties)]
