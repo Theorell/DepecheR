@@ -1,5 +1,5 @@
 Package: DepecheR
-Version: 1.1.0
+Version: 1.1.1
 Date: 2018-12-04
 Title: Determination of essential phenotypic elements of clusters in high-dimensional entities 
 Authors@R: c(person(given='Jakob', family='Theorell', email = "jakob.theorell@ki.se",
