@@ -16,7 +16,7 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector, groupVector, pairin
     
     colnames(zeroMat) <- colnames(clusterTable1)
     allRowNames <- as.character(sort(unique(clusterVector)))
-    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable1))]
+    row.names(zeroMat) <- allRowNames[-which(allRowNames%in%row.names(clusterTable1))]
     #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
     clusterTable1big <- rbind(clusterTable1, zeroMat)
     
@@ -31,7 +31,7 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector, groupVector, pairin
     
     colnames(zeroMat) <- colnames(clusterTable2)
     allRowNames <- as.character(sort(unique(clusterVector)))
-    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable2))]
+    row.names(zeroMat) <- allRowNames[-which(allRowNames%in%row.names(clusterTable2))]
     #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
     clusterTable2big <- rbind(clusterTable2, zeroMat)
 

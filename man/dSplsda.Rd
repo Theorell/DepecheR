@@ -6,7 +6,7 @@
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
   testSampleRows, paired = FALSE, densContour = TRUE,
-  name = "dSplsda", groupName1 = unique(groupVector)[1],
+  name = "default", groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
   title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
   bandColor = "black", dotSize = 500/sqrt(nrow(xYData)),

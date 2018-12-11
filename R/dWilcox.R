@@ -56,7 +56,7 @@
 #' groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
 #' 
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="dWilcox", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, lowestPlottedP=0.05, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
+dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector, paired=FALSE, multipleCorrMethod="hochberg", densContour=TRUE, name="default", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE, lowestPlottedP=0.05, createDirectory=FALSE, directoryName="dWilcox", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -76,6 +76,10 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   if(class(xYData)=="matrix"){
     xYData <- as.data.frame(xYData)
   }
+  
+  if(name=="default"){
+    name <- paste0(groupName1, "_vs_", groupName2)
+  }
 
   #Here, the statistical evaluation is performed. First, the data is divided into each group.
   clusterVectorGroup1 <- clusterVector[groupVector==unique(groupVector)[1]]
@@ -94,7 +98,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
     
     colnames(zeroMat) <- colnames(clusterTable1)
     allRowNames <- as.character(sort(unique(clusterVector)))
-    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable1))]
+    row.names(zeroMat) <- allRowNames[-which(allRowNames%in%row.names(clusterTable1))]
     #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
     clusterTable1big <- rbind(clusterTable1, zeroMat)
     
@@ -109,7 +113,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
     
     colnames(zeroMat) <- colnames(clusterTable2)
     allRowNames <- as.character(sort(unique(clusterVector)))
-    row.names(zeroMat) <- allRowNames[which(allRowNames!=row.names(clusterTable2))]
+    row.names(zeroMat) <- allRowNames[-which(allRowNames%in%row.names(clusterTable2))]
     #Here, rows are added to the cluster table to make the number of rows the same as the unique values of the cluster vector.
     clusterTable2big <- rbind(clusterTable2, zeroMat)
     
@@ -207,7 +211,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
     }
   }  
   
-  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  png(paste(name,'_Wilcox_result.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createOutput==TRUE){
     if(title==TRUE){
       plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
@@ -226,7 +230,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 	yname <- paste(multipleCorrMethod, " corrected p-values", sep="")
 	topText <- paste(groupName1, " is more abundant", sep="")
 	bottomText <- paste(groupName2, " is more abundant", sep="")
-	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
+	legendTitle <- paste("Color scale for", name, "Wilcoxon analysis.pdf", sep=" ")
 
 	if(createOutput==TRUE){
 	  pdf(legendTitle)
@@ -248,7 +252,8 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   
 
 	if(createOutput==TRUE){
-	  write.csv(result, "dWilcoxResult.csv", row.names=FALSE)
+	  name
+	  write.csv(result, file = paste0(name, "_WilcoxResult.csv"), row.names=FALSE)
 	}
   
   if(createDirectory==TRUE){

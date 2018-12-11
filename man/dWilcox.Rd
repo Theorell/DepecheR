@@ -6,7 +6,7 @@
 \usage{
 dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
   paired = FALSE, multipleCorrMethod = "hochberg",
-  densContour = TRUE, name = "dWilcox",
+  densContour = TRUE, name = "default",
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], title = FALSE,
   lowestPlottedP = 0.05, createDirectory = FALSE,
