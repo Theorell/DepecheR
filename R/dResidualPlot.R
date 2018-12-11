@@ -143,8 +143,8 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
     y=seq(-maxAbsPlottingValues,maxAbsPlottingValues,len=11)
     image(x,y,z,col=rev(colors),axes=FALSE,xlab="",ylab=yname)
     axis(2)
-    text(1,maxAbsPlottingValues*1.1, labels=topText, cex=1.1)
-    text(1,-maxAbsPlottingValues*1.1, labels=bottomText, cex=1.1)
+    text(1,maxAbsPlottingValues*1.2, labels=topText, cex=1.1)
+    text(1,-maxAbsPlottingValues*1.2, labels=bottomText, cex=1.1)
     box()
     dev.off()
   }

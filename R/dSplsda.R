@@ -83,7 +83,7 @@
 #' testSampleRows=testDataRows)
 #'
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector, testSampleRows, paired=FALSE, densContour=TRUE, name="dSplsda", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
+dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector, testSampleRows, paired=FALSE, densContour=TRUE, name="default", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], thresholdMisclassRate=0.05, title=FALSE, createDirectory=FALSE, directoryName="dSplsda", bandColor="black", dotSize=500/sqrt(nrow(xYData)), createOutput=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -97,6 +97,10 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 
   if(length(unique(idsVector))<8){
     warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
+  }
+  
+  if(name=="default"){
+    name <- paste0(groupName1, "_vs_", groupName2)
   }
   
   if(paired==TRUE){
@@ -247,7 +251,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
       densContour <- dContours(xYData)
     }
   } 
-  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  png(paste(name,'_sPLSDA_result.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createOutput==TRUE){
     if(title==TRUE){
       plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
@@ -267,7 +271,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
 	yname <- "Misclass-corrected sPLS-DA loadings"
 	topText <- paste(groupName1, " is more abundant", sep="")
 	bottomText <- paste(groupName2, " is more abundant", sep="")
-	legendTitle <- paste("Color scale for", name, "analysis.pdf", sep=" ")
+	legendTitle <- paste("Color scale for", name, "sPLS-DA analysis.pdf", sep=" ")
 
 	if(createOutput==TRUE){
 	  pdf(legendTitle)
@@ -285,8 +289,8 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector, displayVector
   
   #Return data from the sPLS-DA that was needed for the generation of the graphs
 	if(createOutput==TRUE){
-	  write.csv(sPLSDALoadings, "sPLSDALoadings.csv")
-	  write.csv(sPLSDAX, "sPLSDAVariatesX.csv")
+	  write.csv(sPLSDALoadings, paste0(name, "_sPLSDALoadings.csv"))
+	  write.csv(sPLSDAX, paste0(name, "_sPLSDAVariatesX.csv"))
 	}
   
   
