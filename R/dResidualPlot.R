@@ -37,7 +37,7 @@
 #' dResidualPlot(xYData=testDataSNE$Y, groupVector=testData[,16], 
 #' clusterVector=testDataDepeche$clusterVector)
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, name="dResidualPlot", groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData)), createPlot=TRUE){
+dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, groupName1=unique(groupVector)[1], groupName2=unique(groupVector)[2], name="default", title=FALSE,  maxAbsPlottingValues, bandColor="black", createDirectory=FALSE, directoryName="dResidualPlot", dotSize=400/sqrt(nrow(xYData)), createPlot=TRUE){
 
   if(createDirectory==TRUE){
     dir.create(directoryName)
@@ -53,6 +53,10 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   
   if(class(xYData)=="matrix"){
     xYData <- as.data.frame(xYData)
+  }
+  
+  if(name=="default"){
+    name <- paste0(groupName1, "_vs_", groupName2)
   }
   
   #Here, the residuals are identified.
@@ -90,8 +94,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   }
 
   #Here the data that will be used for plotting is scaled.
-  xYDataScaled <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=1)
-  colnames(xYDataScaled) <- c("V1", "V2")
+  colnames(xYData) <- c("V1", "V2")
 
   #Make a color vector with the same length as the data
   residual.df <- as.data.frame(residualVectorLong)
@@ -102,7 +105,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
   #assign each value to a bin
   grps <- with(residual.df, cut(residual.df[,1], breaks = brks, include.lowest = TRUE))
   colors <- colorRampPalette(c("#FF0000",  "white","#0000FF"))(11)
-  xYDataScaled$col <- rev(colors)[grps]
+  xYData$col <- rev(colors)[grps]
 
   #Create the density matrix for xYData.
   if(is.logical(densContour)){
@@ -110,20 +113,31 @@ dResidualPlot <- function(xYData, groupVector, clusterVector, densContour=TRUE, 
       densContour <- dContours(xYData)
     }
   } 
+  if(length(densContour)>1){
+    xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
+    ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
+  } else {
+    minX <- min(xYData[,1])
+    maxX <- max(xYData[,1])
+    minY <- min(xYData[,2])
+    maxY <- max(xYData[,2])
+    xlim <- c(minX-abs(minX*0.05), maxX+abs(maxX*0.05))
+    ylim <- c(minY-abs(minY*0.05), maxY+abs(maxY*0.05))
+  }
 
   
-  png(paste(name,'.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
+  png(paste(name,'_residuals.png', sep=""), width = 2500, height = 2500, units = "px", bg="transparent")
   if(createPlot==TRUE){
     if(title==TRUE){
-      plot(V2~V1, data=xYDataScaled, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+      plot(V2~V1, data=xYData, main=name, pch=20, cex=dotSize, cex.main=5, col=col, xlim=xlim, ylim=ylim, axes=FALSE, xaxs="i", yaxs="i")
     }
     
     if(title==FALSE){
-      plot(V2~V1, data=xYDataScaled, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), axes=FALSE, xaxs="i", yaxs="i")
+      plot(V2~V1, data=xYData, main="", pch=20, cex=dotSize, cex.main=5, col=col, xlim=xlim, ylim=ylim, axes=FALSE, xaxs="i", yaxs="i")
     }
     if(length(densContour)>1){
       par(fig=c(0,1,0,1), mar=c(6,4.5,4.5,2.5), new=TRUE)
-      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=c(-0.05, 1.05), ylim=c(-0.05, 1.05), nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
+      contour(x=densContour$x, y=densContour$y, z=densContour$z, xlim=xlim, ylim=ylim, nlevels=10, col=bandColor, lwd=8, drawlabels = FALSE, axes=FALSE, xaxs="i", yaxs="i")
     } 
   }
   dev.off()

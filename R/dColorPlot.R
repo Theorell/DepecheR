@@ -52,7 +52,7 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
     colorData <- as.data.frame(colorData)
   }
   
-  if(class(colorData)!="numeric" && class(colorData)!="data.frame" && class(colorData)!="character"){
+  if(class(colorData)!="numeric" && class(colorData)!="integer" && class(colorData)!="data.frame" && class(colorData)!="character"){
     stop("ColorData needs to be either a numeric vector, a character vector of colors or a matrix or dataframe of numbers.")
   }
 
@@ -97,19 +97,17 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
   }
 
 
-  xYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
-  
   if(class(colorData)=="numeric"){
     colorDataPercent <- dScale(colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVector <- dColorVector(round(colorDataPercent), colorScale="rich_colors", order=c(0:100))
-    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
+    dColorPlotCoFunction(colorVariable=colorVector, name=names, xYData=xYData, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
   }
   if(class(colorData)=="data.frame"){
     colorDataPercent <- dScale(x=colorData, control=controlData, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100, truncate=truncate)
     colorVectors <- apply(round(colorDataPercent), 2, dColorVector, colorScale="rich_colors", order=c(0:100))
     if(multiCore=="default"){
       if(nrow(colorData)>100000){
-        multiCore <- TRUExYDataFraction <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+        multiCore <- TRUExYData <- dScale(xYData, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 
       } else {
         multiCore <- FALSE
@@ -119,14 +117,14 @@ dColorPlot <- function(colorData, controlData, xYData,  names="default", densCon
       no_cores <- detectCores() - 1
       cl = makeCluster(no_cores, type = "SOCK")
       registerDoSNOW(cl)
-      foreach(i=1:ncol(colorVectors), .inorder=FALSE) %dopar% dColorPlotCoFunction(colorVariable=colorVectors[,i], name=names[i], xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
+      foreach(i=1:ncol(colorVectors), .inorder=FALSE) %dopar% dColorPlotCoFunction(colorVariable=colorVectors[,i], name=names[i], xYData=xYData, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
       stopCluster(cl)
     } else {
-       mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, stringsAsFactors =FALSE), names, MoreArgs=list(xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot))
+       mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, stringsAsFactors =FALSE), names, MoreArgs=list(xYData=xYData, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot))
     }
   }
   if(class(colorData)=="character"){
-    dColorPlotCoFunction(colorVariable=colorData, name=names, xYDataFraction=xYDataFraction, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
+    dColorPlotCoFunction(colorVariable=colorData, name=names, xYData=xYData, title=title, densContour=densContour, bandColor=bandColor, dotSize=dotSize, createPlot=createPlot)
   }
 
   if(addLegend==TRUE && createPlot==TRUE){

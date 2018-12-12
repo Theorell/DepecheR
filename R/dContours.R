@@ -23,17 +23,21 @@
 #' @export dContours
 dContours <- function(xYData, control, n=100){
 
-  if(missing(control)){
-    control <- xYData
+  if(missing(control)==FALSE){
+    min1 <- min(control[,1])
+    max1 <- max(control[,1])
+    min2 <- min(control[,2])
+    max2 <- max(control[,2])
+  } else{
+    min1 <- min(xYData[,1])
+    max1 <- max(xYData[,1])
+    min2 <- min(xYData[,2])
+    max2 <- max(xYData[,2])
   }
+  lims <- c(min1-abs(min1*0.05), max1+abs(max1*0.05), min2-abs(min2*0.05), max2+abs(max2*0.05))
   
-	xYDataNorm <- dScale(x=xYData, control=control, scale=c(0,1), robustVarScale=FALSE, center=FALSE)
-
-	V1 <- xYDataNorm[,1]
-	V2 <- xYDataNorm[,2]
-
 #Construct the third dimension with smooth kernel density estimate
-den3d <- kde2d(V1, V2, n=n, lims=c(-0.05,1.05, -0.05,1.05))
+den3d <- kde2d(xYData[,1], xYData[,2], n=n, lims=lims)
 
 return(den3d)
 }

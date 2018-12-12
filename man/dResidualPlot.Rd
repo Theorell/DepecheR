@@ -5,11 +5,11 @@
 \title{Showing the residuals when subtracting the values from one group from another on a SNE plot}
 \usage{
 dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
-  name = "dResidualPlot", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE,
-  maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE,
-  directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)),
-  createPlot = TRUE)
+  groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2], name = "default",
+  title = FALSE, maxAbsPlottingValues, bandColor = "black",
+  createDirectory = FALSE, directoryName = "dResidualPlot",
+  dotSize = 400/sqrt(nrow(xYData)), createPlot = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
@@ -20,11 +20,11 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
 
 \item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE.}
 
-\item{name}{The main name for the graph and the analysis.}
-
 \item{groupName1}{The name for the first group}
 
 \item{groupName2}{The name for the second group}
+
+\item{name}{The main name for the graph and the analysis.}
 
 \item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
 
