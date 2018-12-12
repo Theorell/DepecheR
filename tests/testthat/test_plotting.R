@@ -20,7 +20,7 @@ testDataSNESubset <- rbind(testDataSNE$Y[1:2000,], testDataSNE$Y[95001:97000,])
 densContour <- DepecheR:::dContours(as.data.frame(testDataSNESubset))
 testDataSNESubsetFraction <- DepecheR:::dScale(as.data.frame(testDataSNESubset), scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 testColor <- dColorVector(testDataSubset$ids, colorScale="plasma")
-DepecheR:::dColorPlotCoFunction(colorVariable=testColor, name="separate samplings", xYDataFraction=testDataSNESubsetFraction, title=FALSE, densContour=densContour, bandColor="black", dotSize=400/sqrt(nrow(testDataSNESubsetFraction)), createPlot=FALSE)
+DepecheR:::dColorPlotCoFunction(colorVariable=testColor, name="separate samplings", xYData=testDataSNESubsetFraction, title=FALSE, densContour=densContour, bandColor="black", dotSize=400/sqrt(nrow(testDataSNESubsetFraction)), createPlot=FALSE)
 
 ######################
 #dColorVector
@@ -54,10 +54,10 @@ dDensityPlot(xYData=testDataSNESubset, color=testColor, idsVector=testDataSubset
 
 ######################
 #dDensityPlotCoFunction
-xYDataScaled <- DepecheR:::dScale(as.data.frame(testDataSNE$Y), as.data.frame(testDataSNE$Y), scale=c(0,1), robustVarScale=FALSE, center=FALSE)
+xYData <- DepecheR:::dScale(as.data.frame(testDataSNE$Y), as.data.frame(testDataSNE$Y), scale=c(0,1), robustVarScale=FALSE, center=FALSE)
 cols <- colorRampPalette(c("black", "grey", "red"))(256)
 densContour <- DepecheR:::dContours(as.data.frame(testDataSNE$Y))
-DepecheR:::dDensityPlotCoFunction(xYDataScaled=xYDataScaled, cols=cols, name="test", densContour=densContour, bandColor="black", dotSize=1.5, title=FALSE, createPlot=FALSE)
+DepecheR:::dDensityPlotCoFunction(xYData=xYData, cols=cols, name="test", densContour=densContour, bandColor="black", dotSize=1.5, title=FALSE, createPlot=FALSE)
 
 
 ######################
