@@ -4,14 +4,14 @@
 \alias{dViolins}
 \title{Create violin plots for all non-penalized variable for all clusters}
 \usage{
-dViolins(clusterVector, clusterCenters, inDataFrame,
+dViolins(clusterVector, sparsityMatrix, inDataFrame,
   order = unique(clusterVector), colorScale = "viridis",
   plotAll = FALSE, createOutput = TRUE)
 }
 \arguments{
 \item{clusterVector}{Vector with the same length as inDataFrame containing information about the cluster identity of each observation.}
 
-\item{clusterCenters}{The cluster centers from the corresponding depeche run.}
+\item{sparsityMatrix}{The sparsity matrix from the corresponding depeche run.}
 
 \item{inDataFrame}{The data used to generate the depecheObject}
 
@@ -43,5 +43,5 @@ dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFr
 
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}
 }

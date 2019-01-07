@@ -12,7 +12,7 @@ The purpose of this package is to identify traits in a dataset that can separate
 The package is indirectly clearly dependent on Rtsne for generation of output. See comment on the github wiki for how to speed Rtsne up.
 }
 \author{
-\strong{Maintainer}: Jakob Theorell \email{jakob.theorell@ki.se}
+\strong{Maintainer}: Jakob Theorell \email{jakob.theorell@ndcn.ox.ac.uk}
 
 Authors:
 \itemize{

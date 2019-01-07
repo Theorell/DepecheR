@@ -6,14 +6,14 @@
 #' @importFrom gplots rich.colors
 #' @importFrom grDevices rainbow
 #' @param clusterVector Vector with the same length as inDataFrame containing information about the cluster identity of each observation.
-#' @param clusterCenters The cluster centers from the corresponding depeche run.
+#' @param sparsityMatrix The sparsity matrix from the corresponding depeche run.
 #' @param inDataFrame The data used to generate the depecheObject
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
-#' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}
+#' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}
 #' @examples
 #' #Load some data
 #' data(testData)
@@ -27,7 +27,7 @@
 #' dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame=testData[,2:15])
 #' 
 #' @export dViolins
-dViolins <- function(clusterVector, clusterCenters, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE, createOutput=TRUE){
+dViolins <- function(clusterVector, sparsityMatrix, inDataFrame, order=unique(clusterVector), colorScale="viridis", plotAll=FALSE, createOutput=TRUE){
   percentClusterVector <- dScale(clusterVector, scale=c(0,1), robustVarScale=FALSE, center=FALSE, multiplicationFactor=100)
 
   if(length(colorScale)>1){
