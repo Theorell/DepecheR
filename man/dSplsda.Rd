@@ -56,63 +56,70 @@ This function returns the full result of the sPLS-DA. It also returns a SNE base
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
-#data is inluded
-#library(Rtsne)
-#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+# Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
+# data is inluded
+# library(Rtsne)
+# testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
- 
-#Run the clustering function. For more rapid example execution, 
-#a depeche clustering of the data is inluded
-#testDataDepeche <- depeche(testData[,2:15]) 
+
+# Run the clustering function. For more rapid example execution,
+# a depeche clustering of the data is inluded
+# testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-#Run the function. This time without pairing.
-sPLSDAObject <- dSplsda(xYData=testDataSNE$Y, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
+# Run the function. This time without pairing.
+sPLSDAObject <- dSplsda(
+  xYData = testDataSNE$Y, idsVector = testData$ids,
+  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
+)
 
-#Here, pairing is used
-#First, an artificial pairing vector is introduced and a subset of the data is used, to make the 
-#number of donors identical. NB! Paired execution CAN ONLY BE USED 
-#in instances where true pairing is present, such as when identical individuals are 
-#compared across different treatments. This artificial example is only present to show how to
-#use the function, it is not good practive to set up artificial pairing vectors!
-xYDataPaired <- as.data.frame(testDataSNE$Y)[c(1:30000,  67001:nrow(testDataSNE$Y)),]
-testDataPaired <- testData[c(1:30000,  67001:nrow(testDataSNE$Y)),]
-clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000,  67001:nrow(testDataSNE$Y))]
+# Here, pairing is used
+# First, an artificial pairing vector is introduced and a subset of the data is used, to make the
+# number of donors identical. NB! Paired execution CAN ONLY BE USED
+# in instances where true pairing is present, such as when identical individuals are
+# compared across different treatments. This artificial example is only present to show how to
+# use the function, it is not good practive to set up artificial pairing vectors!
+xYDataPaired <- as.data.frame(testDataSNE$Y)[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
+testDataPaired <- testData[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
+clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000, 67001:nrow(testDataSNE$Y))]
 
-#Then the actual multilevel sPLS-DA is run. 
-sPLSDAObject <- dSplsda(xYData=xYDataPaired, idsVector=testDataPaired$ids, 
-groupVector=testDataPaired$label, clusterVector=clusterVectorPaired, paired=TRUE, 
-name="d_sPLSDAPlot_paired", groupName1="Stimulation 1", groupName2="Stimulation 2")
+# Then the actual multilevel sPLS-DA is run.
+sPLSDAObject <- dSplsda(
+  xYData = xYDataPaired, idsVector = testDataPaired$ids,
+  groupVector = testDataPaired$label, clusterVector = clusterVectorPaired, paired = TRUE,
+  name = "d_sPLSDAPlot_paired", groupName1 = "Stimulation 1", groupName2 = "Stimulation 2"
+)
 
-#Here is an example of how the display vector can be used.
-subsetVector <- sample(1:nrow(testData), size=10000)
+# Here is an example of how the display vector can be used.
+subsetVector <- sample(1:nrow(testData), size = 10000)
 
-#Now, the SNE for this displayVector could be created
-#testDataSubset <- testData[subsetVector, 2:15]
-#testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
-#But we will just subset the testDataSNE immediately
-testDataSNESubset <- testDataSNE$Y[subsetVector,]
+# Now, the SNE for this displayVector could be created
+# testDataSubset <- testData[subsetVector, 2:15]
+# testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
+# But we will just subset the testDataSNE immediately
+testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 
-#And now, this new SNE can be used for display, although all 
-#the data is used for the sPLS-DA calculations
-sPLSDAObject <- dSplsda(xYData=testDataSNESubset, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, 
-displayVector=subsetVector)
+# And now, this new SNE can be used for display, although all
+# the data is used for the sPLS-DA calculations
+sPLSDAObject <- dSplsda(
+  xYData = testDataSNESubset, idsVector = testData$ids,
+  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
+  displayVector = subsetVector
+)
 
-#Finally, an example of a train-test set situation, where a random half the dataset 
-#is used for training and the second half is used for testing. It is naturally more
-#biologically interesting to use two independent datasets for training and testing 
-#in the real world.
-testDataRows <- sample(1:nrow(testData), size=48500)
-sPLSDAObject <- dSplsda(xYData=testDataSNE$Y, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector,
-testSampleRows=testDataRows)
-
+# Finally, an example of a train-test set situation, where a random half the dataset
+# is used for training and the second half is used for testing. It is naturally more
+# biologically interesting to use two independent datasets for training and testing
+# in the real world.
+testDataRows <- sample(1:nrow(testData), size = 48500)
+sPLSDAObject <- dSplsda(
+  xYData = testDataSNE$Y, idsVector = testData$ids,
+  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
+  testSampleRows = testDataRows
+)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

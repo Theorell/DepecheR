@@ -53,27 +53,31 @@ A nested list with varying components depending on the setup above:
 This function only requires a dataset and an id vector. It starts by doing all necessary optimizations and then performs clustering based on the values identified in the optimization step.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#First, just run with the standard settings
+# First, just run with the standard settings
 \dontrun{
-testDataDepecheResult <- depeche(testData[,2:15])
+testDataDepecheResult <- depeche(testData[, 2:15])
 }
 
-#Look at the result
+# Look at the result
 \dontrun{
 str(testDataDepecheResult)
 }
 
-#Now, a dual depeche setup is used
+# Now, a dual depeche setup is used
 \dontrun{
-testDataDepecheResultDual <- depeche(testData[,2:15], dualDepecheSetup=data.frame(rep(1:2, each=7), 
-colnames(testData[,2:15])), penalties=c(64, 128), sampleSize=500, selectionSampleSize=500, 
-maxIter=20)
+testDataDepecheResultDual <- depeche(testData[, 2:15],
+  dualDepecheSetup = data.frame(
+    rep(1:2, each = 7),
+    colnames(testData[, 2:15])
+  ), penalties = c(64, 128), sampleSize = 500, selectionSampleSize = 500,
+  maxIter = 20
+)
 }
 
-#Look at the result
+# Look at the result
 \dontrun{
 str(testDataDepecheResultDual)
 }

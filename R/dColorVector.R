@@ -11,55 +11,56 @@
 #' @return A vector, the same length as x with each unique value substitutet with a color.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
 #' @examples
-#' #Load some data
+#' # Load some data
 #' data(testData)
-#' 
-#' testColor <- dColorVector(testData$ids, colorScale="plasma")
-#' 
-#' #In this case, each of the 97 individual donors in the dataset has gotten their own color code: 
-#' table(testColor) 
-#' 
+#'
+#' testColor <- dColorVector(testData$ids, colorScale = "plasma")
+#'
+#' # In this case, each of the 97 individual donors in the dataset has gotten their own color code:
+#' table(testColor)
 #' @export dColorVector
-dColorVector <- function(x, order=unique(x), colorScale="viridis"){
-	if(class(x)=="factor"){
-	  x <- as.character(x)
-	  order <- as.character(order)
-	}
-
-  if(length(colorScale)>1){
-    orderColors <- colorRampPalette(colorScale)(length(order)) 
-  } else {
-    if(colorScale=="inferno"){
-      orderColors <- inferno(length(order)) 
+dColorVector <-
+  function(x,
+           order = unique(x),
+           colorScale = "viridis") {
+    if (class(x) == "factor") {
+      x <- as.character(x)
+      order <- as.character(order)
     }
-    if(colorScale=="viridis"){
-      orderColors <- viridis(length(order)) 
+    
+    if (length(colorScale) > 1) {
+      orderColors <- colorRampPalette(colorScale)(length(order))
+    } else {
+      if (colorScale == "inferno") {
+        orderColors <- inferno(length(order))
+      }
+      if (colorScale == "viridis") {
+        orderColors <- viridis(length(order))
+      }
+      if (colorScale == "plasma") {
+        orderColors <- plasma(length(order))
+      }
+      if (colorScale == "magma") {
+        orderColors <- magma(length(order))
+      }
+      if (colorScale == "rich_colors") {
+        orderColors <- rich.colors(length(order))
+      }
+      if (colorScale == "rainbow") {
+        orderColors <- rainbow(length(order))
+      }
+      if (colorScale == "dark_rainbow") {
+        orderColors <- colorRampPalette(c("#990000", "#FFCC00", "#336600",
+                                          "#000066", "#660033"))(length(order))
+      }
     }
-    if(colorScale=="plasma"){
-      orderColors <- plasma(length(order)) 
+    
+    # Here, a vector with the same length as the x vector is generated,
+    # but where the x info has been substituted with a color.
+    dColorVector <- x
+    for (i in 0:length(order)) {
+      dColorVector[x == order[i]] <- orderColors[i]
     }
-    if(colorScale=="magma"){
-      orderColors <- magma(length(order)) 
-    }
-    if(colorScale=="rich_colors"){
-      orderColors <- rich.colors(length(order)) 
-    }
-    if(colorScale=="rainbow"){
-      orderColors <- rainbow(length(order)) 
-    }
-    if(colorScale=="dark_rainbow"){
-      orderColors <- colorRampPalette(c("#990000", "#FFCC00", "#336600", "#000066", "#660033"))(length(order)) 
-    }
+    
+    return(dColorVector)
   }
-
-  	#Here, a vector with the same length as the x vector is generated, but where the x info has been substituted with a color.
-  	dColorVector <- x
-  		for(i in 0:length(order)){
-    	dColorVector[x==order[i]] <- 	orderColors[i]
-  	}
-
-  return(dColorVector)
-  	
-}
-
-

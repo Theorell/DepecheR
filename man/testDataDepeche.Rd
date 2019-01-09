@@ -9,7 +9,7 @@
 data(testDataDepeche)
 }
 \description{
-This is a depeche clustering of the testData dataset. It has  
+This is a depeche clustering of the testData dataset. It has
 been generated with the Rtsne.multicore package
 }
 \details{

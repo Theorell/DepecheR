@@ -9,11 +9,11 @@
 data(testDataSNE)
 }
 \description{
-This is a t-distributed stochastic neighbor embedding of the testData dataset. It has  
+This is a t-distributed stochastic neighbor embedding of the testData dataset. It has
 been generated with the Rtsne.multicore package.
 }
 \references{
-Jesse H. Krijthe (2015). Rtsne: T-Distributed Stochastic Neighbor 
+Jesse H. Krijthe (2015). Rtsne: T-Distributed Stochastic Neighbor
 Embedding using a Barnes-Hut Implementation
 (\href{https://github.com/RGLab/Rtsne.multicore/issues/5}{GitHub})
 }

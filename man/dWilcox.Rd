@@ -57,38 +57,41 @@ This function always returns a dataframe showing the Wilcoxon statistic and the 
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
-#data is inluded
-#library(Rtsne)
-#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+# Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
+# data is inluded
+# library(Rtsne)
+# testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
- 
-#Run the clustering function. For more rapid example execution, 
-#a depeche clustering of the data is inluded
-#testDataDepeche <- depeche(testData[,2:15]) 
+
+# Run the clustering function. For more rapid example execution,
+# a depeche clustering of the data is inluded
+# testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-#Run the function
-dWilcoxResult <- dWilcox(xYData=testDataSNE$Y, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector)
+# Run the function
+dWilcoxResult <- dWilcox(
+  xYData = testDataSNE$Y, idsVector = testData$ids,
+  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
+)
 
-#Here is an example of how the display vector can be used.
-subsetVector <- sample(1:nrow(testData), size=10000)
+# Here is an example of how the display vector can be used.
+subsetVector <- sample(1:nrow(testData), size = 10000)
 
-#Now, the SNE for this displayVector could be created
-#testDataSubset <- testData[subsetVector, 2:15]
-#testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
-#But we will just subset the testDataSNE immediately
-testDataSNESubset <- testDataSNE$Y[subsetVector,]
+# Now, the SNE for this displayVector could be created
+# testDataSubset <- testData[subsetVector, 2:15]
+# testDataSNESubset <- Rtsne(testDataDisplay, pca=FALSE)$Y
+# But we will just subset the testDataSNE immediately
+testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 
-#And now, this new SNE can be used for display, although all 
-#the data is used for the Wilcoxon calculations
-dWilcoxResult <- dWilcox(xYData=testDataSNESubset, idsVector=testData$ids, 
-groupVector=testData$label, clusterVector=testDataDepeche$clusterVector, displayVector=subsetVector)
-
+# And now, this new SNE can be used for display, although all
+# the data is used for the Wilcoxon calculations
+dWilcoxResult <- dWilcox(
+  xYData = testDataSNESubset, idsVector = testData$ids,
+  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, displayVector = subsetVector
+)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

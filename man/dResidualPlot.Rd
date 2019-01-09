@@ -47,23 +47,25 @@ A sne based plot showing which events that belong to a cluster dominated by the 
 This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the 
-#data is inluded
-#library(Rtsne)
-#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+# Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
+# data is inluded
+# library(Rtsne)
+# testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
- 
-#Run the clustering function. For more rapid example execution, 
-#a depeche clustering of the data is inluded
-#testDataDepeche <- depeche(testData[,2:15]) 
+
+# Run the clustering function. For more rapid example execution,
+# a depeche clustering of the data is inluded
+# testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-#And finally run the function
-dResidualPlot(xYData=testDataSNE$Y, groupVector=testData[,16], 
-clusterVector=testDataDepeche$clusterVector)
+# And finally run the function
+dResidualPlot(
+  xYData = testDataSNE$Y, groupVector = testData[, 16],
+  clusterVector = testDataDepeche$clusterVector
+)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}

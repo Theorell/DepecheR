@@ -20,14 +20,13 @@ A vector, the same length as x with each unique value substitutet with a color.
 This function takes a vector x and a shorter ordering vector with all the unique values of the x vector in the specific order that the colors should be in and returns a vector of RGB colors the same length as the initial x vector.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-testColor <- dColorVector(testData$ids, colorScale="plasma")
+testColor <- dColorVector(testData$ids, colorScale = "plasma")
 
-#In this case, each of the 97 individual donors in the dataset has gotten their own color code: 
-table(testColor) 
-
+# In this case, each of the 97 individual donors in the dataset has gotten their own color code:
+table(testColor)
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}

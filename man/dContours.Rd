@@ -24,12 +24,11 @@ A list of three components
 Here, contour lines for two-dimensional data are construced. It is primarily thought to be used in the context of SNE plots in this package. This function is used both internally in other functions suchas sneFluoroPlot and sneDensityPlot, but also as a standalone function, as it increases speed greatly to generate the density curves only once per overall analysis.
 }
 \examples{
-#Load the test SNE data 
+# Load the test SNE data
 data(testDataSNE)
 
-#Run the function
+# Run the function
 contour_result <- dContours(testDataSNE$Y)
-
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}

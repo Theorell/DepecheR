@@ -20,32 +20,37 @@ A vector with the same length as number of rows in the inDataFrame, where the cl
 Here, observations of a dataset are allocated to a set of preestablished cluster centers. This is intended to be used for the test set in train-test dataset situations.
 }
 \examples{
-#Retrieve some example data
+# Retrieve some example data
 data(testData)
 
-#Now arbitrarily (for the sake of the example) divide the data into a 
-#training- and a test set.
-testDataSample <- sample(1:nrow(testData), size=48500)
-testDataTrain <- testData[testDataSample,]
-testDataTest <- testData[-testDataSample,]
+# Now arbitrarily (for the sake of the example) divide the data into a
+# training- and a test set.
+testDataSample <- sample(1:nrow(testData), size = 48500)
+testDataTrain <- testData[testDataSample, ]
+testDataTest <- testData[-testDataSample, ]
 
-#Run the depeche function for the train set
+# Run the depeche function for the train set
 \dontrun{
 
-x_depeche_train <- depeche(testDataTrain[,2:15], maxIter=20, sampleSize=1000)
+x_depeche_train <- depeche(testDataTrain[, 2:15], maxIter = 20,
+sampleSize = 1000)
 
-#Allocate the test dataset to the centers of the train dataset
-x_depeche_test <- dAllocate(testDataTest[,2:15], 
-clusterCenters=x_depeche_train$clusterCenters)
+# Allocate the test dataset to the centers of the train dataset
+x_depeche_test <- dAllocate(testDataTest[, 2:15],
+  clusterCenters = x_depeche_train$clusterCenters
+)
 
-#And finally plot the two groups to see how great the overlap was:
-trainTablePerId <- apply(as.matrix(table(testDataTrain$ids, 
-x_depeche_train$clusterVector)), 1, function(x) x/sum(x))
+# And finally plot the two groups to see how great the overlap was:
+trainTablePerId <- apply(as.matrix(table(
+  testDataTrain$ids,
+  x_depeche_train$clusterVector
+)), 1, function(x) x / sum(x))
 trainTableCollapsed <- apply(trainTablePerId, 1, sum)
-trainTableFraction <- trainTableCollapsed/sum(trainTableCollapsed)
-testTablePerId <- apply(as.matrix(table(testDataTest$ids, x_depeche_test)), 1, function(x) x/sum(x))
+trainTableFraction <- trainTableCollapsed / sum(trainTableCollapsed)
+testTablePerId <- apply(as.matrix(table(testDataTest$ids, x_depeche_test)),
+1, function(x) x / sum(x))
 testTableCollapsed <- apply(testTablePerId, 1, sum)
-testTableFraction <- testTableCollapsed/sum(testTableCollapsed)
+testTableFraction <- testTableCollapsed / sum(testTableCollapsed)
 xmatrix <- t(cbind(trainTableFraction, testTableFraction))
 library(gplots)
 barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))

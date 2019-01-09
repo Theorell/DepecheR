@@ -14,32 +14,33 @@
 #' }
 #'
 #' @examples
-#' #Load the test SNE data 
+#' # Load the test SNE data
 #' data(testDataSNE)
-#' 
-#' #Run the function
-#' contour_result <- dContours(testDataSNE$Y)
 #'
+#' # Run the function
+#' contour_result <- dContours(testDataSNE$Y)
 #' @export dContours
-dContours <- function(xYData, control, n=100){
-
-  if(missing(control)==FALSE){
-    min1 <- min(control[,1])
-    max1 <- max(control[,1])
-    min2 <- min(control[,2])
-    max2 <- max(control[,2])
-  } else{
-    min1 <- min(xYData[,1])
-    max1 <- max(xYData[,1])
-    min2 <- min(xYData[,2])
-    max2 <- max(xYData[,2])
+dContours <- function(xYData, control, n = 100) {
+  if (missing(control) == FALSE) {
+    min1 <- min(control[, 1])
+    max1 <- max(control[, 1])
+    min2 <- min(control[, 2])
+    max2 <- max(control[, 2])
+  } else {
+    min1 <- min(xYData[, 1])
+    max1 <- max(xYData[, 1])
+    min2 <- min(xYData[, 2])
+    max2 <- max(xYData[, 2])
   }
-  lims <- c(min1-abs(min1*0.05), max1+abs(max1*0.05), min2-abs(min2*0.05), max2+abs(max2*0.05))
+  lims <- c(
+    min1 - abs(min1 * 0.05),
+    max1 + abs(max1 * 0.05),
+    min2 - abs(min2 * 0.05),
+    max2 + abs(max2 * 0.05)
+  )
   
-#Construct the third dimension with smooth kernel density estimate
-den3d <- kde2d(xYData[,1], xYData[,2], n=n, lims=lims)
-
-return(den3d)
+  # Construct the third dimension with smooth kernel density estimate
+  den3d <- kde2d(xYData[, 1], xYData[, 2], n = n, lims = lims)
+  
+  return(den3d)
 }
-
-

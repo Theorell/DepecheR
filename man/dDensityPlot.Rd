@@ -52,31 +52,36 @@ Plots showing the densities of the specific xYData (subset) displayed as color o
 Function to show density for a set of observations on a field created by two variables. The plot is constructed primarily for displaying density of 2D-stochastic neighbour embedding fields, but can be used for any sets of two known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#Run Barnes Hut tSNE on this. For more rapid example execution, a pre-run SNE is inluded
-#library(Rtsne)
-#testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
+# Run Barnes Hut tSNE on this. For more rapid example execution, a pre-run SNE is inluded
+# library(Rtsne)
+# testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
 
-#Plot all ids together and use a fixed color
-dDensityPlot(xYData=testDataSNE$Y, commonName="All_samplings", 
-color="blue", createDirectory=FALSE)
+# Plot all ids together and use a fixed color
+dDensityPlot(
+  xYData = testDataSNE$Y, commonName = "All_samplings",
+  color = "blue", createDirectory = FALSE
+)
 
-#Now plot each id separately using a predefined colorscale separating each cluster.
-#For this purpose, four individual donors are extracted from the test dataset.
-testDataSubset <- rbind(testData[1:2000,], testData[95001:97000,])
-testDataSNESubset <- rbind(testDataSNE$Y[1:2000,], testDataSNE$Y[95001:97000,])
-testColor <- dColorVector(testDataSubset$ids, colorScale="plasma")
+# Now plot each id separately using a predefined colorscale separating each cluster.
+# For this purpose, four individual donors are extracted from the test dataset.
+testDataSubset <- rbind(testData[1:2000, ], testData[95001:97000, ])
+testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[95001:97000, ])
+testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
 
-dDensityPlot(xYData=testDataSNESubset, color=testColor, plotEachIdSeparately=TRUE, 
-idsVector=testDataSubset$ids, commonName="sampling")
+dDensityPlot(
+  xYData = testDataSNESubset, color = testColor, plotEachIdSeparately = TRUE,
+  idsVector = testDataSubset$ids, commonName = "sampling"
+)
 
-#Now all four example donors are plotted together using the same predefined colorscale
-dDensityPlot(xYData=testDataSNESubset, color=testColor, idsVector=testDataSubset$ids,
-commonName="all samplings")
-
+# Now all four example donors are plotted together using the same predefined colorscale
+dDensityPlot(
+  xYData = testDataSNESubset, color = testColor, idsVector = testDataSubset$ids,
+  commonName = "all samplings"
+)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}

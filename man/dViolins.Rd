@@ -30,17 +30,16 @@ One graph is created for each non-penalized variable in each non-penalized clust
 Here, violin plots of a specific cluster and the total population are created for each variable that has not been penalized away in the penalized K-means analysis. As all such plots are generated for each cluster, this function creates a great number of plots in most instances.
 }
 \examples{
-#Load some data
+# Load some data
 data(testData)
 
-#Run the clustering function. For more rapid example execution, 
-#a depeche clustering of the data is inluded
-#testDataDepeche <- depeche(testData[,2:15]) 
+# Run the clustering function. For more rapid example execution,
+# a depeche clustering of the data is inluded
+# testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-#Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame=testData[,2:15])
-
+# Create the plots of the variables that contribute to creating each cluster
+dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame = testData[, 2:15])
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}
