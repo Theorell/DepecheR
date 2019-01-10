@@ -39,132 +39,162 @@
 #'   clusterVector = testDataDepeche$clusterVector
 #' )
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, clusterVector, densContour = TRUE, groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2], name = "default", title = FALSE, maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE, directoryName = "dResidualPlot", dotSize = 400 / sqrt(nrow(xYData)), createPlot = TRUE) {
-  if (createDirectory == TRUE) {
-    dir.create(directoryName)
-    workingDirectory <- getwd()
-    setwd(paste(workingDirectory, directoryName, sep = "/"))
-  }
-
-  if (length(unique(groupVector)) != 2) {
-    stop("More or less than two groups are present. Please correct this.")
-  }
-
-
-  if (class(xYData) == "matrix") {
-    xYData <- as.data.frame(xYData)
-  }
-
-  if (name == "default") {
-    name <- paste0(groupName1, "_vs_", groupName2)
-  }
-
-  # Here, the residuals are identified.
-  # A table with the percentage of cells in each cluster for each group is created in analogy with XXX pKMRun.
-
-  clusterTable <- table(clusterVector, groupVector)
-
-  countTable <- table(groupVector)
-
-  clusterPercentagesForGroups <- clusterTable
-
-  for (i in 1:length(countTable)) {
-    x <- 100 * clusterTable[, i] / countTable[i]
-    clusterPercentagesForGroups[, i] <- x
-  }
-
-  # Now the residual matrix is constructed
-  residualVector <- as.vector(clusterPercentagesForGroups[, 1] - clusterPercentagesForGroups[, 2])
-
-  names(residualVector) <- as.numeric(row.names(clusterPercentagesForGroups))
-
-  # Here, the maximum values for the plotting is defined if not added by the user.
-  if (missing(maxAbsPlottingValues)) {
-    maxAbsPlottingValues <- max(abs(clusterPercentagesForGroups))
-  }
-
-  # It might be that the maxAbsPlottingValues defined by the user are lower than the most extreme values in the residual data. Then, the data is truncated to fit the range.
-  residualVector[residualVector > maxAbsPlottingValues] <- maxAbsPlottingValues
-  residualVector[residualVector < -maxAbsPlottingValues] <- -maxAbsPlottingValues
-
-  # Here, a vector with the same length as the cluster vector is generated, but where the cluster info has been substituted with the statistic.
-  residualVectorLong <- clusterVector
-  for (i in 1:length(residualVector)) {
-    residualVectorLong[clusterVector == names(residualVector)[i]] <- residualVector[i]
-  }
-
-  # Here the data that will be used for plotting is scaled.
-  colnames(xYData) <- c("V1", "V2")
-
-  # Make a color vector with the same length as the data
-  residual.df <- as.data.frame(residualVectorLong)
-
-  # make a breaks vector to define each bin for the colors
-  brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, length.out = 12))
-
-  # assign each value to a bin
-  grps <- with(residual.df, cut(residual.df[, 1], breaks = brks, include.lowest = TRUE))
-  colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(11)
-  xYData$col <- rev(colors)[grps]
-
-  # Create the density matrix for xYData.
-  if (is.logical(densContour)) {
-    if (densContour == TRUE) {
-      densContour <- dContours(xYData)
+dResidualPlot <- function(xYData, groupVector, clusterVector, 
+    densContour = TRUE, groupName1 = unique(groupVector)[1], 
+    groupName2 = unique(groupVector)[2], name = "default", title = FALSE, 
+    maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE, 
+    directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)), 
+    createPlot = TRUE) {
+    if (createDirectory == TRUE) {
+        dir.create(directoryName)
+        workingDirectory <- getwd()
+        setwd(paste(workingDirectory, directoryName, sep = "/"))
     }
-  }
-  if (length(densContour) > 1) {
-    xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
-    ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
-  } else {
-    minX <- min(xYData[, 1])
-    maxX <- max(xYData[, 1])
-    minY <- min(xYData[, 2])
-    maxY <- max(xYData[, 2])
-    xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 0.05))
-    ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 0.05))
-  }
-
-
-  png(paste(name, "_residuals.png", sep = ""), width = 2500, height = 2500, units = "px", bg = "transparent")
-  if (createPlot == TRUE) {
-    if (title == TRUE) {
-      plot(V2 ~ V1, data = xYData, main = name, pch = 20, cex = dotSize, cex.main = 5, col = col, xlim = xlim, ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+    
+    if (length(unique(groupVector)) != 2) {
+        stop("More or less than two groups are present. Please correct this.")
     }
-
-    if (title == FALSE) {
-      plot(V2 ~ V1, data = xYData, main = "", pch = 20, cex = dotSize, cex.main = 5, col = col, xlim = xlim, ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+    
+    
+    if (any(is(xYData) == "matrix")) {
+        xYData <- as.data.frame(xYData)
+    }
+    
+    if (name == "default") {
+        name <- paste0(groupName1, "_vs_", groupName2)
+    }
+    
+    # Here, the residuals are identified.  A table with the
+    # percentage of cells in each cluster for each group is
+    # created in analogy with XXX pKMRun.
+    
+    clusterTable <- table(clusterVector, groupVector)
+    
+    countTable <- table(groupVector)
+    
+    clusterPercentagesForGroups <- clusterTable
+    
+    for (i in 1:length(countTable)) {
+        x <- 100 * clusterTable[, i]/countTable[i]
+        clusterPercentagesForGroups[, i] <- x
+    }
+    
+    # Now the residual matrix is constructed
+    residualVector <- as.vector(clusterPercentagesForGroups[, 
+        1] - clusterPercentagesForGroups[, 2])
+    
+    names(residualVector) <- as.numeric(row.names(clusterPercentagesForGroups))
+    
+    # Here, the maximum values for the plotting is defined if not
+    # added by the user.
+    if (missing(maxAbsPlottingValues)) {
+        maxAbsPlottingValues <- max(abs(clusterPercentagesForGroups))
+    }
+    
+    # It might be that the maxAbsPlottingValues defined by the
+    # user are lower than the most extreme values in the residual
+    # data. Then, the data is truncated to fit the range.
+    residualVector[residualVector > maxAbsPlottingValues] <- maxAbsPlottingValues
+    residualVector[residualVector < -maxAbsPlottingValues] <- -maxAbsPlottingValues
+    
+    # Here, a vector with the same length as the cluster vector
+    # is generated, but where the cluster info has been
+    # substituted with the statistic.
+    residualVectorLong <- clusterVector
+    for (i in 1:length(residualVector)) {
+        residualVectorLong[clusterVector == names(residualVector)[i]] <- residualVector[i]
+    }
+    
+    # Here the data that will be used for plotting is scaled.
+    colnames(xYData) <- c("V1", "V2")
+    
+    # Make a color vector with the same length as the data
+    residual.df <- as.data.frame(residualVectorLong)
+    
+    # make a breaks vector to define each bin for the colors
+    brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
+        length.out = 10))
+    
+    # assign each value to a bin
+    grps <- with(residual.df, cut(residual.df[, 1], breaks = brks, 
+        include.lowest = TRUE))
+    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
+    xYData$col <- colors[grps]
+    
+    # Create the density matrix for xYData.
+    if (is.logical(densContour)) {
+        if (densContour == TRUE) {
+            densContour <- dContours(xYData)
+        }
     }
     if (length(densContour) > 1) {
-      par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), new = TRUE)
-      contour(x = densContour$x, y = densContour$y, z = densContour$z, xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", yaxs = "i")
+        xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
+        ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
+    } else {
+        minX <- min(xYData[, 1])
+        maxX <- max(xYData[, 1])
+        minY <- min(xYData[, 2])
+        maxY <- max(xYData[, 2])
+        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 
+            0.05))
+        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 
+            0.05))
     }
-  }
-  dev.off()
-  # Create a color legend with text
-
-  yname <- "Residual values"
-  topText <- paste(groupName1, " is more abundant", sep = "")
-  bottomText <- paste(groupName2, " is more abundant", sep = "")
-  legendTitle <- paste("Color scale for", name, "residual analysis.pdf", sep = " ")
-
-
-  if (createPlot == TRUE) {
-    pdf(legendTitle)
-    par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
-    z <- matrix(1:11, nrow = 1)
-    x <- 1
-    y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, len = 11)
-    image(x, y, z, col = rev(colors), axes = FALSE, xlab = "", ylab = yname)
-    axis(2)
-    text(1, maxAbsPlottingValues * 1.2, labels = topText, cex = 1.1)
-    text(1, -maxAbsPlottingValues * 1.2, labels = bottomText, cex = 1.1)
-    box()
+    
+    
+    png(paste(name, "_residuals.png", sep = ""), width = 2500, 
+        height = 2500, units = "px", bg = "transparent")
+    if (createPlot == TRUE) {
+        if (title == TRUE) {
+            plot(V2 ~ V1, data = xYData, main = name, pch = 20, 
+                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
+                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+        }
+        
+        if (title == FALSE) {
+            plot(V2 ~ V1, data = xYData, main = "", pch = 20, 
+                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
+                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+        }
+        if (length(densContour) > 1) {
+            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), 
+                new = TRUE)
+            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
+                xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
+                lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
+                yaxs = "i")
+        }
+    }
     dev.off()
-  }
-
-  if (createDirectory == TRUE) {
-    setwd(workingDirectory)
-  }
-  print(paste0("Files were saved at ", getwd()))
+    # Create a color legend with text
+    
+    yname <- "Residual values"
+    topText <- paste(groupName1, " is more abundant", sep = "")
+    bottomText <- paste(groupName2, " is more abundant", sep = "")
+    legendTitle <- paste("Color scale for", name, "residual analysis.pdf", 
+        sep = " ")
+    
+    
+    if (createPlot == TRUE) {
+        pdf(legendTitle)
+        par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
+        z <- matrix(1:9, nrow = 1)
+        x <- 1
+        y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
+            len = 9)
+        image(x, y, z, col = colors, axes = FALSE, xlab = "", 
+            ylab = yname)
+        axis(2)
+        text(1, maxAbsPlottingValues * 1.2, labels = topText, 
+            cex = 1.1)
+        text(1, -maxAbsPlottingValues * 1.2, labels = bottomText, 
+            cex = 1.1)
+        box()
+        dev.off()
+    }
+    
+    if (createDirectory == TRUE) {
+        setwd(workingDirectory)
+    }
+    print(paste0("Files were saved at ", getwd()))
 }

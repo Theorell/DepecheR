@@ -1,7 +1,8 @@
 Package: DepecheR
-Version: 0.80.2
-Date: 2019-01-09
+Version: 0.81.1
+Date: 2019-01-10
 Title: Determination of essential phenotypic elements of clusters in high-dimensional entities 
+biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,DataRepresentation,ImmunoOncology,Transcriptomics,Classification,Clustering,DimensionReduction,FeatureExtraction,FlowCytometry,RNASeq,SingleCell,Visualization
 Authors@R: c(person(given='Jakob', family='Theorell', email = "jakob.theorell@ndcn.ox.ac.uk",
                   role = c("aut", "cre")),
            person(given='Axel', family='Theorell', email = "a.theorell@fz-juelich.de",
@@ -19,5 +20,5 @@ Depends: R (>= 3.5.0)
 Imports:
   ggplot2 (>= 2.2.1), MASS (>= 7.3.47), Rcpp (>= 0.12.11), dplyr (>= 0.5.0), gplots (>= 3.0.1), viridis (>= 0.4.0), foreach (>= 1.4.3), doSNOW (>= 1.0.14), parallel (>= 3.2.3), mixOmics (>= 6.2.0), moments (>= 0.14), grDevices (>= 3.5.1), graphics (>= 3.5.1), stats (>= 3.5.1), utils (>= 3.5.1)
 LinkingTo: Rcpp, RcppEigen
-Suggests: Rtsne,
-    testthat
+Suggests: Rtsne, testthat, knitr, rmarkdown
+VignetteBuilder: knitr

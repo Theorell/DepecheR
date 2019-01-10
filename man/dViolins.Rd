@@ -17,7 +17,7 @@ dViolins(clusterVector, sparsityMatrix, inDataFrame,
 
 \item{order}{The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.}
 
-\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.}
+\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific 'dark_rainbow'). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c('#FF0033', '#03AF49')) are also accepted.}
 
 \item{plotAll}{If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.}
 
@@ -39,7 +39,7 @@ data(testData)
 data(testDataDepeche)
 
 # Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche$clusterVector, testDataDepeche$clusterCenters, inDataFrame = testData[, 2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}

@@ -19,7 +19,7 @@ dColorPlot(colorData, controlData, xYData, names = "default",
 
 \item{xYData}{These variables create the field on which the colorData will be displayed. It needs to be a matrix or dataframe with two columns and the same number of rows as the colorData object.}
 
-\item{names}{The name(s) for the plots. The default alternative, "default" returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name "testVariable". It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
+\item{names}{The name(s) for the plots. The default alternative, 'default' returns the column names of the colorData object in the case this is a dataframe and otherwise returns the somewhat generic name 'testVariable'. It can be substituted with a string (in the case colorData is a vector) or vector of strings, as long as it has the same length as the number of columns in colorData.}
 
 \item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
 
@@ -69,10 +69,10 @@ drawColorPalette = TRUE)
 # four individual donors are extracted from the test dataset
 testDataSubset <- rbind(testData[1:2000, ], testData[95001:97000, ])
 testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[95001:97000, ])
-testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
+testColor <- dColorVector(testDataSubset$ids, colorScale = 'plasma')
 dColorPlot(
   colorData = testColor, xYData = testDataSNESubset,
-  names = "separate samplings", addLegend = TRUE, idsVector = testDataSubset$ids
+  names = 'separate samplings', addLegend = TRUE, idsVector = testDataSubset$ids
 )
 }
 \seealso{

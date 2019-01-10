@@ -90,7 +90,7 @@ clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000, 67001:nrow(testD
 sPLSDAObject <- dSplsda(
   xYData = xYDataPaired, idsVector = testDataPaired$ids,
   groupVector = testDataPaired$label, clusterVector = clusterVectorPaired, paired = TRUE,
-  name = "d_sPLSDAPlot_paired", groupName1 = "Stimulation 1", groupName2 = "Stimulation 2"
+  name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', groupName2 = 'Stimulation 2'
 )
 
 # Here is an example of how the display vector can be used.

@@ -54,9 +54,9 @@ testTableFraction <- testTableCollapsed / sum(testTableCollapsed)
 xmatrix <- t(cbind(trainTableFraction, testTableFraction))
 library(gplots)
 barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
-title(main = "Difference between train and test set")
-title(xlab = "Clusters")
-title(ylab = "Fraction")
+title(main = 'Difference between train and test set')
+title(xlab = 'Clusters')
+title(ylab = 'Fraction')
 }
 }
 \seealso{

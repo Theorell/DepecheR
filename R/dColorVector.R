@@ -7,60 +7,58 @@
 #' @importFrom grDevices rainbow
 #' @param x A vector, in most cases of identities of individuals or clusters, et cetera.
 #' @param order The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.
-#' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
+#' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific 'dark_rainbow'). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c('#FF0033', '#03AF49')) are also accepted.
 #' @return A vector, the same length as x with each unique value substitutet with a color.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
 #' @examples
 #' # Load some data
 #' data(testData)
 #'
-#' testColor <- dColorVector(testData$ids, colorScale = "plasma")
+#' testColor <- dColorVector(testData$ids, colorScale = 'plasma')
 #'
 #' # In this case, each of the 97 individual donors in the dataset has gotten their own color code:
 #' table(testColor)
 #' @export dColorVector
-dColorVector <-
-  function(x,
-           order = unique(x),
-           colorScale = "viridis") {
-    if (class(x) == "factor") {
-      x <- as.character(x)
-      order <- as.character(order)
+dColorVector <- function(x, order = unique(x), colorScale = "viridis") {
+    if (any(is(x) == "factor")) {
+        x <- as.character(x)
+        order <- as.character(order)
     }
     
     if (length(colorScale) > 1) {
-      orderColors <- colorRampPalette(colorScale)(length(order))
+        orderColors <- colorRampPalette(colorScale)(length(order))
     } else {
-      if (colorScale == "inferno") {
-        orderColors <- inferno(length(order))
-      }
-      if (colorScale == "viridis") {
-        orderColors <- viridis(length(order))
-      }
-      if (colorScale == "plasma") {
-        orderColors <- plasma(length(order))
-      }
-      if (colorScale == "magma") {
-        orderColors <- magma(length(order))
-      }
-      if (colorScale == "rich_colors") {
-        orderColors <- rich.colors(length(order))
-      }
-      if (colorScale == "rainbow") {
-        orderColors <- rainbow(length(order))
-      }
-      if (colorScale == "dark_rainbow") {
-        orderColors <- colorRampPalette(c("#990000", "#FFCC00", "#336600",
-                                          "#000066", "#660033"))(length(order))
-      }
+        if (colorScale == "inferno") {
+            orderColors <- inferno(length(order))
+        }
+        if (colorScale == "viridis") {
+            orderColors <- viridis(length(order))
+        }
+        if (colorScale == "plasma") {
+            orderColors <- plasma(length(order))
+        }
+        if (colorScale == "magma") {
+            orderColors <- magma(length(order))
+        }
+        if (colorScale == "rich_colors") {
+            orderColors <- rich.colors(length(order))
+        }
+        if (colorScale == "rainbow") {
+            orderColors <- rainbow(length(order))
+        }
+        if (colorScale == "dark_rainbow") {
+            orderColors <- colorRampPalette(c("#990000", "#FFCC00", 
+                "#336600", "#000066", "#660033"))(length(order))
+        }
     }
     
-    # Here, a vector with the same length as the x vector is generated,
-    # but where the x info has been substituted with a color.
+    # Here, a vector with the same length as the x vector is
+    # generated, but where the x info has been substituted with a
+    # color.
     dColorVector <- x
     for (i in 0:length(order)) {
-      dColorVector[x == order[i]] <- orderColors[i]
+        dColorVector[x == order[i]] <- orderColors[i]
     }
     
     return(dColorVector)
-  }
+}

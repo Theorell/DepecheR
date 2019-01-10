@@ -8,7 +8,7 @@
 #'
 #' @usage data(testDataSNE)
 #'
-#' @format An object of class \code{"list"};
+#' @format An object of class \code{'list'};
 #'
 #' @keywords datasets
 #' #'

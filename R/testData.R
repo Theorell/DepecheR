@@ -10,7 +10,7 @@
 #'
 #' @usage data(testData)
 #'
-#' @format An object of class \code{"data.frame"};
+#' @format An object of class \code{'data.frame'};
 #'
 #' @keywords datasets
 "testData"

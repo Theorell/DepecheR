@@ -4,7 +4,7 @@
 \name{testDataSNE}
 \alias{testDataSNE}
 \title{SNE of the testData set}
-\format{An object of class \code{"list"};}
+\format{An object of class \code{'list'};}
 \usage{
 data(testDataSNE)
 }

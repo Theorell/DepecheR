@@ -1,5 +1,4 @@
-######################
-# truncateData
+###################### truncateData
 context("truncateData")
 
 
@@ -10,14 +9,13 @@ xTruncated <- DepecheR:::truncateData(x, lowQuantile = low, highQuantile = 1)
 quant <- quantile(x, low)
 x[3] <- quant
 test_that("truncateData expected output", {
-  expect_equal(x, xTruncated)
+    expect_equal(x, xTruncated)
 })
 
-######################
-# truncateDataCoFunction
+###################### truncateDataCoFunction
 x <- c(1000, 4000, -9, 100, 101)
 xTruncated <- DepecheR:::truncateDataCoFunction(x, control = c(0, 100), lowQuantile = 0, highQuantile = 1)
 x[3] <- 1
 test_that("truncateData expected output", {
-  expect_equal(c(100, 100, 0, 100, 100), xTruncated)
+    expect_equal(c(100, 100, 0, 100, 100), xTruncated)
 })

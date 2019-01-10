@@ -1,0 +1,20 @@
+DepecheR v0.81.1 (Release date: 2019-01-10)
+==============
+
+Changes:
+
+* A vignette has been created. 
+* A visual bug, making the colors reversed in the residual plot function compared
+* to the dWilcox and DSplsda functions has been removed. 
+* Formatting to satisfy the BioConductor criteria has been added.
+* Tests have been adapted to work after reformatting
+* No actual changes have been added to the code. 
+
+
+DepecheR v0.80.3 (Release date: 2019-01-09)
+==============
+
+Changes:
+
+* This is the first time the NEWS file is present. For all previous changes, and
+* those are hundreds, see the git history. 

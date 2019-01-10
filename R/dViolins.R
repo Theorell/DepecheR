@@ -9,7 +9,7 @@
 #' @param sparsityMatrix The sparsity matrix from the corresponding depeche run.
 #' @param inDataFrame The data used to generate the depecheObject
 #' @param order The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.
-#' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific "dark_rainbow"). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c("#FF0033", "#03AF49")) are also accepted.
+#' @param colorScale The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific 'dark_rainbow'). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c('#FF0033', '#03AF49')) are also accepted.
 #' @param plotAll If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
@@ -26,88 +26,106 @@
 #' # Create the plots of the variables that contribute to creating each cluster
 #' dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
 #' @export dViolins
-dViolins <- function(clusterVector, sparsityMatrix, inDataFrame, order = unique(clusterVector), colorScale = "viridis", plotAll = FALSE, createOutput = TRUE) {
-  percentClusterVector <- dScale(clusterVector, scale = c(0, 1), robustVarScale = FALSE, center = FALSE, multiplicationFactor = 100)
-
-  if (length(colorScale) > 1) {
-    orderColors <- colorRampPalette(colorScale)(length(order))
-  } else {
-    if (colorScale == "inferno") {
-      paletteColors <- inferno(length(order))
-    }
-    if (colorScale == "viridis") {
-      paletteColors <- viridis(length(order))
-    }
-    if (colorScale == "plasma") {
-      paletteColors <- plasma(length(order))
-    }
-    if (colorScale == "magma") {
-      paletteColors <- magma(length(order))
-    }
-    if (colorScale == "rich_colors") {
-      paletteColors <- rich.colors(length(order))
-    }
-    if (colorScale == "rainbow") {
-      paletteColors <- rainbow(length(order))
-    }
-    if (colorScale == "dark_rainbow") {
-      paletteColors <- colorRampPalette(c("#990000", "#FFCC00", "#336600", "#000066", "#660033"))(length(order))
-    }
-  }
-
-  # Here, a directory for all the subdirectories for each cluster is made
-  directoryName <- "Cluster expressions"
-  workingDirectory <- getwd()
-  if (createOutput == TRUE) {
-    dir.create(directoryName)
-    setwd(paste(workingDirectory, directoryName, sep = "/"))
-  }
-
-  # Here, the columns in the inDataFrame that are not selected as contributing are excluded from further analysis, if plotAll is not TRUE
-  if (plotAll == FALSE) {
-    inDataFocused <- subset(inDataFrame, select = colnames(sparsityMatrix))
-  } else {
-    inDataFocused <- inDataFrame
-  }
-
-
-  for (i in 1:length(order)) {
-
-    # Here, a specific directory for the graphics are made.
-    directoryName <- paste("Cluster", order[i])
-    workingDirectoryClusters <- getwd()
-
-    if (createOutput == TRUE) {
-      dir.create(directoryName)
-      setwd(paste(workingDirectoryClusters, directoryName, sep = "/"))
-    }
-
-    # This code is an efficient way of giving all rows in the "Clusters" column the same name, except for the rows with the cluster of interest.
-
-    clustIndicesSpecific <- sapply(clusterVector, dViolinsCoFunction1, n = order[i])
-
-    # Create a color vector for the visualzation
-    clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
-
-    # Here, the mu variables for the specific cluster is extracted, if not all clusters should be shown.
-    if (plotAll == FALSE) {
-      oneClustAllMu <- sparsityMatrix[rownames(sparsityMatrix) == order[i], ]
+dViolins <- function(clusterVector, sparsityMatrix, inDataFrame, 
+    order = unique(clusterVector), colorScale = "viridis", plotAll = FALSE, 
+    createOutput = TRUE) {
+    percentClusterVector <- dScale(clusterVector, scale = c(0, 
+        1), robustVarScale = FALSE, center = FALSE, multiplicationFactor = 100)
+    
+    if (length(colorScale) > 1) {
+        orderColors <- colorRampPalette(colorScale)(length(order))
     } else {
-      oneClustAllMu <- rep(1, ncol(inDataFrame))
+        if (colorScale == "inferno") {
+            paletteColors <- inferno(length(order))
+        }
+        if (colorScale == "viridis") {
+            paletteColors <- viridis(length(order))
+        }
+        if (colorScale == "plasma") {
+            paletteColors <- plasma(length(order))
+        }
+        if (colorScale == "magma") {
+            paletteColors <- magma(length(order))
+        }
+        if (colorScale == "rich_colors") {
+            paletteColors <- rich.colors(length(order))
+        }
+        if (colorScale == "rainbow") {
+            paletteColors <- rainbow(length(order))
+        }
+        if (colorScale == "dark_rainbow") {
+            paletteColors <- colorRampPalette(c("#990000", "#FFCC00", 
+                "#336600", "#000066", "#660033"))(length(order))
+        }
     }
-
-    # Here the variable names is exported
-    allVarNames <- colnames(inDataFocused)
-    # Then a list is created that contains the objects for the plot creation
-    oneClustAllVarList <- mapply(dViolinsCoFunction2, inDataFocused, oneClustAllMu, allVarNames, MoreArgs = list(clust = clustIndicesSpecific, cols = clustColorsSpecific, clustNum = order[i]), SIMPLIFY = FALSE)
-    # And then the plots are created
-    sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll = plotAll, createOutput = createOutput)
-
-
-    setwd(workingDirectoryClusters)
-  }
-
-  setwd(workingDirectory)
-
-  print(paste0("Files were saved at ", getwd()))
+    
+    # Here, a directory for all the subdirectories for each
+    # cluster is made
+    directoryName <- "Cluster expressions"
+    workingDirectory <- getwd()
+    if (createOutput == TRUE) {
+        dir.create(directoryName)
+        setwd(paste(workingDirectory, directoryName, sep = "/"))
+    }
+    
+    # Here, the columns in the inDataFrame that are not selected
+    # as contributing are excluded from further analysis, if
+    # plotAll is not TRUE
+    if (plotAll == FALSE) {
+        inDataFocused <- subset(inDataFrame, select = colnames(sparsityMatrix))
+    } else {
+        inDataFocused <- inDataFrame
+    }
+    
+    
+    for (i in 1:length(order)) {
+        
+        # Here, a specific directory for the graphics are made.
+        directoryName <- paste("Cluster", order[i])
+        workingDirectoryClusters <- getwd()
+        
+        if (createOutput == TRUE) {
+            dir.create(directoryName)
+            setwd(paste(workingDirectoryClusters, directoryName, 
+                sep = "/"))
+        }
+        
+        # This code is an efficient way of giving all rows in the
+        # 'Clusters' column the same name, except for the rows with
+        # the cluster of interest.
+        
+        clustIndicesSpecific <- sapply(clusterVector, dViolinsCoFunction1, 
+            n = order[i])
+        
+        # Create a color vector for the visualzation
+        clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
+        
+        # Here, the mu variables for the specific cluster is
+        # extracted, if not all clusters should be shown.
+        if (plotAll == FALSE) {
+            oneClustAllMu <- sparsityMatrix[rownames(sparsityMatrix) == 
+                order[i], ]
+        } else {
+            oneClustAllMu <- rep(1, ncol(inDataFrame))
+        }
+        
+        # Here the variable names is exported
+        allVarNames <- colnames(inDataFocused)
+        # Then a list is created that contains the objects for the
+        # plot creation
+        oneClustAllVarList <- mapply(dViolinsCoFunction2, inDataFocused, 
+            oneClustAllMu, allVarNames, MoreArgs = list(clust = clustIndicesSpecific, 
+                cols = clustColorsSpecific, clustNum = order[i]), 
+            SIMPLIFY = FALSE)
+        # And then the plots are created
+        sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll = plotAll, 
+            createOutput = createOutput)
+        
+        
+        setwd(workingDirectoryClusters)
+    }
+    
+    setwd(workingDirectory)
+    
+    print(paste0("Files were saved at ", getwd()))
 }
