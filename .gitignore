@@ -14,7 +14,10 @@
 .rproj 
 .rproj.user
 .rhistory 
-*.rapp.history
+.rapp.history
+inst/.rapp.history
+R/.rapp.history
+tests/testthat/.rapp.history
 .o 
 .sl 
 .so 
