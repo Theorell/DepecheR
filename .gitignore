@@ -14,7 +14,7 @@
 .rproj 
 .rproj.user
 .rhistory 
-.rapp.history
+*.rapp.history
 .o 
 .sl 
 .so 
