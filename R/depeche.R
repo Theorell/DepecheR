@@ -188,14 +188,14 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
             1] == 2)]]
         
         inDataFrameSecondList <- list()
-        for (i in 1:length(unique(depecheResultFirst$clusterVector))) {
+        for (i in seq_len(length(unique(depecheResultFirst$clusterVector)))) {
             inDataFrameSecondList[[i]] <- inDataFrameSecond[which(depecheResultFirst$clusterVector == 
                 i), ]
         }
         
         # Now create the list of cluster numbers
         firstClusterNumberList <- list()
-        for (i in 1:length(unique(depecheResultFirst$clusterVector))) {
+        for (i in seq_len(length(unique(depecheResultFirst$clusterVector)))) {
             rightNumberSize <- 100 * i
             firstClusterNumberList[[i]] <- rightNumberSize + 
                 1
@@ -203,7 +203,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
         
         # Here, a list of cluster names are created, so that the
         # results are sorted in a correct manner
-        directoryNames <- lapply(c(1:length(unique(depecheResultFirst$clusterVector))), 
+        directoryNames <- lapply(c(seq_len(length(unique(depecheResultFirst$clusterVector)))), 
             function(x) paste("Cluster", x, "level_two_depeche", 
                 sep = "_"))
         # Here, the secondary clusters are generated for each
@@ -219,20 +219,20 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
         # Now, all the clustering data is recompiled to one long
         # cluster vector
         complexClusterVector <- inDataFrameScaled[, 1]
-        for (i in 1:length(depecheResultSecondList)) {
+        for (i in seq_len(length(depecheResultSecondList))) {
             complexClusterVector[which(depecheResultFirst$clusterVector == 
                 i)] <- depecheResultSecondList[[i]][[1]]
         }
         
         # And the cluster centers are also compiled
         clusterCentersList <- list()
-        for (i in 1:length(depecheResultSecondList)) {
+        for (i in seq_len(length(depecheResultSecondList))) {
             clusterCentersList[[i]] <- depecheResultSecondList[[i]][[2]]
         }
         
         # Create a list of all unique colnames
         colnamesList <- list()
-        for (i in 1:length(depecheResultSecondList)) {
+        for (i in seq_len(length(depecheResultSecondList))) {
             colnamesList[[i]] <- colnames(clusterCentersList[[i]])
         }
         uniqueColnamesVector <- sort(unique(unlist(colnamesList)))
@@ -240,7 +240,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
         # Now, if a variable is missing in a certain cluster center
         # matrix, it is added with zeros.  ALso the variables are
         # sorted.
-        for (i in 1:length(clusterCentersList)) {
+        for (i in seq_len(length(clusterCentersList))) {
             if (length(clusterCentersList[[i]]) != length(uniqueColnamesVector)) {
                 missingColnames <- uniqueColnamesVector[!uniqueColnamesVector %in% 
                   colnames(clusterCentersList[[i]])]
@@ -263,7 +263,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
         firstOnSecondClusterCentersList <- list()
         clusterClusters <- substr(as.character(row.names(secondLevelClusterCenters)), 
             1, 1)
-        for (i in 1:length(clusterClusters)) {
+        for (i in seq_len(length(clusterClusters))) {
             firstOnSecondClusterCentersList[[i]] <- firstClusterCenters[which(row.names(firstClusterCenters) == 
                 clusterClusters[i]), ]
         }
@@ -279,7 +279,9 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
         
         # And now, all the penalty optimization and possible sample
         # size optimizations are saved
-        penaltyOptListList <- do.call("list", sapply(depecheResultSecondList, 
+        funval <- depecheResultSecondList[[1]][[3]]
+        
+        penaltyOptListList <- do.call("list", vapply(depecheResultSecondList, FUN.VALUE = funval,
             "[[", 3))
         
         depecheResult <- list(levelOneCLusterResult = depecheResultFirst, 
@@ -287,7 +289,8 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
             levelTwoPenaltyOptList = penaltyOptListList)
         
         if (length(sampleSize) > 1) {
-            sampleSizeOptList <- do.call("list", sapply(depecheResultSecondList, 
+          funval <- depecheResultSecondList[[1]][[4]]
+            sampleSizeOptList <- do.call("list", vapply(depecheResultSecondList,  FUN.VALUE = funval,
                 "[[", 4))
             nextClustResultPosition <- length(depecheResult) + 
                 1
@@ -304,7 +307,7 @@ depeche <- function(inDataFrame, dualDepecheSetup, penalties = c(2^0,
             
             clusterFractionsForAllIds <- clusterTable
             
-            for (i in 1:length(countTable)) {
+            for (i in seq_len(length(countTable))) {
                 x <- clusterTable[, i]/countTable[i]
                 clusterFractionsForAllIds[, i] <- x
             }

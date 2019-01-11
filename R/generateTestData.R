@@ -29,7 +29,7 @@ generateBimodalData <- function(centers, prop = 0.3, dataCols = 5,
         floor(prop * observations)))
     rands <- matrix(rnorm(observations * dataCols, mean = 0, 
         sd = 1), observations, dataCols)
-    pop1 <- rands[1:floor(prop * observations), ] + rep(centers[1, 
+    pop1 <- rands[seq_len(floor(prop * observations)), ] + rep(centers[1, 
         ], each = floor(prop * observations))
     
     pop2 <- tail(rands, n = observations - floor(prop * observations)) + 
@@ -56,15 +56,15 @@ generateSparseData <- function(modeN = 5, dataCols = 100, observations = 10000) 
     randInts <- sample(c(-50, 50), dataCols * modeN, replace = TRUE)
     centers <- matrix(randInts, nrow = modeN, byrow = TRUE)
     # put in sparsity
-    for (i in 1:modeN) {
-        inds <- sample(1:dataCols, i)
+    for (i in seq_len(modeN)) {
+        inds <- sample(seq_len(dataCols), i)
         centers[i, inds] <- 0
     }
     
     # generate the data
     samples <- matrix(0, nrow = observations, ncol = dataCols)
     ids <- matrix(0, nrow = observations, ncol = 1)
-    for (i in 1:modeN) {
+    for (i in seq_len(modeN)) {
         temp <- matrix(rnorm(observations * dataCols, mean = 0, 
             sd = 1), obsPerMode, dataCols)
         samples[seq((1 + obsPerMode * (i - 1)), obsPerMode * 

@@ -1,12 +1,10 @@
 Package: DepecheR
-Version: 0.81.1
-Date: 2019-01-10
+Version: 0.81.2
+Date: 2019-01-11
 Title: Determination of essential phenotypic elements of clusters in high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,DataRepresentation,ImmunoOncology,Transcriptomics,Classification,Clustering,DimensionReduction,FeatureExtraction,FlowCytometry,RNASeq,SingleCell,Visualization
-Authors@R: c(person(given='Jakob', family='Theorell', email = "jakob.theorell@ndcn.ox.ac.uk",
-                  role = c("aut", "cre")),
-           person(given='Axel', family='Theorell', email = "a.theorell@fz-juelich.de",
-		  role = "aut", "cre"))
+Authors@R: c(person('Jakob', 'Theorell', email = "jakob.theorell@ndcn.ox.ac.uk", role = c("aut", "cre")),
+           person('Axel', 'Theorell', email = "a.theorell@fz-juelich.de", role = "aut", "cre"))
 Author:
    Jakob Theorell [aut, cre],
    Axel Theorell [aut, cre]
@@ -16,9 +14,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
 RoxygenNote: 6.1.1
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.5.2)
 Imports:
-  ggplot2 (>= 2.2.1), MASS (>= 7.3.47), Rcpp (>= 0.12.11), dplyr (>= 0.5.0), gplots (>= 3.0.1), viridis (>= 0.4.0), foreach (>= 1.4.3), doSNOW (>= 1.0.14), parallel (>= 3.2.3), mixOmics (>= 6.2.0), moments (>= 0.14), grDevices (>= 3.5.1), graphics (>= 3.5.1), stats (>= 3.5.1), utils (>= 3.5.1)
+  ggplot2 (>= 3.1.0), MASS (>= 7.3.51), Rcpp (>= 1.0.0), dplyr (>= 0.7.8), gplots (>= 3.0.1), viridis (>= 0.5.1), foreach (>= 1.4.4), doSNOW (>= 1.0.16), parallel (>= 3.5.2), mixOmics (>= 6.6.1), moments (>= 0.14), grDevices (>= 3.5.2), graphics (>= 3.5.2), stats (>= 3.5.2), utils (>= 3.5.2)
 LinkingTo: Rcpp, RcppEigen
 Suggests: Rtsne, testthat, knitr, rmarkdown
 VignetteBuilder: knitr

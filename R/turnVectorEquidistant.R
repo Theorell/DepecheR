@@ -7,7 +7,7 @@ turnVectorEquidistant <- function(x, startValue = 1, newNumbers) {
     }
     
     result <- x
-    for (i in 1:length(originalNumbers)) {
+    for (i in seq_len(length(originalNumbers))) {
         result[(x == originalNumbers[i])] <- newNumbers[i]
     }
     

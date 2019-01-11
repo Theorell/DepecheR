@@ -93,13 +93,13 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
             if (returnCenter == FALSE) {
-                result <- as.data.frame(foreach(i = 1:ncol(x), 
+                result <- as.data.frame(foreach(i = seq_len(ncol(x)), 
                   .inorder = TRUE) %dopar% dScaleCoFunction(x[, 
                   i], control = control[, i], scale = scale, 
                   robustVarScale = robustVarScale, truncate = truncate, 
                   center = center, multiplicationFactor = multiplicationFactor))
             } else {
-                resultComplex <- foreach(i = 1:ncol(x), .inorder = TRUE) %dopar% 
+                resultComplex <- foreach(i = seq_len(ncol(x)), .inorder = TRUE) %dopar% 
                   dScaleCoFunction(x[, i], control = control[, 
                     i], scale = scale, robustVarScale = robustVarScale, 
                     truncate = truncate, center = center, multiplicationFactor = multiplicationFactor, 

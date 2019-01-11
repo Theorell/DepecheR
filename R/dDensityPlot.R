@@ -95,7 +95,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
         if (plotEachIdSeparately == TRUE) {
             uniqueIds <- unique(idsVector)
             
-            for (i in 1:length(uniqueIds)) {
+            for (i in seq_len(length(uniqueIds))) {
                 dDensityPlotCoFunction(xYData = xYData[idsVector == 
                   uniqueIds[i], ], cols = cols, name = paste(commonName, 
                   uniqueIds[i], "density", sep = " "), densContour = densContour, 
@@ -107,9 +107,9 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
     
     if (length(color) > 1) {
         # Here, the colors are defined
-        colors <- sapply(unique(color), as.character)
+        colors <- vapply(unique(color), FUN.VALUE="xyz", as.character)
         colorList <- list()
-        for (i in 1:length(colors)) {
+        for (i in seq_len(length(colors))) {
             colorList[[i]] <- colorRampPalette(c("black", "grey", 
                 colors[i]))(256)
         }
@@ -144,7 +144,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
         if (plotEachIdSeparately == TRUE) {
             uniqueIds <- unique(idsVector)
             
-            for (i in 1:length(uniqueIds)) {
+            for (i in seq_len(length(uniqueIds))) {
                 dDensityPlotCoFunction(xYData = xYData[idsVector == 
                   uniqueIds[i], ], cols = colorList[[i]], name = paste(commonName, 
                   uniqueIds[i], "density", sep = " "), densContour = densContour, 

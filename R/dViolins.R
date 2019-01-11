@@ -78,7 +78,7 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
     }
     
     
-    for (i in 1:length(order)) {
+    for (i in seq_len(length(order))) {
         
         # Here, a specific directory for the graphics are made.
         directoryName <- paste("Cluster", order[i])
@@ -93,10 +93,9 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
         # This code is an efficient way of giving all rows in the
         # 'Clusters' column the same name, except for the rows with
         # the cluster of interest.
-        
-        clustIndicesSpecific <- sapply(clusterVector, dViolinsCoFunction1, 
-            n = order[i])
-        
+        clustIndicesSpecific <- vapply(clusterVector, FUN.VALUE="xyz", 
+                                       dViolinsCoFunction1, n = order[i])
+            
         # Create a color vector for the visualzation
         clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
         
@@ -118,7 +117,7 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
                 cols = clustColorsSpecific, clustNum = order[i]), 
             SIMPLIFY = FALSE)
         # And then the plots are created
-        sapply(oneClustAllVarList, dViolinsCoFunction3, plotAll = plotAll, 
+        vapply(oneClustAllVarList, FUN.VALUE=1, dViolinsCoFunction3, plotAll = plotAll, 
             createOutput = createOutput)
         
         

@@ -21,7 +21,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     # just perform the boot strapping becomes so consuming, that
     # the process stalls.
     if (nrow(inDataFrameScaled) > 1e+06) {
-        sampleRows <- sample(1:nrow(inDataFrameScaled), 1e+06)
+        sampleRows <- sample(seq_len(nrow(inDataFrameScaled)), 1e+06)
         inDataFrameUsed <- inDataFrameScaled[sampleRows, ]
     } else {
         inDataFrameUsed <- inDataFrameScaled
@@ -49,7 +49,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     if (nrow(inDataFrameUsed) <= selectionSampleSize) {
         selectionDataSet <- inDataFrameUsed
     } else {
-        selectionDataSet <- inDataFrameUsed[sample(1:nrow(inDataFrameUsed), 
+        selectionDataSet <- inDataFrameUsed[sample(seq_len(nrow(inDataFrameUsed)), 
             selectionSampleSize, replace = TRUE), ]
     }
     
@@ -74,7 +74,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # selectionDataSet.
         allocationResultList <- list()
         selectionDataSetMatrix <- data.matrix(selectionDataSet)
-        allocationResultList <- foreach(i = 1:length(allSolutions)) %do% 
+        allocationResultList <- foreach(i = seq_len(length(allSolutions))) %do% 
             removeEmptyVariablesAndAllocatePoints(selectionDataSet = selectionDataSetMatrix, 
                 clusterCenters = allSolutions[[i]])
         
@@ -84,8 +84,8 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         n_cores <- detectCores() - 1
         cl <- makeCluster(n_cores, type = "SOCK")
         registerDoSNOW(cl)
-        meanARIList <- foreach(i = 1:length(allocationResultList)) %dopar% 
-            mean(sapply(allocationResultList, rand_index, inds2 = allocationResultList[[i]], 
+        meanARIList <- foreach(i = seq_len(length(allocationResultList))) %dopar% 
+            mean(vapply(allocationResultList, FUN.VALUE=0.5, rand_index, inds2 = allocationResultList[[i]], 
                 k = k))
         stopCluster(cl)
         meanARIVector <- unlist(meanARIList)
@@ -135,7 +135,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     # Then, the center term is added to all variables separately
     if (is.logical(logCenterSd[[2]]) == FALSE) {
         correctClusterCentersList <- list()
-        for (i in 1:ncol(clusterCentersMultSd)) {
+        for (i in seq_len(ncol(clusterCentersMultSd))) {
             focusMean <- logCenterSd[[2]][which(names(logCenterSd[[2]]) %in% 
                 colnames(clusterCentersMultSd)[i])]
             correctClusterCentersList[[i]] <- clusterCentersMultSd[, 
@@ -165,7 +165,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # Here we scale each center value to the range between the
         # lowest and highest permille of the observations in the
         # inDataScaled for that variable
-        for (i in 1:ncol(graphicClusterCenters)) {
+        for (i in seq_len(ncol(graphicClusterCenters))) {
             scaledFocus <- inDataFrameUsed[, colnames(inDataFrameUsed) == 
                 colnames(graphicClusterCenters)[i]]
             graphicClusterCenters[, i] <- dScale(reducedClusterCenters[, 
@@ -175,7 +175,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         
         graphicClusterCenters[sparsityMatrix == 0] <- NA
         
-        colorLadder <- dColorVector(1:11, colorScale = c("#0D0887FF", 
+        colorLadder <- dColorVector(seq_len(11), colorScale = c("#0D0887FF", 
             "#6A00A8FF", "#900DA4FF", "#B12A90FF", "#CC4678FF", 
             "#E16462FF", "#F1844BFF", "#FCA636FF", "#FCCE25FF"))
         

@@ -153,12 +153,12 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     clusterFractionsForAllIds1 <- clusterTable1
     clusterFractionsForAllIds2 <- clusterTable2
     
-    for (i in 1:length(countTable1)) {
+    for (i in seq_len(length(countTable1))) {
         x <- clusterTable1[, i]/countTable1[i]
         clusterFractionsForAllIds1[, i] <- x
     }
     
-    for (i in 1:length(countTable2)) {
+    for (i in seq_len(length(countTable2))) {
         x <- clusterTable2[, i]/countTable2[i]
         clusterFractionsForAllIds2[, i] <- x
     }
@@ -184,7 +184,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     # Combine the four
     result <- data.frame(as.numeric(names(p_values)), median1, 
         median2, statistic, p_values, p_adjusted)
-    row.names(result) <- c(1:nrow(result))
+    row.names(result) <- c(seq_len(nrow(result)))
     colnames(result) <- c("Cluster", paste("Median percentage for", 
         groupName1, sep = " "), paste("Median percentage for", 
         groupName2, sep = " "), "Wilcoxon_statistic", "p-value", 
@@ -207,7 +207,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     medianClustDiff <- median1 - median2
     p_adjusted_log <- log10(p_adjusted)
     p_adjusted_log_inv <- p_adjusted_log
-    for (i in 1:length(p_adjusted_log)) {
+    for (i in seq_len(length(p_adjusted_log))) {
         if (medianClustDiff[i] > 0) {
             p_adjusted_log_inv[i] <- -p_adjusted_log[i]
         }
@@ -297,7 +297,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     if (createOutput == TRUE) {
         pdf(legendTitle)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
-        z <- matrix(1:9, nrow = 1)
+        z <- matrix(seq_len(9), nrow = 1)
         x <- 1
         y <- seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 9)
         image(x, y, z, col = colors, axes = FALSE, xlab = "", 

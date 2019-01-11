@@ -29,13 +29,13 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     registerDoSNOW(cl)
     
     interestingPenalties <- realPenalties
-    usedPositions <- 1:length(realPenalties)
+    usedPositions <- seq_len(length(realPenalties))
     
     while (iterTimesChunkSize < 20 || (iterTimesChunkSize < maxIter && 
         (std >= minARIImprovement || distanceBetweenMaxAndSecond > 
             0))) {
         ptm <- proc.time()
-        optimList <- foreach(i = 1:chunkSize, .packages = "DepecheR") %dopar% 
+        optimList <- foreach(i = seq_len(chunkSize), .packages = "DepecheR") %dopar% 
             grid_search(dataMat, k, interestingPenalties, 1, 
                 sampleSize, i)
         
@@ -43,7 +43,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
         # can result in a trivial solution are practically
         # eliminated.
         optimListNonTrivial <- optimList
-        for (i in 1:length(optimListNonTrivial)) {
+        for (i in seq_len(length(optimListNonTrivial))) {
             optimListNonTrivial[[i]]$d[which(optimList[[i]]$n == 
                 1)] <- 0
         }
@@ -55,7 +55,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
         } else {
             # First, the excluded values are included as NAs for each of
             # the iterations in the chunk
-            for (i in 1:length(optimListNonTrivial)) {
+            for (i in seq_len(length(optimListNonTrivial))) {
                 d <- rep("NA", length(optimListFull[[1]][[1]]))
                 d[usedPositions] <- optimListNonTrivial[[i]]$d
                 optimListNonTrivial[[i]]$d <- d
@@ -87,7 +87,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
         # the mean (or something like that) is retrieved
         meanOptimList <- list()
         stdOptimList <- list()
-        for (i in 1:4) {
+        for (i in seq_len(4)) {
             x <- do.call("rbind", lapply(optimListFull, "[[", 
                 i))
             xNumeric <- suppressWarnings(apply(x, 2, as.numeric))
@@ -162,16 +162,20 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
         
         # Here, the cluster center information for each run is saved:
         # First all cluster center information is saved in one place.
-        allClusterCenters <- sapply(optimListNonTrivial, "[", 
+        funval <- optimListNonTrivial[[1]][5]
+        allClusterCenters <- vapply(optimListNonTrivial, FUN.VALUE=funval, "[", 
             5)
         
         # Then each penalty and the solutions are reorganized and, if
         # iter>1, integrated with previous runs.
-        for (i in 1:length(allClusterCenters[[1]])) {
-            tempPenaltyList <- sapply(allClusterCenters, "[", 
+        for (i in seq_len(length(allClusterCenters[[1]]))) {
+          funval <- allClusterCenters[[1]][i]
+            tempPenaltyList <- vapply(allClusterCenters, FUN.VALUE=funval, "[", 
                 i)
-            tempClusterCenters <- c(sapply(tempPenaltyList, "[", 
-                1), sapply(tempPenaltyList, "[", 2))
+            funval1 <- allClusterCenters[[1]][2]
+            funval2 <- allClusterCenters[[1]][2]
+            tempClusterCenters <- c(vapply(tempPenaltyList, FUN.VALUE=funval1, "[", 
+                1), vapply(tempPenaltyList, FUN.VALUE=funval2, "[", 2))
             
             if (iter == 1) {
                 allClusterCentersPenaltySorted[[i]] <- tempClusterCenters
@@ -209,7 +213,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     # optimal penalty with the even number among the two most
     # centrally placed, in the case of an even number of optimal
     # solutions.
-    penaltyOpt.df <- data.frame(bestPenalty = optimalPenalties[round(mean(c(1:length(optimalPenalties))))], 
+    penaltyOpt.df <- data.frame(bestPenalty = optimalPenalties[round(mean(c(seq_len(length(optimalPenalties)))))], 
         k)
     
     lowestPenalty <- roundPenalties[1]

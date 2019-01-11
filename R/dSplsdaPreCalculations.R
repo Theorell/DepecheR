@@ -67,12 +67,12 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector,
     clusterFractionsForAllIds2 <- clusterTable2
     
     
-    for (i in 1:length(countTable1)) {
+    for (i in seq_len(length(countTable1))) {
         x <- clusterTable1[, i]/countTable1[i]
         clusterFractionsForAllIds1[, i] <- x
     }
     
-    for (i in 1:length(countTable2)) {
+    for (i in seq_len(length(countTable2))) {
         x <- clusterTable2[, i]/countTable2[i]
         clusterFractionsForAllIds2[, i] <- x
     }
@@ -88,14 +88,14 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector,
         
         pairingShortGroup1 <- clusterFractionsForAllIds1[1, ]
         
-        for (i in 1:ncol(clusterFractionsForAllIds1)) {
+        for (i in seq_len(ncol(clusterFractionsForAllIds1))) {
             pairingShortGroup1[i] <- pairingVectorGroup1[which(colnames(clusterFractionsForAllIds1)[i] == 
                 idsVectorGroup1)[1]]
         }
         
         pairingShortGroup2 <- clusterFractionsForAllIds2[1, ]
         
-        for (i in 1:ncol(clusterFractionsForAllIds2)) {
+        for (i in seq_len(ncol(clusterFractionsForAllIds2))) {
             pairingShortGroup2[i] <- pairingVectorGroup2[which(colnames(clusterFractionsForAllIds2)[i] == 
                 idsVectorGroup2)[1]]
         }
@@ -119,7 +119,7 @@ dSplsdaPreCalculations <- function(clusterVector, idsVector,
     # to five, but if the number of clusters is low, the lowest
     # tested variant will be 1 and that will be tested only once.
     testKeepAlternatives <- vector()
-    for (i in 1:5) {
+    for (i in seq_len(5)) {
         if (i == 1) {
             testKeepAlternatives[i] <- nrow(clusterFractionsForAllIds)
         } else {

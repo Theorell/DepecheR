@@ -123,7 +123,8 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
             colorScale = "rich_colors", order = c(0:100))
         if (multiCore == "default") {
             if (nrow(colorData) > 1e+05) {
-                multiCore <- TRUExYData <- dScale(xYData, scale = c(0, 
+                multiCore <- TRUE
+                xYData <- dScale(xYData, scale = c(0, 
                   1), robustVarScale = FALSE, center = FALSE)
             } else {
                 multiCore <- FALSE
@@ -133,7 +134,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
             no_cores <- detectCores() - 1
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
-            foreach(i = 1:ncol(colorVectors), .inorder = FALSE) %dopar% 
+            foreach(i = seq_len(ncol(colorVectors)), .inorder = FALSE) %dopar% 
                 dColorPlotCoFunction(colorVariable = colorVectors[, 
                   i], name = names[i], xYData = xYData, title = title, 
                   densContour = densContour, bandColor = bandColor, 

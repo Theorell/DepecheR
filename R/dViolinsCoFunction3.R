@@ -33,4 +33,5 @@ dViolinsCoFunction3 <- function(allClustOneVarOneMuList, plotAll,
             ggsave(filename = plotname, dpi = 300)
         }
     }
+  return(1)
 }

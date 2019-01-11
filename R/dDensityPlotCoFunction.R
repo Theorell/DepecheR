@@ -35,7 +35,7 @@ dDensityPlotCoFunction <- function(xYData, multipleColors = FALSE,
         colors <- colorList[[length(colorList) - 1]]
         color <- colorList[[length(colorList)]]
         dfList <- list()
-        for (i in 1:length(colors)) {
+        for (i in seq_len(length(colors))) {
             x1 <- xYData[color == colors[i], 1]
             x2 <- xYData[color == colors[i], 2]
             df <- data.frame(x1, x2)

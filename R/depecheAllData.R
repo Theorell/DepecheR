@@ -15,7 +15,7 @@ depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber = 1,
     
     cl <- makeCluster(n_cores, type = "SOCK")
     registerDoSNOW(cl)
-    return_all <- foreach(i = 1:21, .packages = "DepecheR") %dopar% 
+    return_all <- foreach(i = seq_len(21), .packages = "DepecheR") %dopar% 
         sparse_k_means(dataMat, round(k * 3), penaltyForRightSize, 
             1, i)
     
@@ -24,7 +24,7 @@ depecheAllData <- function(inDataFrameScaled, penalty, firstClusterNumber = 1,
     
     logMaxLik <- as.vector(do.call("rbind", lapply(return_all, 
         "[[", 5)))
-    nClust <- sapply(return_all, function(x) sum(rowSums(x[[3]] != 
+    nClust <- vapply(return_all, FUN.VALUE=1, function(x) sum(rowSums(x[[3]] != 
         0) != 0))
     logMaxLikNotOne <- logMaxLik[which(nClust > 1)]
     maxN <- max(logMaxLikNotOne)

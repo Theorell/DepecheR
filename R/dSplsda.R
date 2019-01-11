@@ -254,7 +254,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     median1 <- apply(group1Data, 1, median)
     median2 <- apply(group2Data, 1, median)
     correctSPLSDALoadings <- absSPLSDALoadings
-    for (i in 1:nrow(group1Data)) {
+    for (i in seq_len(nrow(group1Data))) {
         if (median1[i] >= median2[i]) {
             correctSPLSDALoadings[i] <- absSPLSDALoadings[i]
         } else {
@@ -274,7 +274,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         clusterVectorUsed <- clusterVector
     }
     
-    for (i in 1:nrow(correctSPLSDALoadings)) {
+    for (i in seq_len(nrow(correctSPLSDALoadings))) {
         statisticVector[clusterVectorUsed == rownames(correctSPLSDALoadings)[i]] <- correctSPLSDALoadings[i]
     }
     
@@ -343,7 +343,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     if (createOutput == TRUE) {
         pdf(legendTitle)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
-        z <- matrix(1:9, nrow = 1)
+        z <- matrix(seq_len(9), nrow = 1)
         x <- 1
         y <- seq(-1, 1, len = 9)
         image(x, y, z, col = colors, axes = FALSE, xlab = "", 

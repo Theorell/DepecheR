@@ -74,7 +74,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     
     clusterPercentagesForGroups <- clusterTable
     
-    for (i in 1:length(countTable)) {
+    for (i in seq_len(length(countTable))) {
         x <- 100 * clusterTable[, i]/countTable[i]
         clusterPercentagesForGroups[, i] <- x
     }
@@ -101,7 +101,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     # is generated, but where the cluster info has been
     # substituted with the statistic.
     residualVectorLong <- clusterVector
-    for (i in 1:length(residualVector)) {
+    for (i in seq_len(length(residualVector))) {
         residualVectorLong[clusterVector == names(residualVector)[i]] <- residualVector[i]
     }
     
@@ -178,7 +178,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     if (createPlot == TRUE) {
         pdf(legendTitle)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
-        z <- matrix(1:9, nrow = 1)
+        z <- matrix(seq_len(9), nrow = 1)
         x <- 1
         y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
             len = 9)
