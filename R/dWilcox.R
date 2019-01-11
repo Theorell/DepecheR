@@ -56,19 +56,23 @@
 #' # the data is used for the Wilcoxon calculations
 #' dWilcoxResult <- dWilcox(
 #'   xYData = testDataSNESubset, idsVector = testData$ids,
-#'   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, displayVector = subsetVector
-#' )
+#'   groupVector = testData$label, clusterVector = 
+#'   testDataDepeche$clusterVector, displayVector = subsetVector)
 #' @export dWilcox
-dWilcox <- function(xYData, idsVector, groupVector, clusterVector, 
-    displayVector, paired = FALSE, multipleCorrMethod = "hochberg", 
-    densContour = TRUE, name = "default", groupName1 = unique(groupVector)[1], 
-    groupName2 = unique(groupVector)[2], title = FALSE, lowestPlottedP = 0.05, 
-    createDirectory = FALSE, directoryName = "dWilcox", bandColor = "black", 
-    dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE) {
+dWilcox <- function(xYData, idsVector, groupVector, 
+    clusterVector, displayVector, paired = FALSE, 
+    multipleCorrMethod = "hochberg", densContour = TRUE, 
+    name = "default", groupName1 = unique(groupVector)[1], 
+    groupName2 = unique(groupVector)[2], 
+    title = FALSE, lowestPlottedP = 0.05, 
+    createDirectory = FALSE, directoryName = "dWilcox", 
+    bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
+    createOutput = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
         workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, sep = "/"))
+        setwd(paste(workingDirectory, directoryName, 
+            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -84,30 +88,37 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     }
     
     if (name == "default") {
-        name <- paste0(groupName1, "_vs_", groupName2)
+        name <- paste0(groupName1, "_vs_", 
+            groupName2)
     }
     
-    # Here, the statistical evaluation is performed.  First, the
-    # data is divided into each group.
-    clusterVectorGroup1 <- clusterVector[groupVector == unique(groupVector)[1]]
-    clusterVectorGroup2 <- clusterVector[groupVector == unique(groupVector)[2]]
+    # Here, the statistical evaluation is
+    # performed.  First, the data is divided
+    # into each group.
+    clusterVectorGroup1 <- clusterVector[groupVector == 
+        unique(groupVector)[1]]
+    clusterVectorGroup2 <- clusterVector[groupVector == 
+        unique(groupVector)[2]]
     idsVectorGroup1 <- as.character(idsVector[groupVector == 
         unique(groupVector)[1]])
     idsVectorGroup2 <- as.character(idsVector[groupVector == 
         unique(groupVector)[2]])
     
-    # Now, a table with the percentage of cells in each cluster
-    # for each individual is created for both groups, in analogy
-    # with XXX pKMRun.
+    # Now, a table with the percentage of
+    # cells in each cluster for each
+    # individual is created for both groups,
+    # in analogy with XXX pKMRun.
     
     clusterTable1 <- as.matrix(as.data.frame.matrix(table(clusterVectorGroup1, 
         idsVectorGroup1)))
     clusterTable2 <- as.matrix(as.data.frame.matrix(table(clusterVectorGroup2, 
         idsVectorGroup2)))
     
-    # In the very unlikely event that there is not a single
-    # observation for one cluster from one of the groups, this
-    # cluster is substituted to that table with a row of zeros.
+    # In the very unlikely event that there
+    # is not a single observation for one
+    # cluster from one of the groups, this
+    # cluster is substituted to that table
+    # with a row of zeros.
     if (nrow(clusterTable1) < length(unique(clusterVector))) {
         zeroMat <- matrix(data = 0, nrow = length(unique(clusterVector)) - 
             nrow(clusterTable1), ncol = ncol(clusterTable1))
@@ -116,10 +127,12 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         allRowNames <- as.character(sort(unique(clusterVector)))
         row.names(zeroMat) <- allRowNames[-which(allRowNames %in% 
             row.names(clusterTable1))]
-        # Here, rows are added to the cluster table to make the
-        # number of rows the same as the unique values of the cluster
-        # vector.
-        clusterTable1big <- rbind(clusterTable1, zeroMat)
+        # Here, rows are added to the cluster
+        # table to make the number of rows the
+        # same as the unique values of the
+        # cluster vector.
+        clusterTable1big <- rbind(clusterTable1, 
+            zeroMat)
         
         # The rows of the table are re-sorted
         clusterTable1bigResorted <- clusterTable1big[order(as.numeric(row.names(clusterTable1big))), 
@@ -127,7 +140,8 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         clusterTable1 <- clusterTable1bigResorted
     }
     
-    # And the same procedure is done for the second group
+    # And the same procedure is done for the
+    # second group
     if (nrow(clusterTable2) < length(unique(clusterVector))) {
         zeroMat <- matrix(data = 0, nrow = length(unique(clusterVector)) - 
             nrow(clusterTable2), ncol = ncol(clusterTable2))
@@ -136,10 +150,12 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         allRowNames <- as.character(sort(unique(clusterVector)))
         row.names(zeroMat) <- allRowNames[-which(allRowNames %in% 
             row.names(clusterTable2))]
-        # Here, rows are added to the cluster table to make the
-        # number of rows the same as the unique values of the cluster
-        # vector.
-        clusterTable2big <- rbind(clusterTable2, zeroMat)
+        # Here, rows are added to the cluster
+        # table to make the number of rows the
+        # same as the unique values of the
+        # cluster vector.
+        clusterTable2big <- rbind(clusterTable2, 
+            zeroMat)
         
         # The rows of the table are re-sorted
         clusterTable2bigResorted <- clusterTable2big[order(as.numeric(row.names(clusterTable2big))), 
@@ -163,37 +179,50 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         clusterFractionsForAllIds2[, i] <- x
     }
     
-    # And here the statistical test is performed for each cluster
-    # individually
-    statisticList <- mapply(wilcox.test, as.data.frame.matrix(t(clusterFractionsForAllIds1)), 
+    # And here the statistical test is
+    # performed for each cluster individually
+    statisticList <- mapply(wilcox.test, 
+        as.data.frame.matrix(t(clusterFractionsForAllIds1)), 
         as.data.frame.matrix(t(clusterFractionsForAllIds2)), 
-        MoreArgs = list(alternative = "two.sided", paired = paired, 
-            exact = FALSE), SIMPLIFY = FALSE)
+        MoreArgs = list(alternative = "two.sided", 
+            paired = paired, exact = FALSE), 
+        SIMPLIFY = FALSE)
     
-    # Now, the statistics and the p-values are retrieved
-    statistic <- unlist(lapply(statisticList, `[[`, 1))
-    p_values <- unlist(lapply(statisticList, `[[`, 3))
+    # Now, the statistics and the p-values
+    # are retrieved
+    statistic <- unlist(lapply(statisticList, 
+        `[[`, 1))
+    p_values <- unlist(lapply(statisticList, 
+        `[[`, 3))
     
-    # Here, adjustments for multiple comparisons are performed
+    # Here, adjustments for multiple
+    # comparisons are performed
     p_adjusted <- p.adjust(p_values, method = multipleCorrMethod)
     
-    # Now the median for each group and cluster is calculated
-    median1 <- 100 * apply(clusterFractionsForAllIds1, 1, median)
-    median2 <- 100 * apply(clusterFractionsForAllIds2, 1, median)
+    # Now the median for each group and
+    # cluster is calculated
+    median1 <- 100 * apply(clusterFractionsForAllIds1, 
+        1, median)
+    median2 <- 100 * apply(clusterFractionsForAllIds2, 
+        1, median)
     
     # Combine the four
-    result <- data.frame(as.numeric(names(p_values)), median1, 
-        median2, statistic, p_values, p_adjusted)
+    result <- data.frame(as.numeric(names(p_values)), 
+        median1, median2, statistic, p_values, 
+        p_adjusted)
     row.names(result) <- c(seq_len(nrow(result)))
     colnames(result) <- c("Cluster", paste("Median percentage for", 
         groupName1, sep = " "), paste("Median percentage for", 
-        groupName2, sep = " "), "Wilcoxon_statistic", "p-value", 
-        paste(multipleCorrMethod, "corrected p-value", sep = " "))
+        groupName2, sep = " "), "Wilcoxon_statistic", 
+        "p-value", paste(multipleCorrMethod, 
+            "corrected p-value", sep = " "))
     
-    # Here, a vector with the same length as the cluster vector
-    # is generated, but where the cluster info has been
-    # substituted with the statistic.  If a displayVector has
-    # been included, it is used here, to subset the clusterVector
+    # Here, a vector with the same length as
+    # the cluster vector is generated, but
+    # where the cluster info has been
+    # substituted with the statistic.  If a
+    # displayVector has been included, it is
+    # used here, to subset the clusterVector
     if (missing(displayVector) == FALSE) {
         pVector <- clusterVector[displayVector]
         clusterVectorUsed <- clusterVector[displayVector]
@@ -202,8 +231,8 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         clusterVectorUsed <- clusterVector
     }
     
-    # Here, the p-values are transformed to be useful for
-    # plotting
+    # Here, the p-values are transformed to
+    # be useful for plotting
     medianClustDiff <- median1 - median2
     p_adjusted_log <- log10(p_adjusted)
     p_adjusted_log_inv <- p_adjusted_log
@@ -214,11 +243,14 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         pVector[clusterVectorUsed == result$Cluster[i]] <- p_adjusted_log_inv[i]
     }
     
-    # Here the data that will be used for plotting is scaled.
+    # Here the data that will be used for
+    # plotting is scaled.
     colnames(xYData) <- c("V1", "V2")
     
-    # Here, the maximum values for the plotting are defined. If
-    # not added by the user, they are obtained from the data.
+    # Here, the maximum values for the
+    # plotting are defined. If not added by
+    # the user, they are obtained from the
+    # data.
     
     if (min(p_adjusted) < lowestPlottedP) {
         print(paste("NB!, The lowest p-value with this dataset was ", 
@@ -227,18 +259,23 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         lowestPlottedP <- min(p_adjusted)
     }
     
-    # Now, the lowest value is log-transformed
+    # Now, the lowest value is
+    # log-transformed
     lowestPlottedPLog <- log10(lowestPlottedP)
-    # Here, the breaks for the color interpretation are created
-    brks <- seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 10)
+    # Here, the breaks for the color
+    # interpretation are created
+    brks <- seq(lowestPlottedPLog, -lowestPlottedPLog, 
+        length.out = 10)
     
     # assign each value to a bin
     grps <- cut(pVector, breaks = brks, include.lowest = TRUE)
-    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
+    colors <- colorRampPalette(c("#FF0000", 
+        "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
     # Here the scale is created
-    scaleHighPart <- 10^seq(0, lowestPlottedPLog, len = 3)
+    scaleHighPart <- 10^seq(0, lowestPlottedPLog, 
+        len = 3)
     scaleLowPart <- rev(scaleHighPart[2:3])
     plotScale <- c(scaleLowPart, scaleHighPart)
     
@@ -249,39 +286,50 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         }
     }
     if (length(densContour) > 1) {
-        xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
-        ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
+        xlim <- c(min(densContour[[1]]), 
+            max(densContour[[1]]))
+        ylim <- c(min(densContour[[2]]), 
+            max(densContour[[2]]))
     } else {
         minX <- min(xYData[, 1])
         maxX <- max(xYData[, 1])
         minY <- min(xYData[, 2])
         maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 
-            0.05))
-        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 
-            0.05))
+        xlim <- c(minX - abs(minX * 0.05), 
+            maxX + abs(maxX * 0.05))
+        ylim <- c(minY - abs(minY * 0.05), 
+            maxY + abs(maxY * 0.05))
     }
     
-    png(paste(name, "_Wilcox_result.png", sep = ""), width = 2500, 
-        height = 2500, units = "px", bg = "transparent")
+    png(paste(name, "_Wilcox_result.png", 
+        sep = ""), width = 2500, height = 2500, 
+        units = "px", bg = "transparent")
     if (createOutput == TRUE) {
         if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, main = name, pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = name, pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, main = "", pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = "", pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), 
-                new = TRUE)
-            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
-                xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
-                lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
-                yaxs = "i")
+            par(fig = c(0, 1, 0, 1), mar = c(6, 
+                4.5, 4.5, 2.5), new = TRUE)
+            contour(x = densContour$x, y = densContour$y, 
+                z = densContour$z, xlim = xlim, 
+                ylim = ylim, nlevels = 10, 
+                col = bandColor, lwd = 8, 
+                drawlabels = FALSE, axes = FALSE, 
+                xaxs = "i", yaxs = "i")
         }
     }
     dev.off()
@@ -289,31 +337,36 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     
     yname <- paste(multipleCorrMethod, " corrected p-values", 
         sep = "")
-    topText <- paste(groupName1, " is more abundant", sep = "")
-    bottomText <- paste(groupName2, " is more abundant", sep = "")
-    legendTitle <- paste("Color scale for", name, "Wilcoxon analysis.pdf", 
-        sep = " ")
+    topText <- paste(groupName1, " is more abundant", 
+        sep = "")
+    bottomText <- paste(groupName2, " is more abundant", 
+        sep = "")
+    legendTitle <- paste("Color scale for", 
+        name, "Wilcoxon analysis.pdf", sep = " ")
     
     if (createOutput == TRUE) {
         pdf(legendTitle)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
         z <- matrix(seq_len(9), nrow = 1)
         x <- 1
-        y <- seq(lowestPlottedPLog, -lowestPlottedPLog, length.out = 9)
-        image(x, y, z, col = colors, axes = FALSE, xlab = "", 
-            ylab = yname)
+        y <- seq(lowestPlottedPLog, -lowestPlottedPLog, 
+            length.out = 9)
+        image(x, y, z, col = colors, axes = FALSE, 
+            xlab = "", ylab = yname)
         text(0.32, -lowestPlottedPLog, labels = (round(plotScale[5], 
             digits = 5)))
-        text(0.32, -lowestPlottedPLog/2, labels = (round(plotScale[4], 
-            digits = 5)))
+        text(0.32, -lowestPlottedPLog/2, 
+            labels = (round(plotScale[4], 
+                digits = 5)))
         text(x = 0.32, y = 0, labels = 1)
         text(0.32, lowestPlottedPLog/2, labels = (round(plotScale[2], 
             digits = 5)))
         text(0.32, lowestPlottedPLog, labels = (round(plotScale[1], 
             digits = 5)))
-        text(1, -lowestPlottedPLog * 1.2, labels = topText, cex = 1.1)
-        text(1, lowestPlottedPLog * 1.2, labels = bottomText, 
-            cex = 1.1)
+        text(1, -lowestPlottedPLog * 1.2, 
+            labels = topText, cex = 1.1)
+        text(1, lowestPlottedPLog * 1.2, 
+            labels = bottomText, cex = 1.1)
         box()
         dev.off()
     }
@@ -321,15 +374,16 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     
     if (createOutput == TRUE) {
         name
-        write.csv(result, file = paste0(name, "_WilcoxResult.csv"), 
-            row.names = FALSE)
+        write.csv(result, file = paste0(name, 
+            "_WilcoxResult.csv"), row.names = FALSE)
     }
     
     if (createDirectory == TRUE) {
         setwd(workingDirectory)
     }
     
-    print(paste0("Files were saved at ", getwd()))
+    print(paste0("Files were saved at ", 
+        getwd()))
     
     return(result)
 }

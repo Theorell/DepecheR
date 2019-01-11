@@ -90,16 +90,20 @@
 #'   testSampleRows = testDataRows
 #' )
 #' @export dSplsda
-dSplsda <- function(xYData, idsVector, groupVector, clusterVector, 
-    displayVector, testSampleRows, paired = FALSE, densContour = TRUE, 
-    name = "default", groupName1 = unique(groupVector)[1], groupName2 = unique(groupVector)[2], 
-    thresholdMisclassRate = 0.05, title = FALSE, createDirectory = FALSE, 
-    directoryName = "dSplsda", bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
+dSplsda <- function(xYData, idsVector, groupVector, 
+    clusterVector, displayVector, testSampleRows, 
+    paired = FALSE, densContour = TRUE, name = "default", 
+    groupName1 = unique(groupVector)[1], 
+    groupName2 = unique(groupVector)[2], 
+    thresholdMisclassRate = 0.05, title = FALSE, 
+    createDirectory = FALSE, directoryName = "dSplsda", 
+    bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
     createOutput = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
         workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, sep = "/"))
+        setwd(paste(workingDirectory, directoryName, 
+            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -111,21 +115,30 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     }
     
     if (name == "default") {
-        name <- paste0(groupName1, "_vs_", groupName2)
+        name <- paste0(groupName1, "_vs_", 
+            groupName2)
     }
     
     if (paired == TRUE) {
-        # As the algorithm does not like repeated ids, if the id
-        # vector contains the same values for the first group and the
-        # second, a new id vector is introduced here
-        if (identical(unique(idsVector[groupVector == unique(groupVector)[1]]), 
-            unique(idsVector[groupVector == unique(groupVector)[2]]))) {
+        # As the algorithm does not like repeated
+        # ids, if the id vector contains the same
+        # values for the first group and the
+        # second, a new id vector is introduced
+        # here
+        if (identical(unique(idsVector[groupVector == 
+            unique(groupVector)[1]]), unique(idsVector[groupVector == 
+            unique(groupVector)[2]]))) {
             pairingVector <- idsVector
-            idsVector <- paste0(idsVector, groupVector)
-        } else if (length(unique(idsVector[groupVector == unique(groupVector)[1]])) == 
-            length(unique(idsVector[groupVector == unique(groupVector)[2]]))) {
-            pairingVector <- c(idsVector[groupVector == unique(groupVector)[1]], 
-                idsVector[groupVector == unique(groupVector)[1]])
+            idsVector <- paste0(idsVector, 
+                groupVector)
+        } else if (length(unique(idsVector[groupVector == 
+            unique(groupVector)[1]])) == 
+            length(unique(idsVector[groupVector == 
+                unique(groupVector)[2]]))) {
+            pairingVector <- c(idsVector[groupVector == 
+                unique(groupVector)[1]], 
+                idsVector[groupVector == 
+                  unique(groupVector)[1]])
         } else {
             print("Pairing cannot be performed, as the first and second datasets contain different number of individual Ids")
         }
@@ -158,40 +171,53 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     
     if (paired == FALSE) {
         dSplsdaInData <- dSplsdaPreCalculations(clusterVectorTrain, 
-            idsVectorTrain, groupVectorTrain, groupName1 = groupName1, 
-            groupName2 = groupName2)
+            idsVectorTrain, groupVectorTrain, 
+            groupName1 = groupName1, groupName2 = groupName2)
     } else {
         dSplsdaInData <- dSplsdaPreCalculations(clusterVectorTrain, 
-            idsVectorTrain, groupVectorTrain, groupName1 = groupName1, 
-            groupName2 = groupName2, pairingVector = pairingVectorTrain)
+            idsVectorTrain, groupVectorTrain, 
+            groupName1 = groupName1, groupName2 = groupName2, 
+            pairingVector = pairingVectorTrain)
     }
     
-    # Here, the number of clusters that should be kept in the
-    # sPLS-DA is chosen
-    nVarSPLSDA <- tune.splsda(X = t(dSplsdaInData[[1]]), Y = dSplsdaInData[[2]], 
-        ncomp = 1, logratio = "none", test.keepX = dSplsdaInData[[3]], 
-        validation = "loo", dist = "mahalanobis.dist", multilevel = dSplsdaInData[[4]])
+    # Here, the number of clusters that
+    # should be kept in the sPLS-DA is chosen
+    nVarSPLSDA <- tune.splsda(X = t(dSplsdaInData[[1]]), 
+        Y = dSplsdaInData[[2]], ncomp = 1, 
+        logratio = "none", test.keepX = dSplsdaInData[[3]], 
+        validation = "loo", dist = "mahalanobis.dist", 
+        multilevel = dSplsdaInData[[4]])
     
-    # And here the sPLS-DA is performed. Scaling is performed
-    # internally in the algorithm. The number of components is
-    # set to one, as this situation is by far the most
-    # interpretable.
-    sPLSDAObject <- splsda(X = t(dSplsdaInData[[1]]), Y = dSplsdaInData[[2]], 
-        ncomp = 1, keepX = nVarSPLSDA$choice.keepX, multilevel = dSplsdaInData[[4]])
+    # And here the sPLS-DA is performed.
+    # Scaling is performed internally in the
+    # algorithm. The number of components is
+    # set to one, as this situation is by far
+    # the most interpretable.
+    sPLSDAObject <- splsda(X = t(dSplsdaInData[[1]]), 
+        Y = dSplsdaInData[[2]], ncomp = 1, 
+        keepX = nVarSPLSDA$choice.keepX, 
+        multilevel = dSplsdaInData[[4]])
     
     # Retrieve the x variates for plotting
-    sPLSDAX <- data.frame(sPLSDAObject$variates$X)
-    densityHist <- cbind(sPLSDAX, dSplsdaInData[[2]])
+    sPLSDA_vector <- data.frame(sPLSDAObject$variates$X)
+    Group <- dSplsdaInData[[2]]
+    densityHist <- cbind(sPLSDA_vector, Group)
     
-    colnames(densityHist) <- c("sPLSDA_vector", "Group")
+    colnames(densityHist) <- c("sPLSDA_vector", 
+        "Group")
     
-    # Density plots with semi-transparent fill
-    ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) + 
-        geom_density(adjust = 0.2, alpha = 0.4) + scale_fill_manual(values = c("red", 
+    # Density plots with semi-transparent
+    # fill
+    ggplot(densityHist, aes(x = sPLSDA_vector, 
+        fill = Group)) + geom_density(adjust = 0.2, 
+        alpha = 0.4) + scale_fill_manual(values = c("red", 
         "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector) - 
-        abs(max(densityHist$sPLSDA_vector) - min(densityHist$sPLSDA_vector)) * 
-            0.3, max(densityHist$sPLSDA_vector) + abs(max(densityHist$sPLSDA_vector) - 
-        min(densityHist$sPLSDA_vector)) * 0.3)) + theme(line = element_blank(), 
+        abs(max(densityHist$sPLSDA_vector) - 
+            min(densityHist$sPLSDA_vector)) * 
+            0.3, max(densityHist$sPLSDA_vector) + 
+        abs(max(densityHist$sPLSDA_vector) - 
+            min(densityHist$sPLSDA_vector)) * 
+            0.3)) + theme(line = element_blank(), 
         panel.background = element_rect(fill = "white"))
     if (createOutput == TRUE) {
         ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", 
@@ -201,16 +227,20 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     # Retrieve the sparse loadings
     sPLSDALoadings <- sPLSDAObject$loadings$X
     
-    # Here, the maximum values for the plotting are defined. If
-    # not added by the user, they are related to the overlap
-    # between the populations.  Furthermore, the data is
-    # re-scaled in here, to be more visually understandable.
+    # Here, the maximum values for the
+    # plotting are defined. If not added by
+    # the user, they are related to the
+    # overlap between the populations.
+    # Furthermore, the data is re-scaled in
+    # here, to be more visually
+    # understandable.
     group1SplsDa <- densityHist$sPLSDA_vector[which(densityHist$Group == 
         groupName1)]
     group2SplsDa <- densityHist$sPLSDA_vector[which(densityHist$Group == 
         groupName2)]
     
-    # Now, the border between the populations is defined
+    # Now, the border between the populations
+    # is defined
     
     if (min(group1SplsDa) > min(group2SplsDa)) {
         lowGroup <- group2SplsDa
@@ -219,10 +249,12 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         lowGroup <- group1SplsDa
         highGroup <- group2SplsDa
     }
-    groupBorder <- (quantile(lowGroup, probs = 0.75) + quantile(highGroup, 
-        probs = 0.25))/2
-    lowErrors <- length(which(highGroup < groupBorder))
-    highErrors <- length(which(lowGroup > groupBorder))
+    groupBorder <- (quantile(lowGroup, probs = 0.75) + 
+        quantile(highGroup, probs = 0.25))/2
+    lowErrors <- length(which(highGroup < 
+        groupBorder))
+    highErrors <- length(which(lowGroup > 
+        groupBorder))
     misclassRate <- (lowErrors + highErrors)/sum(length(highGroup), 
         length(lowGroup))
     if (max(lowGroup) < min(highGroup)) {
@@ -231,21 +263,25 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         absSPLSDALoadings <- abs(sPLSDALoadings)
     } else if (misclassRate <= thresholdMisclassRate) {
         print(paste("The separation of the datasets was very clear, with the misclassification rate being ", 
-            round(100 * misclassRate), " percent", sep = ""))
+            round(100 * misclassRate), " percent", 
+            sep = ""))
         lowestPlottedOverlap <- misclassRate
         absSPLSDALoadings <- abs(sPLSDALoadings)
     } else {
         print(paste("The separation of the datasets was not clear, with the misclassification rate being ", 
-            round(100 * misclassRate), " percent", sep = ""))
+            round(100 * misclassRate), " percent", 
+            sep = ""))
         scalingValue <- thresholdMisclassRate/misclassRate
-        absSPLSDALoadings <- abs(sPLSDALoadings * scalingValue)
+        absSPLSDALoadings <- abs(sPLSDALoadings * 
+            scalingValue)
     }
     
     
-    # Now, the sign is changed of the splsda-loadings, to make
-    # the function generate a similar visual output to the
-    # dWilcox function.  Now the median for each group and
-    # cluster is calculated
+    # Now, the sign is changed of the
+    # splsda-loadings, to make the function
+    # generate a similar visual output to the
+    # dWilcox function.  Now the median for
+    # each group and cluster is calculated
     group1Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) == 
         groupName1)]
     group2Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) == 
@@ -262,10 +298,12 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         }
     }
     
-    # Here, a vector with the same length as the cluster vector
-    # is generated, but where the cluster info has been
-    # substituted with the statistic.  If a displayVector has
-    # been included, it is used here, to subset the clusterVector
+    # Here, a vector with the same length as
+    # the cluster vector is generated, but
+    # where the cluster info has been
+    # substituted with the statistic.  If a
+    # displayVector has been included, it is
+    # used here, to subset the clusterVector
     if (missing(displayVector) == FALSE) {
         statisticVector <- clusterVector[displayVector]
         clusterVectorUsed <- clusterVector[displayVector]
@@ -275,17 +313,21 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     }
     
     for (i in seq_len(nrow(correctSPLSDALoadings))) {
-        statisticVector[clusterVectorUsed == rownames(correctSPLSDALoadings)[i]] <- correctSPLSDALoadings[i]
+        statisticVector[clusterVectorUsed == 
+            rownames(correctSPLSDALoadings)[i]] <- correctSPLSDALoadings[i]
     }
     
-    # Here the data that will be used for plotting is scaled.
+    # Here the data that will be used for
+    # plotting is scaled.
     colnames(xYData) <- c("V1", "V2")
     
     brks <- seq(-1, 1, length.out = 10)
     
     # assign each value to a bin
-    grps <- cut(statisticVector, breaks = brks, include.lowest = TRUE)
-    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
+    grps <- cut(statisticVector, breaks = brks, 
+        include.lowest = TRUE)
+    colors <- colorRampPalette(c("#FF0000", 
+        "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
     # Create the density matrix for xYData.
@@ -295,50 +337,63 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         }
     }
     if (length(densContour) > 1) {
-        xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
-        ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
+        xlim <- c(min(densContour[[1]]), 
+            max(densContour[[1]]))
+        ylim <- c(min(densContour[[2]]), 
+            max(densContour[[2]]))
     } else {
         minX <- min(xYData[, 1])
         maxX <- max(xYData[, 1])
         minY <- min(xYData[, 2])
         maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 
-            0.05))
-        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 
-            0.05))
+        xlim <- c(minX - abs(minX * 0.05), 
+            maxX + abs(maxX * 0.05))
+        ylim <- c(minY - abs(minY * 0.05), 
+            maxY + abs(maxY * 0.05))
     }
     
-    png(paste(name, "_sPLSDA_result.png", sep = ""), width = 2500, 
-        height = 2500, units = "px", bg = "transparent")
+    png(paste(name, "_sPLSDA_result.png", 
+        sep = ""), width = 2500, height = 2500, 
+        units = "px", bg = "transparent")
     if (createOutput == TRUE) {
         if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, main = name, pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = name, pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         
         if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, main = "", pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = "", pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), 
-                new = TRUE)
-            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
-                xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
-                lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
-                yaxs = "i")
+            par(fig = c(0, 1, 0, 1), mar = c(6, 
+                4.5, 4.5, 2.5), new = TRUE)
+            contour(x = densContour$x, y = densContour$y, 
+                z = densContour$z, xlim = xlim, 
+                ylim = ylim, nlevels = 10, 
+                col = bandColor, lwd = 8, 
+                drawlabels = FALSE, axes = FALSE, 
+                xaxs = "i", yaxs = "i")
         }
     }
     dev.off()
     # Create a color legend with text
     
     yname <- "Misclass-corrected sPLS-DA loadings"
-    topText <- paste(groupName1, " is more abundant", sep = "")
-    bottomText <- paste(groupName2, " is more abundant", sep = "")
-    legendTitle <- paste("Color scale for", name, "sPLS-DA analysis.pdf", 
-        sep = " ")
+    topText <- paste(groupName1, " is more abundant", 
+        sep = "")
+    bottomText <- paste(groupName2, " is more abundant", 
+        sep = "")
+    legendTitle <- paste("Color scale for", 
+        name, "sPLS-DA analysis.pdf", sep = " ")
     
     if (createOutput == TRUE) {
         pdf(legendTitle)
@@ -346,20 +401,24 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         z <- matrix(seq_len(9), nrow = 1)
         x <- 1
         y <- seq(-1, 1, len = 9)
-        image(x, y, z, col = colors, axes = FALSE, xlab = "", 
-            ylab = yname)
+        image(x, y, z, col = colors, axes = FALSE, 
+            xlab = "", ylab = yname)
         axis(2)
-        text(1, 1 * 1.2, labels = topText, cex = 1.1)
-        text(1, -1 * 1.2, labels = bottomText, cex = 1.1)
+        text(1, 1 * 1.2, labels = topText, 
+            cex = 1.1)
+        text(1, -1 * 1.2, labels = bottomText, 
+            cex = 1.1)
         box()
         dev.off()
     }
     
-    # Return data from the sPLS-DA that was needed for the
-    # generation of the graphs
+    # Return data from the sPLS-DA that was
+    # needed for the generation of the graphs
     if (createOutput == TRUE) {
-        write.csv(sPLSDALoadings, paste0(name, "_sPLSDALoadings.csv"))
-        write.csv(sPLSDAX, paste0(name, "_sPLSDAVariatesX.csv"))
+        write.csv(sPLSDALoadings, paste0(name, 
+            "_sPLSDALoadings.csv"))
+        write.csv(sPLSDA_vector, paste0(name, 
+            "_sPLSDA_vector.csv"))
     }
     
     
@@ -367,37 +426,49 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         setwd(workingDirectory)
     }
     
-    # Now, prediction is performed, if the setup is train-test.
+    # Now, prediction is performed, if the
+    # setup is train-test.
     if (missing(testSampleRows) == FALSE) {
         if (paired == FALSE) {
             dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, 
-                idsVectorTest, groupVectorTest, groupName1 = groupName1, 
+                idsVectorTest, groupVectorTest, 
+                groupName1 = groupName1, 
                 groupName2 = groupName2)
         } else {
             dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, 
-                idsVectorTest, groupVectorTest, groupName1 = groupName1, 
-                groupName2 = groupName2, pairingVector = pairingVectorTest)
+                idsVectorTest, groupVectorTest, 
+                groupName1 = groupName1, 
+                groupName2 = groupName2, 
+                pairingVector = pairingVectorTest)
         }
-        # And here the sPLS-DA is performed. Scaling is performed
-        # internally in the algorithm. The number of components is
-        # set to one, as this situation is by far the most
-        # interpretable.
+        # And here the sPLS-DA is performed.
+        # Scaling is performed internally in the
+        # algorithm. The number of components is
+        # set to one, as this situation is by far
+        # the most interpretable.
         sPLSDAPredictObject <- predict(object = sPLSDAObject, 
-            newdata = t(dSplsdaInDataTest[[1]]), multilevel = dSplsdaInDataTest[[4]])
+            newdata = t(dSplsdaInDataTest[[1]]), 
+            multilevel = dSplsdaInDataTest[[4]])
         
         # Retrieve the x variates for plotting
         sPLSDAX <- data.frame(sPLSDAPredictObject$variates)
         densityHist <- cbind(sPLSDAX, dSplsdaInDataTest[[2]])
         
-        colnames(densityHist) <- c("sPLSDA_vector", "Group")
+        colnames(densityHist) <- c("sPLSDA_vector", 
+            "Group")
         
-        # Density plots with semi-transparent fill
-        ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) + 
-            geom_density(adjust = 0.2, alpha = 0.4) + scale_fill_manual(values = c("red", 
+        # Density plots with semi-transparent
+        # fill
+        ggplot(densityHist, aes(x = sPLSDA_vector, 
+            fill = Group)) + geom_density(adjust = 0.2, 
+            alpha = 0.4) + scale_fill_manual(values = c("red", 
             "blue")) + scale_x_continuous(limits = c(min(densityHist$sPLSDA_vector) - 
-            abs(max(densityHist$sPLSDA_vector) - min(densityHist$sPLSDA_vector)) * 
-                0.3, max(densityHist$sPLSDA_vector) + abs(max(densityHist$sPLSDA_vector) - 
-            min(densityHist$sPLSDA_vector)) * 0.3)) + theme(line = element_blank(), 
+            abs(max(densityHist$sPLSDA_vector) - 
+                min(densityHist$sPLSDA_vector)) * 
+                0.3, max(densityHist$sPLSDA_vector) + 
+            abs(max(densityHist$sPLSDA_vector) - 
+                min(densityHist$sPLSDA_vector)) * 
+                0.3)) + theme(line = element_blank(), 
             panel.background = element_rect(fill = "white"))
         if (createOutput == TRUE) {
             ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", 
@@ -405,7 +476,8 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         }
     }
     
-    print(paste0("Files were saved at ", getwd()))
+    print(paste0("Files were saved at ", 
+        getwd()))
     
     if (missing(testSampleRows) == TRUE) {
         return(sPLSDAObject)

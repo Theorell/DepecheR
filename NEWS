@@ -1,3 +1,11 @@
+DepecheR v0.81.3 (Release date: 2019-01-11)
+==============
+
+Changes:
+
+* More minimal adaptions to make the software pass both CMD check, test_that
+tests and BiocCheck at the same time. 
+
 DepecheR v0.81.2 (Release date: 2019-01-11)
 ==============
 

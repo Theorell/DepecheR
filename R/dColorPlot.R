@@ -48,18 +48,23 @@
 #'   names = 'separate samplings', addLegend = TRUE, idsVector = testDataSubset$ids
 #' )
 #' @export dColorPlot
-dColorPlot <- function(colorData, controlData, xYData, names = "default", 
-    densContour = TRUE, addLegend = FALSE, idsVector, drawColorPalette = FALSE, 
-    title = FALSE, createDirectory = TRUE, directoryName = "Variables displayed as color on SNE field", 
-    truncate = TRUE, bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
-    multiCore = "default", createPlot = TRUE) {
+dColorPlot <- function(colorData, controlData, 
+    xYData, names = "default", densContour = TRUE, 
+    addLegend = FALSE, idsVector, drawColorPalette = FALSE, 
+    title = FALSE, createDirectory = TRUE, 
+    directoryName = "Variables displayed as color on SNE field", 
+    truncate = TRUE, bandColor = "black", 
+    dotSize = 500/sqrt(nrow(xYData)), multiCore = "default", 
+    createPlot = TRUE) {
     if (any(is(colorData) == "matrix")) {
         colorData <- as.data.frame(colorData)
     }
     
-    if (any(is(colorData) == "numeric") == FALSE && any(is(colorData) == 
-        "integer") == FALSE && any(is(colorData) == "data.frame") == 
-        FALSE && any(is(colorData) == "character") == FALSE) {
+    if (any(is(colorData) == "numeric") == 
+        FALSE && any(is(colorData) == "integer") == 
+        FALSE && any(is(colorData) == "data.frame") == 
+        FALSE && any(is(colorData) == "character") == 
+        FALSE) {
         stop("ColorData needs to be either a numeric vector, a character vector
         of colors or a matrix or dataframe of numbers.")
     }
@@ -74,16 +79,20 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
     if (createDirectory == TRUE) {
         workingDirectory <- getwd()
         dir.create(directoryName)
-        setwd(paste(workingDirectory, directoryName, sep = "/"))
+        setwd(paste(workingDirectory, directoryName, 
+            sep = "/"))
     }
-    if (names == "default" && any(is(colorData) == "numeric")) {
+    if (names == "default" && any(is(colorData) == 
+        "numeric")) {
         names <- "testVariable"
     }
-    if (names == "default" && any(is(colorData) == "character")) {
+    if (names == "default" && any(is(colorData) == 
+        "character")) {
         names <- "Ids"
     }
     
-    if (names == "default" && any(is(colorData) == "data.frame")) {
+    if (names == "default" && any(is(colorData) == 
+        "data.frame")) {
         names <- colnames(colorData)
     }
     
@@ -98,7 +107,8 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
         }
     }
     
-    if (drawColorPalette == TRUE && createPlot == TRUE) {
+    if (drawColorPalette == TRUE && createPlot == 
+        TRUE) {
         pdf("palette.pdf")
         palette(rev(rich.colors(100, plot = TRUE)))
         dev.off()
@@ -106,26 +116,34 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
     
     
     if (any(is(colorData) == "numeric")) {
-        colorDataPercent <- dScale(colorData, control = controlData, 
-            scale = c(0, 1), robustVarScale = FALSE, center = FALSE, 
-            multiplicationFactor = 100, truncate = truncate)
+        colorDataPercent <- dScale(colorData, 
+            control = controlData, scale = c(0, 
+                1), robustVarScale = FALSE, 
+            center = FALSE, multiplicationFactor = 100, 
+            truncate = truncate)
         colorVector <- dColorVector(round(colorDataPercent), 
             colorScale = "rich_colors", order = c(0:100))
-        dColorPlotCoFunction(colorVariable = colorVector, name = names, 
-            xYData = xYData, title = title, densContour = densContour, 
-            bandColor = bandColor, dotSize = dotSize, createPlot = createPlot)
+        dColorPlotCoFunction(colorVariable = colorVector, 
+            name = names, xYData = xYData, 
+            title = title, densContour = densContour, 
+            bandColor = bandColor, dotSize = dotSize, 
+            createPlot = createPlot)
     }
     if (any(is(colorData) == "data.frame")) {
-        colorDataPercent <- dScale(x = colorData, control = controlData, 
-            scale = c(0, 1), robustVarScale = FALSE, center = FALSE, 
-            multiplicationFactor = 100, truncate = truncate)
-        colorVectors <- apply(round(colorDataPercent), 2, dColorVector, 
-            colorScale = "rich_colors", order = c(0:100))
+        colorDataPercent <- dScale(x = colorData, 
+            control = controlData, scale = c(0, 
+                1), robustVarScale = FALSE, 
+            center = FALSE, multiplicationFactor = 100, 
+            truncate = truncate)
+        colorVectors <- apply(round(colorDataPercent), 
+            2, dColorVector, colorScale = "rich_colors", 
+            order = c(0:100))
         if (multiCore == "default") {
             if (nrow(colorData) > 1e+05) {
                 multiCore <- TRUE
-                xYData <- dScale(xYData, scale = c(0, 
-                  1), robustVarScale = FALSE, center = FALSE)
+                xYData <- dScale(xYData, 
+                  scale = c(0, 1), robustVarScale = FALSE, 
+                  center = FALSE)
             } else {
                 multiCore <- FALSE
             }
@@ -134,36 +152,49 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
             no_cores <- detectCores() - 1
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
-            foreach(i = seq_len(ncol(colorVectors)), .inorder = FALSE) %dopar% 
+            i <- 1
+            foreach(i = seq_len(ncol(colorVectors)), 
+                .inorder = FALSE) %dopar% 
                 dColorPlotCoFunction(colorVariable = colorVectors[, 
-                  i], name = names[i], xYData = xYData, title = title, 
-                  densContour = densContour, bandColor = bandColor, 
+                  i], name = names[i], xYData = xYData, 
+                  title = title, densContour = densContour, 
+                  bandColor = bandColor, 
                   dotSize = dotSize, createPlot = createPlot)
             stopCluster(cl)
         } else {
-            mapply(dColorPlotCoFunction, as.data.frame.matrix(colorVectors, 
-                stringsAsFactors = FALSE), names, MoreArgs = list(xYData = xYData, 
-                title = title, densContour = densContour, bandColor = bandColor, 
-                dotSize = dotSize, createPlot = createPlot))
+            mapply(dColorPlotCoFunction, 
+                as.data.frame.matrix(colorVectors, 
+                  stringsAsFactors = FALSE), 
+                names, MoreArgs = list(xYData = xYData, 
+                  title = title, densContour = densContour, 
+                  bandColor = bandColor, 
+                  dotSize = dotSize, createPlot = createPlot))
         }
     }
     if (any(is(colorData) == "character")) {
-        dColorPlotCoFunction(colorVariable = colorData, name = names, 
-            xYData = xYData, title = title, densContour = densContour, 
-            bandColor = bandColor, dotSize = dotSize, createPlot = createPlot)
+        dColorPlotCoFunction(colorVariable = colorData, 
+            name = names, xYData = xYData, 
+            title = title, densContour = densContour, 
+            bandColor = bandColor, dotSize = dotSize, 
+            createPlot = createPlot)
     }
     
-    if (addLegend == TRUE && createPlot == TRUE) {
-        # Some preparations for the legend Create a dataframe from
-        # the ids and the color vectors
-        colorIdsDataFrame <- data.frame(unique(colorData), unique(idsVector), 
-            stringsAsFactors = FALSE)
+    if (addLegend == TRUE && createPlot == 
+        TRUE) {
+        # Some preparations for the legend Create
+        # a dataframe from the ids and the color
+        # vectors
+        colorIdsDataFrame <- data.frame(unique(colorData), 
+            unique(idsVector), stringsAsFactors = FALSE)
         colorIdsDataFrame <- colorIdsDataFrame[order(colorIdsDataFrame[, 
             2]), ]
-        pdf(paste("Legend for ", names, ".pdf", sep = ""))
+        pdf(paste("Legend for ", names, ".pdf", 
+            sep = ""))
         plot.new()
-        legend("center", legend = colorIdsDataFrame[, 2], col = colorIdsDataFrame[, 
-            1], cex = 15/length(unique(idsVector)), pch = 19)
+        legend("center", legend = colorIdsDataFrame[, 
+            2], col = colorIdsDataFrame[, 
+            1], cex = 15/length(unique(idsVector)), 
+            pch = 19)
         dev.off()
     }
     
@@ -171,5 +202,6 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
         setwd(workingDirectory)
     }
     
-    print(paste0("Files were saved at ", getwd()))
+    print(paste0("Files were saved at ", 
+        getwd()))
 }

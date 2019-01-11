@@ -19,7 +19,8 @@
 #' # In this case, each of the 97 individual donors in the dataset has gotten their own color code:
 #' table(testColor)
 #' @export dColorVector
-dColorVector <- function(x, order = unique(x), colorScale = "viridis") {
+dColorVector <- function(x, order = unique(x), 
+    colorScale = "viridis") {
     if (any(is(x) == "factor")) {
         x <- as.character(x)
         order <- as.character(order)
@@ -47,13 +48,15 @@ dColorVector <- function(x, order = unique(x), colorScale = "viridis") {
             orderColors <- rainbow(length(order))
         }
         if (colorScale == "dark_rainbow") {
-            orderColors <- colorRampPalette(c("#990000", "#FFCC00", 
-                "#336600", "#000066", "#660033"))(length(order))
+            orderColors <- colorRampPalette(c("#990000", 
+                "#FFCC00", "#336600", "#000066", 
+                "#660033"))(length(order))
         }
     }
     
-    # Here, a vector with the same length as the x vector is
-    # generated, but where the x info has been substituted with a
+    # Here, a vector with the same length as
+    # the x vector is generated, but where
+    # the x info has been substituted with a
     # color.
     dColorVector <- x
     for (i in 0:length(order)) {

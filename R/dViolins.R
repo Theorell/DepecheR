@@ -24,13 +24,16 @@
 #' data(testDataDepeche)
 #' 
 #' # Create the plots of the variables that contribute to creating each cluster
-#' dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
+#' dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, 
+#' inDataFrame = testData[, 2:15])
 #' @export dViolins
-dViolins <- function(clusterVector, sparsityMatrix, inDataFrame, 
-    order = unique(clusterVector), colorScale = "viridis", plotAll = FALSE, 
+dViolins <- function(clusterVector, sparsityMatrix, 
+    inDataFrame, order = unique(clusterVector), 
+    colorScale = "viridis", plotAll = FALSE, 
     createOutput = TRUE) {
-    percentClusterVector <- dScale(clusterVector, scale = c(0, 
-        1), robustVarScale = FALSE, center = FALSE, multiplicationFactor = 100)
+    percentClusterVector <- dScale(clusterVector, 
+        scale = c(0, 1), robustVarScale = FALSE, 
+        center = FALSE, multiplicationFactor = 100)
     
     if (length(colorScale) > 1) {
         orderColors <- colorRampPalette(colorScale)(length(order))
@@ -54,25 +57,29 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
             paletteColors <- rainbow(length(order))
         }
         if (colorScale == "dark_rainbow") {
-            paletteColors <- colorRampPalette(c("#990000", "#FFCC00", 
-                "#336600", "#000066", "#660033"))(length(order))
+            paletteColors <- colorRampPalette(c("#990000", 
+                "#FFCC00", "#336600", "#000066", 
+                "#660033"))(length(order))
         }
     }
     
-    # Here, a directory for all the subdirectories for each
-    # cluster is made
+    # Here, a directory for all the
+    # subdirectories for each cluster is made
     directoryName <- "Cluster expressions"
     workingDirectory <- getwd()
     if (createOutput == TRUE) {
         dir.create(directoryName)
-        setwd(paste(workingDirectory, directoryName, sep = "/"))
+        setwd(paste(workingDirectory, directoryName, 
+            sep = "/"))
     }
     
-    # Here, the columns in the inDataFrame that are not selected
-    # as contributing are excluded from further analysis, if
+    # Here, the columns in the inDataFrame
+    # that are not selected as contributing
+    # are excluded from further analysis, if
     # plotAll is not TRUE
     if (plotAll == FALSE) {
-        inDataFocused <- subset(inDataFrame, select = colnames(sparsityMatrix))
+        inDataFocused <- subset(inDataFrame, 
+            select = colnames(sparsityMatrix))
     } else {
         inDataFocused <- inDataFrame
     }
@@ -80,27 +87,34 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
     
     for (i in seq_len(length(order))) {
         
-        # Here, a specific directory for the graphics are made.
-        directoryName <- paste("Cluster", order[i])
+        # Here, a specific directory for the
+        # graphics are made.
+        directoryName <- paste("Cluster", 
+            order[i])
         workingDirectoryClusters <- getwd()
         
         if (createOutput == TRUE) {
             dir.create(directoryName)
-            setwd(paste(workingDirectoryClusters, directoryName, 
-                sep = "/"))
+            setwd(paste(workingDirectoryClusters, 
+                directoryName, sep = "/"))
         }
         
-        # This code is an efficient way of giving all rows in the
-        # 'Clusters' column the same name, except for the rows with
-        # the cluster of interest.
-        clustIndicesSpecific <- vapply(clusterVector, FUN.VALUE="xyz", 
-                                       dViolinsCoFunction1, n = order[i])
-            
-        # Create a color vector for the visualzation
-        clustColorsSpecific <- c(paletteColors[i], "#d3d3d3")
+        # This code is an efficient way of giving
+        # all rows in the 'Clusters' column the
+        # same name, except for the rows with the
+        # cluster of interest.
+        clustIndicesSpecific <- vapply(clusterVector, 
+            FUN.VALUE = "xyz", dViolinsCoFunction1, 
+            n = order[i])
         
-        # Here, the mu variables for the specific cluster is
-        # extracted, if not all clusters should be shown.
+        # Create a color vector for the
+        # visualzation
+        clustColorsSpecific <- c(paletteColors[i], 
+            "#d3d3d3")
+        
+        # Here, the mu variables for the specific
+        # cluster is extracted, if not all
+        # clusters should be shown.
         if (plotAll == FALSE) {
             oneClustAllMu <- sparsityMatrix[rownames(sparsityMatrix) == 
                 order[i], ]
@@ -110,14 +124,16 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
         
         # Here the variable names is exported
         allVarNames <- colnames(inDataFocused)
-        # Then a list is created that contains the objects for the
-        # plot creation
-        oneClustAllVarList <- mapply(dViolinsCoFunction2, inDataFocused, 
-            oneClustAllMu, allVarNames, MoreArgs = list(clust = clustIndicesSpecific, 
-                cols = clustColorsSpecific, clustNum = order[i]), 
-            SIMPLIFY = FALSE)
+        # Then a list is created that contains
+        # the objects for the plot creation
+        oneClustAllVarList <- mapply(dViolinsCoFunction2, 
+            inDataFocused, oneClustAllMu, 
+            allVarNames, MoreArgs = list(clust = clustIndicesSpecific, 
+                cols = clustColorsSpecific, 
+                clustNum = order[i]), SIMPLIFY = FALSE)
         # And then the plots are created
-        vapply(oneClustAllVarList, FUN.VALUE=1, dViolinsCoFunction3, plotAll = plotAll, 
+        vapply(oneClustAllVarList, FUN.VALUE = 1, 
+            dViolinsCoFunction3, plotAll = plotAll, 
             createOutput = createOutput)
         
         
@@ -126,5 +142,6 @@ dViolins <- function(clusterVector, sparsityMatrix, inDataFrame,
     
     setwd(workingDirectory)
     
-    print(paste0("Files were saved at ", getwd()))
+    print(paste0("Files were saved at ", 
+        getwd()))
 }

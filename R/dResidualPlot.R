@@ -39,16 +39,18 @@
 #'   clusterVector = testDataDepeche$clusterVector
 #' )
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, clusterVector, 
-    densContour = TRUE, groupName1 = unique(groupVector)[1], 
-    groupName2 = unique(groupVector)[2], name = "default", title = FALSE, 
-    maxAbsPlottingValues, bandColor = "black", createDirectory = FALSE, 
+dResidualPlot <- function(xYData, groupVector, 
+    clusterVector, densContour = TRUE, groupName1 = unique(groupVector)[1], 
+    groupName2 = unique(groupVector)[2], 
+    name = "default", title = FALSE, maxAbsPlottingValues, 
+    bandColor = "black", createDirectory = FALSE, 
     directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)), 
     createPlot = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
         workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, sep = "/"))
+        setwd(paste(workingDirectory, directoryName, 
+            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -61,14 +63,17 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     }
     
     if (name == "default") {
-        name <- paste0(groupName1, "_vs_", groupName2)
+        name <- paste0(groupName1, "_vs_", 
+            groupName2)
     }
     
-    # Here, the residuals are identified.  A table with the
-    # percentage of cells in each cluster for each group is
-    # created in analogy with XXX pKMRun.
+    # Here, the residuals are identified.  A
+    # table with the percentage of cells in
+    # each cluster for each group is created
+    # in analogy with XXX pKMRun.
     
-    clusterTable <- table(clusterVector, groupVector)
+    clusterTable <- table(clusterVector, 
+        groupVector)
     
     countTable <- table(groupVector)
     
@@ -81,44 +86,54 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     
     # Now the residual matrix is constructed
     residualVector <- as.vector(clusterPercentagesForGroups[, 
-        1] - clusterPercentagesForGroups[, 2])
+        1] - clusterPercentagesForGroups[, 
+        2])
     
     names(residualVector) <- as.numeric(row.names(clusterPercentagesForGroups))
     
-    # Here, the maximum values for the plotting is defined if not
-    # added by the user.
+    # Here, the maximum values for the
+    # plotting is defined if not added by the
+    # user.
     if (missing(maxAbsPlottingValues)) {
         maxAbsPlottingValues <- max(abs(clusterPercentagesForGroups))
     }
     
-    # It might be that the maxAbsPlottingValues defined by the
-    # user are lower than the most extreme values in the residual
-    # data. Then, the data is truncated to fit the range.
+    # It might be that the
+    # maxAbsPlottingValues defined by the
+    # user are lower than the most extreme
+    # values in the residual data. Then, the
+    # data is truncated to fit the range.
     residualVector[residualVector > maxAbsPlottingValues] <- maxAbsPlottingValues
     residualVector[residualVector < -maxAbsPlottingValues] <- -maxAbsPlottingValues
     
-    # Here, a vector with the same length as the cluster vector
-    # is generated, but where the cluster info has been
+    # Here, a vector with the same length as
+    # the cluster vector is generated, but
+    # where the cluster info has been
     # substituted with the statistic.
     residualVectorLong <- clusterVector
     for (i in seq_len(length(residualVector))) {
-        residualVectorLong[clusterVector == names(residualVector)[i]] <- residualVector[i]
+        residualVectorLong[clusterVector == 
+            names(residualVector)[i]] <- residualVector[i]
     }
     
-    # Here the data that will be used for plotting is scaled.
+    # Here the data that will be used for
+    # plotting is scaled.
     colnames(xYData) <- c("V1", "V2")
     
-    # Make a color vector with the same length as the data
+    # Make a color vector with the same
+    # length as the data
     residual.df <- as.data.frame(residualVectorLong)
     
-    # make a breaks vector to define each bin for the colors
-    brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
-        length.out = 10))
+    # make a breaks vector to define each bin
+    # for the colors
+    brks <- with(residual.df, seq(-maxAbsPlottingValues, 
+        maxAbsPlottingValues, length.out = 10))
     
     # assign each value to a bin
-    grps <- with(residual.df, cut(residual.df[, 1], breaks = brks, 
-        include.lowest = TRUE))
-    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
+    grps <- with(residual.df, cut(residual.df[, 
+        1], breaks = brks, include.lowest = TRUE))
+    colors <- colorRampPalette(c("#FF0000", 
+        "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
     # Create the density matrix for xYData.
@@ -128,51 +143,64 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
         }
     }
     if (length(densContour) > 1) {
-        xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
-        ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
+        xlim <- c(min(densContour[[1]]), 
+            max(densContour[[1]]))
+        ylim <- c(min(densContour[[2]]), 
+            max(densContour[[2]]))
     } else {
         minX <- min(xYData[, 1])
         maxX <- max(xYData[, 1])
         minY <- min(xYData[, 2])
         maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 
-            0.05))
-        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 
-            0.05))
+        xlim <- c(minX - abs(minX * 0.05), 
+            maxX + abs(maxX * 0.05))
+        ylim <- c(minY - abs(minY * 0.05), 
+            maxY + abs(maxY * 0.05))
     }
     
     
-    png(paste(name, "_residuals.png", sep = ""), width = 2500, 
-        height = 2500, units = "px", bg = "transparent")
+    png(paste(name, "_residuals.png", sep = ""), 
+        width = 2500, height = 2500, units = "px", 
+        bg = "transparent")
     if (createPlot == TRUE) {
         if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, main = name, pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = name, pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         
         if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, main = "", pch = 20, 
-                cex = dotSize, cex.main = 5, col = col, xlim = xlim, 
-                ylim = ylim, axes = FALSE, xaxs = "i", yaxs = "i")
+            plot(V2 ~ V1, data = xYData, 
+                main = "", pch = 20, cex = dotSize, 
+                cex.main = 5, col = col, 
+                xlim = xlim, ylim = ylim, 
+                axes = FALSE, xaxs = "i", 
+                yaxs = "i")
         }
         if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), 
-                new = TRUE)
-            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
-                xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
-                lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
-                yaxs = "i")
+            par(fig = c(0, 1, 0, 1), mar = c(6, 
+                4.5, 4.5, 2.5), new = TRUE)
+            contour(x = densContour$x, y = densContour$y, 
+                z = densContour$z, xlim = xlim, 
+                ylim = ylim, nlevels = 10, 
+                col = bandColor, lwd = 8, 
+                drawlabels = FALSE, axes = FALSE, 
+                xaxs = "i", yaxs = "i")
         }
     }
     dev.off()
     # Create a color legend with text
     
     yname <- "Residual values"
-    topText <- paste(groupName1, " is more abundant", sep = "")
-    bottomText <- paste(groupName2, " is more abundant", sep = "")
-    legendTitle <- paste("Color scale for", name, "residual analysis.pdf", 
-        sep = " ")
+    topText <- paste(groupName1, " is more abundant", 
+        sep = "")
+    bottomText <- paste(groupName2, " is more abundant", 
+        sep = "")
+    legendTitle <- paste("Color scale for", 
+        name, "residual analysis.pdf", sep = " ")
     
     
     if (createPlot == TRUE) {
@@ -182,13 +210,13 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
         x <- 1
         y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
             len = 9)
-        image(x, y, z, col = colors, axes = FALSE, xlab = "", 
-            ylab = yname)
+        image(x, y, z, col = colors, axes = FALSE, 
+            xlab = "", ylab = yname)
         axis(2)
-        text(1, maxAbsPlottingValues * 1.2, labels = topText, 
-            cex = 1.1)
-        text(1, -maxAbsPlottingValues * 1.2, labels = bottomText, 
-            cex = 1.1)
+        text(1, maxAbsPlottingValues * 1.2, 
+            labels = topText, cex = 1.1)
+        text(1, -maxAbsPlottingValues * 1.2, 
+            labels = bottomText, cex = 1.1)
         box()
         dev.off()
     }
@@ -196,5 +224,6 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     if (createDirectory == TRUE) {
         setwd(workingDirectory)
     }
-    print(paste0("Files were saved at ", getwd()))
+    print(paste0("Files were saved at ", 
+        getwd()))
 }

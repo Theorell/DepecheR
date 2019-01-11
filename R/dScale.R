@@ -44,16 +44,19 @@
 #' # been performed in the scaling, only to obtain the scaling values.
 #' summary(y_df)
 #' @export dScale
-dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE, 
-    center = "peak", truncate = FALSE, multiplicationFactor = 1, 
+dScale <- function(x, control, scale = TRUE, 
+    robustVarScale = TRUE, center = "peak", 
+    truncate = FALSE, multiplicationFactor = 1, 
     multiCore = FALSE, returnCenter = FALSE) {
     if (any(is(x) == "matrix")) {
         x <- as.data.frame(x)
     }
     
-    if (any(is(x) == "numeric") == FALSE && any(is(x) == "integer") == 
-        FALSE && any(is(x) == "data.frame") == FALSE) {
-        stop("The data is incorrectly formatted, as it is not a vector, a matrix or a dataframe. Change this and try again.")
+    if (any(is(x) == "numeric") == FALSE && 
+        any(is(x) == "integer") == FALSE && 
+        any(is(x) == "data.frame") == FALSE) {
+        stop("The data is incorrectly formatted, as it is not a vector, a 
+            matrix or a dataframe. Change this and try again.")
     }
     
     if (missing("control")) {
@@ -69,11 +72,13 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
         }
     }
     
-    if (is.logical(scale) == TRUE && scale == TRUE) {
+    if (is.logical(scale) == TRUE && scale == 
+        TRUE) {
         scale <- c(0.001, 0.999)
     }
     
-    if (is.logical(truncate) == TRUE && truncate == TRUE) {
+    if (is.logical(truncate) == TRUE && truncate == 
+        TRUE) {
         if (is.logical(scale) == TRUE) {
             truncate <- c(0.001, 0.999)
         } else {
@@ -82,9 +87,10 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
     }
     
     if (any(is(x) == "data.frame") == FALSE) {
-        result <- dScaleCoFunction(x, control = control, scale = scale, 
-            robustVarScale = robustVarScale, truncate = truncate, 
-            center = center, multiplicationFactor = multiplicationFactor, 
+        result <- dScaleCoFunction(x, control = control, 
+            scale = scale, robustVarScale = robustVarScale, 
+            truncate = truncate, center = center, 
+            multiplicationFactor = multiplicationFactor, 
             returnCenter = returnCenter)
     }
     if (any(is(x) == "data.frame")) {
@@ -93,22 +99,30 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
             if (returnCenter == FALSE) {
+                i <- 1
                 result <- as.data.frame(foreach(i = seq_len(ncol(x)), 
-                  .inorder = TRUE) %dopar% dScaleCoFunction(x[, 
-                  i], control = control[, i], scale = scale, 
-                  robustVarScale = robustVarScale, truncate = truncate, 
-                  center = center, multiplicationFactor = multiplicationFactor))
+                  .inorder = TRUE) %dopar% 
+                  dScaleCoFunction(x[, i], 
+                    control = control[, i], 
+                    scale = scale, robustVarScale = robustVarScale, 
+                    truncate = truncate, 
+                    center = center, multiplicationFactor = multiplicationFactor))
             } else {
-                resultComplex <- foreach(i = seq_len(ncol(x)), .inorder = TRUE) %dopar% 
-                  dScaleCoFunction(x[, i], control = control[, 
-                    i], scale = scale, robustVarScale = robustVarScale, 
-                    truncate = truncate, center = center, multiplicationFactor = multiplicationFactor, 
+                resultComplex <- foreach(i = seq_len(ncol(x)), 
+                  .inorder = TRUE) %dopar% 
+                  dScaleCoFunction(x[, i], 
+                    control = control[, i], 
+                    scale = scale, robustVarScale = robustVarScale, 
+                    truncate = truncate, 
+                    center = center, multiplicationFactor = multiplicationFactor, 
                     returnCenter = TRUE)
-                resultDf <- as.data.frame(do.call("cbind", lapply(resultComplex, 
-                  "[[", 1)))
+                resultDf <- as.data.frame(do.call("cbind", 
+                  lapply(resultComplex, "[[", 
+                    1)))
                 resultCenters <- unlist(lapply(resultComplex, 
                   "[[", 2))
-                result <- list(resultDf, resultCenters)
+                result <- list(resultDf, 
+                  resultCenters)
             }
             stopCluster(cl)
             colnames(result) <- colnames(x)
@@ -116,19 +130,25 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
             if (returnCenter == FALSE) {
                 result <- as.data.frame(mapply(dScaleCoFunction, 
                   x, control, MoreArgs = list(scale = scale, 
-                    robustVarScale = robustVarScale, truncate = truncate, 
+                    robustVarScale = robustVarScale, 
+                    truncate = truncate, 
                     center = center, multiplicationFactor = multiplicationFactor), 
                   SIMPLIFY = FALSE))
             } else {
-                resultComplex <- mapply(dScaleCoFunction, x, 
-                  control, MoreArgs = list(scale = scale, robustVarScale = robustVarScale, 
-                    truncate = truncate, center = center, multiplicationFactor = multiplicationFactor, 
-                    returnCenter = TRUE), SIMPLIFY = FALSE)
-                resultDf <- as.data.frame(do.call("cbind", lapply(resultComplex, 
-                  "[[", 1)))
+                resultComplex <- mapply(dScaleCoFunction, 
+                  x, control, MoreArgs = list(scale = scale, 
+                    robustVarScale = robustVarScale, 
+                    truncate = truncate, 
+                    center = center, multiplicationFactor = multiplicationFactor, 
+                    returnCenter = TRUE), 
+                  SIMPLIFY = FALSE)
+                resultDf <- as.data.frame(do.call("cbind", 
+                  lapply(resultComplex, "[[", 
+                    1)))
                 resultCenters <- unlist(lapply(resultComplex, 
                   "[[", 2))
-                result <- list(resultDf, resultCenters)
+                result <- list(resultDf, 
+                  resultCenters)
             }
         }
     }

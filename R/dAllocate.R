@@ -49,7 +49,8 @@
 #' title(ylab = 'Fraction')
 #' }
 #' @export dAllocate
-dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE) {
+dAllocate <- function(inDataFrame, clusterCenters, 
+    log2Off = FALSE) {
     if (any(is(inDataFrame) == "matrix")) {
         inDataFrame <- as.data.frame.matrix(inDataFrame)
     }
@@ -57,19 +58,25 @@ dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE) {
     if (log2Off == FALSE && kurtosis(as.vector(as.matrix(inDataFrame))) > 
         100) {
         kurtosisValue1 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-        # Here, the log transformation is performed. In cases where
-        # the lowest value is 0, everything is simple. In other
-        # cases, a slightly more complicated formula is needed
+        # Here, the log transformation is
+        # performed. In cases where the lowest
+        # value is 0, everything is simple. In
+        # other cases, a slightly more
+        # complicated formula is needed
         if (min(inDataFrame) >= 0) {
-            inDataFrame <- log2(inDataFrame + 1)
+            inDataFrame <- log2(inDataFrame + 
+                1)
         } else {
-            # First, the data needs to be reasonably log transformed to
-            # not too extreme values, but still without loosing
+            # First, the data needs to be reasonably
+            # log transformed to not too extreme
+            # values, but still without loosing
             # resolution.
-            inDataMatrixLog <- log2(apply(inDataFrame, 2, function(x) x - 
-                min(x)) + 1)
-            # Then, the extreme negative values will be replaced by 0, as
-            # they give rise to artefacts.
+            inDataMatrixLog <- log2(apply(inDataFrame, 
+                2, function(x) x - min(x)) + 
+                1)
+            # Then, the extreme negative values will
+            # be replaced by 0, as they give rise to
+            # artefacts.
             inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
             inDataFrame <- as.data.frame(inDataMatrixLog)
             rm(inDataMatrixLog)
@@ -81,20 +88,22 @@ dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE) {
             kurtosisValue2, "."))
     }
     
-    # If some variables have been excluded as they did not
-    # contribute to construction of any cluster, they are removed
-    # from the inData here
+    # If some variables have been excluded as
+    # they did not contribute to construction
+    # of any cluster, they are removed from
+    # the inData here
     inDataFrameReduced <- inDataFrame[, colnames(clusterCenters)]
     
     dataMat <- data.matrix(inDataFrameReduced)
     centersMat <- data.matrix(clusterCenters)
     
-    clusterReallocationResult <- allocate_points(dataMat, centersMat, 
-        1)[[1]]
+    clusterReallocationResult <- allocate_points(dataMat, 
+        centersMat, 1)[[1]]
     
-    # Here, the individual numbers are changed to accomodate the
-    # difference between the inclusion or exclusion of an origo
-    # cluster
+    # Here, the individual numbers are
+    # changed to accomodate the difference
+    # between the inclusion or exclusion of
+    # an origo cluster
     newNumbers <- rownames(clusterCenters)
     clusterReallocationResult <- turnVectorEquidistant(clusterReallocationResult, 
         newNumbers = newNumbers)

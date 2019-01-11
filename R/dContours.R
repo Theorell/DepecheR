@@ -32,12 +32,14 @@ dContours <- function(xYData, control, n = 100) {
         min2 <- min(xYData[, 2])
         max2 <- max(xYData[, 2])
     }
-    lims <- c(min1 - abs(min1 * 0.05), max1 + abs(max1 * 0.05), 
-        min2 - abs(min2 * 0.05), max2 + abs(max2 * 0.05))
+    lims <- c(min1 - abs(min1 * 0.05), max1 + 
+        abs(max1 * 0.05), min2 - abs(min2 * 
+        0.05), max2 + abs(max2 * 0.05))
     
-    # Construct the third dimension with smooth kernel density
-    # estimate
-    den3d <- kde2d(xYData[, 1], xYData[, 2], n = n, lims = lims)
+    # Construct the third dimension with
+    # smooth kernel density estimate
+    den3d <- kde2d(xYData[, 1], xYData[, 
+        2], n = n, lims = lims)
     
     return(den3d)
 }

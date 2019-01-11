@@ -1,4 +1,5 @@
-turnVectorEquidistant <- function(x, startValue = 1, newNumbers) {
+turnVectorEquidistant <- function(x, startValue = 1, 
+    newNumbers) {
     originalNumbers <- sort(unique(x))
     
     if (missing(newNumbers) == TRUE) {
