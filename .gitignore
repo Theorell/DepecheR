@@ -42,3 +42,7 @@ unsrturl.bst
 .seed
 .settings
 .tm_properties
+
+*.bak
+
+src/Makevars
