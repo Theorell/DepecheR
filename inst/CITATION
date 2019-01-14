@@ -1,0 +1,13 @@
+citHeader("To cite DepecheR in publications use:")
+
+citEntry(entry="article",
+         title = "Determination of essential phenotypic elements of clusters in high-dimensional entities - DEPECHE",
+         author = personList( as.person("Axel Theorell"),
+                              as.person("Yenan Bryceson"),
+                              as.person("Jakob Theorell")),
+         year = 2018,
+         journal = "BioRXiv",
+         url = "https://www.biorxiv.org/content/early/2018/08/20/396135",
+         textVersion = "Axel Theorell, Yenan Bryceson and Jakob Theorell. (2018): Determination of essential phenotypic elements of clusters in high-dimensional entities - DEPECHE, BioRXiv, URL: http://dx.doi.org/10.1038/nmeth.4236" )
+
+

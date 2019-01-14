@@ -141,9 +141,6 @@ dColorPlot <- function(colorData, controlData,
         if (multiCore == "default") {
             if (nrow(colorData) > 1e+05) {
                 multiCore <- TRUE
-                xYData <- dScale(xYData, 
-                  scale = c(0, 1), robustVarScale = FALSE, 
-                  center = FALSE)
             } else {
                 multiCore <- FALSE
             }

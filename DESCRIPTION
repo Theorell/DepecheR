@@ -1,10 +1,10 @@
 Package: DepecheR
-Version: 0.81.3
-Date: 2019-01-11
+Version: 0.81.4
+Date: 2019-01-14
 Title: Determination of essential phenotypic elements of clusters in high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,DataRepresentation,ImmunoOncology,Transcriptomics,Classification,Clustering,DimensionReduction,FeatureExtraction,FlowCytometry,RNASeq,SingleCell,Visualization
 Authors@R: c(person('Jakob', 'Theorell', email = "jakob.theorell@ndcn.ox.ac.uk", role = c("aut", "cre")),
-           person('Axel', 'Theorell', email = "a.theorell@fz-juelich.de", role = "aut", "cre"))
+           person('Axel', 'Theorell', email = "a.theorell@fz-juelich.de", role = c("aut", "cre")))
 Author:
    Jakob Theorell [aut, cre],
    Axel Theorell [aut, cre]

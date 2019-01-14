@@ -1,3 +1,10 @@
+DepecheR v0.81.4 (Release date: 2019-01-11)
+==============
+
+Changes:
+
+* Multicore feature made functional for dColorPlot, increasing execution speed. 
+
 DepecheR v0.81.3 (Release date: 2019-01-11)
 ==============
 
