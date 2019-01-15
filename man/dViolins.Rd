@@ -39,7 +39,8 @@ data(testData)
 data(testDataDepeche)
 
 # Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, 
+inDataFrame = testData[, 2:15])
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}

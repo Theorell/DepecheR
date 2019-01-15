@@ -16,7 +16,7 @@ The package is indirectly clearly dependent on Rtsne for generation of output. S
 
 Authors:
 \itemize{
-  \item Axel cre Theorell \email{a.theorell@fz-juelich.de}
+  \item Axel Theorell \email{a.theorell@fz-juelich.de}
 }
 
 }

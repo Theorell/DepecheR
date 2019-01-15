@@ -1,3 +1,12 @@
+DepecheR v0.99.1 (Release date: 2019-01-14)
+==============
+
+Changes:
+
+* C++ code reorganized, making package considerably smaller after build. 
+* Package now passes both CMD check and BiocCheck without errors or warnings.
+
+
 DepecheR v0.81.4 (Release date: 2019-01-11)
 ==============
 

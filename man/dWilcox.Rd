@@ -90,8 +90,8 @@ testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 # the data is used for the Wilcoxon calculations
 dWilcoxResult <- dWilcox(
   xYData = testDataSNESubset, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, displayVector = subsetVector
-)
+  groupVector = testData$label, clusterVector = 
+  testDataDepeche$clusterVector, displayVector = subsetVector)
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
