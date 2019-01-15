@@ -1,9 +1,6 @@
 # History files
 .Rhistory
 .Rapp.history
-inst/.Rapp.history
-R/.Rapp.history
-tests/testthat/.Rapp.history
 
 # Session Data files
 .RData
