@@ -1,3 +1,10 @@
+DepecheR v0.99.9 (Release date: 2019-01-15)
+==============
+
+Changes:
+
+* The figure files connected to the vinjette have been moved out of the package to a separate github directory. This will reduce the package size significantly, and might make the linux version being able to find all the pieces. 
+
 DepecheR v0.99.3 (Release date: 2019-01-15)
 ==============
 

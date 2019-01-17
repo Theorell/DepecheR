@@ -99,7 +99,7 @@ totally random distribution. The adjustment in "Adjusted" Rand index takes the
 divering probabilities of ending up with a high or low overlap in the special 
 cases of very few and very many clusters into consideration. 
 
-![Adjusted Rand Index as a function of penalty values. Each value is based on at least 7 clustering pairs (DepecheR standard in a 8 core machine).](figs/Distance_as_a_function_of_penalty_values.jpg){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Distance_as_a_function_of_penalty_values.jpg "Adjusted Rand Index as a function of penalty values. Each value is based on at least 7 clustering pairs (DepecheR standard in a 8 core machine)."){ width=90% }
 
 #### Cluster centers
 This graph shows in a heatmap format where the cluster center is located for each
@@ -113,7 +113,7 @@ an internal, and for stability reasons necessary, effect of the algotihm: a spec
 penalty will have a larger effect on a cluster with fewer observations, than on 
 a cluster with many observations.
 
-![Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis.](figs/Cluster_centers.jpg){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Cluster_centers.jpg "Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis."){ width=90% }
 
 
 
@@ -160,7 +160,7 @@ dColorPlot(colorData = clusterColor, xYData = testDataSNE$Y, addLegend = TRUE,
 
 The files will always be saved to the current directory. 
 
-![Cluster distribution over the tSNE field. ](figs/Fig_3_DepecheR_markdown.jpg){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_3_DepecheR_markdown.jpg "Cluster distribution over the tSNE field."){ width=90% }
 
 
 ## Step 4: visualization of markers on tSNE
@@ -171,7 +171,8 @@ picture, this is not the standard, for publication reasons.
 dColorPlot(colorData = testData[2:15], xYData = testDataSNE$Y, title=TRUE)
 
 ```
-![Example of a few markers distribution over the tSNE field. ](figs/Fig_4_DepecheR_markdown.png){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_4_DepecheR_markdown.png "Example of a few markers distribution over the tSNE field."){ width=90% }
+
 
 ## Step 5: density distribution of groups
 Now, we are getting into separating the groups from each other. The first thing
@@ -199,8 +200,7 @@ dDensityPlot(
 )
 
 ```
-
-![Distribution of events in the different groups. ](figs/Fig_5_DepecheR_markdown.jpg){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_5_DepecheR_markdown.jpg "Distribution of events in the different groups."){ width=90% }
 
 ## Step 6: separating groups from each other with dSplsda
 Now, we have arrived at a crucial point:  we are now going to see which 
@@ -260,7 +260,7 @@ statistic, the p-value and a p-value corrected for multiple comparisons.
 In addition to the graphs, the dWilcox and the dSplsda functions also output
 result files. See ?dSplsda and ?dWilcox for more information. 
 
-![Residual, Wilcoxon, sPLS-DA plots. ](figs/Fig_6_DepecheR_markdown.jpg){ width=90% }
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_6_DepecheR_markdown.jpg "Residual, Wilcoxon, sPLS-DA plots."){ width=90% }
 
 When investigating the results from the sPLS-DA or the dWilcox analysis, it was
 clear that half of the clusters were highly significantly different between the
