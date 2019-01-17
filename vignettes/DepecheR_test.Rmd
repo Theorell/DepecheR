@@ -278,7 +278,8 @@ where the graphs are placed.
 dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
 
 ```
-![Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters. ](figs/Fig_7_DepecheR_markdown.jpg){ width=90% }
+
+![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_7_DepecheR_markdown.jpg "Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters."){ width=90% }
 
 ## Summary
 In this document, a typical analysis of a cytometry dataset is shown. There are
