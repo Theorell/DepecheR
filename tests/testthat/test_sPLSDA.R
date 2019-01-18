@@ -11,7 +11,7 @@ sPLSDAObject <- dSplsda(
     xYData = testDataSNE$Y, idsVector = testData$ids,
     groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, 
     paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
-    groupName2 = 'Stimulation 2')
+    groupName2 = 'Stimulation 2', createOutput = FALSE)
 
 # Alternative usage
 subsetVector <- sample(1:nrow(testData), size = 10000)

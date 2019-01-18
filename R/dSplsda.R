@@ -47,13 +47,13 @@
 #' 
 #' # Here, pairing is used. NB!! This artificial example is only present to show how to
 #' # use the function. In reality, pairing should only be used in situations 
-#' where true paired data is present! The only reason this works although this is
-#' non-paired data is that the number of donors is identical. As it is, the algorithm
-#' internally converts the idsVector so that the first individual in group1 is 
-#' associated with the first individual in group2. This can lead to erratic 
-#' problems, so make sure that either a valid id vector, with the same id occuring two
-#' times for each individual is provided, or that the individuals occur in the
-#' exact same order in both groups. 
+#' # where true paired data is present! The only reason this works although this is
+#' # non-paired data is that the number of donors is identical. As it is, the algorithm
+#' # internally converts the idsVector so that the first individual in group1 is 
+#' # associated with the first individual in group2. This can lead to erratic 
+#' # problems, so make sure that either a valid id vector, with the same id occuring two
+#' # times for each individual is provided, or that the individuals occur in the
+#' # exact same order in both groups. 
 #' 
 #' sPLSDAObject <- dSplsda(
 #'    xYData = testDataSNE$Y, idsVector = testData$ids,
