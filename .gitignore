@@ -33,3 +33,6 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
+
+#Other files that should be excluded
+*.so
