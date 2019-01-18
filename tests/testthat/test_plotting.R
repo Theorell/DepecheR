@@ -5,8 +5,8 @@ data(testDataSNE)
 dColorPlot(colorData = testData[, 2:3], xYData = testDataSNE$Y, drawColorPalette = TRUE, createDirectory = FALSE, 
     createPlot = FALSE)
 
-testDataSubset <- rbind(testData[1:2000, ], testData[95001:97000, ])
-testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[95001:97000, ])
+testDataSubset <- rbind(testData[1:2000, ], testData[58001:60000, ])
+testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[58001:60000, ])
 testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
 dColorPlot(colorData = testColor, xYData = testDataSNESubset, names = "separate samplings", addLegend = TRUE, idsVector = testDataSubset$ids, 
     createDirectory = FALSE, createPlot = FALSE)
@@ -14,8 +14,8 @@ dColorPlot(colorData = testColor, xYData = testDataSNESubset, names = "separate 
 ###################### dColorPlotCoFunction
 data(testData)
 data(testDataSNE)
-testDataSubset <- rbind(testData[1:2000, ], testData[95001:97000, ])
-testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[95001:97000, ])
+testDataSubset <- rbind(testData[1:2000, ], testData[58001:60000, ])
+testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[58001:60000, ])
 
 densContour <- DepecheR:::dContours(as.data.frame(testDataSNESubset))
 testDataSNESubsetFraction <- DepecheR:::dScale(as.data.frame(testDataSNESubset), scale = c(0, 1), robustVarScale = FALSE, 
@@ -40,8 +40,8 @@ data(testDataSNE)
 dDensityPlot(xYData = testDataSNE$Y, commonName = "All_samplings", color = "blue", createDirectory = FALSE, createPlot = FALSE)
 
 # Alternative usage
-testDataSubset <- rbind(testData[1:1000, ], testData[96001:97000, ])
-testDataSNESubset <- rbind(testDataSNE$Y[1:1000, ], testDataSNE$Y[96001:97000, ])
+testDataSubset <- rbind(testData[1:2000, ], testData[58001:60000, ])
+testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[58001:60000, ])
 testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
 
 dDensityPlot(xYData = testDataSNESubset, color = testColor, plotEachIdSeparately = TRUE, idsVector = testDataSubset$ids, 

@@ -8,7 +8,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(testData)
+#' @usage data("testData")
 #'
 #' @format An object of class \code{'data.frame'};
 #'

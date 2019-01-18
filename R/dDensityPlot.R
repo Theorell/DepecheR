@@ -42,8 +42,8 @@
 #'
 #' # Now plot each id separately using a predefined colorscale separating each cluster.
 #' # For this purpose, four individual donors are extracted from the test dataset.
-#' testDataSubset <- rbind(testData[1:2000, ], testData[95001:97000, ])
-#' testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[95001:97000, ])
+#' testDataSubset <- rbind(testData[1:2000, ], testData[58001:60000, ])
+#' testDataSNESubset <- rbind(testDataSNE$Y[1:2000, ], testDataSNE$Y[58001:60000, ])
 #' testColor <- dColorVector(testDataSubset$ids, colorScale = 'plasma')
 #'
 #' dDensityPlot(

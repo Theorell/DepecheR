@@ -7,12 +7,11 @@ sPLSDAObject <- dSplsda(xYData = testDataSNE$Y, idsVector = testData$ids, groupV
     createOutput = FALSE)
 
 # Alternative usage
-xYDataPaired <- as.data.frame(testDataSNE$Y)[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
-testDataPaired <- testData[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
-clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000, 67001:nrow(testDataSNE$Y))]
-sPLSDAObject <- dSplsda(xYData = xYDataPaired, idsVector = testDataPaired$ids, groupVector = testDataPaired$label, 
-    clusterVector = clusterVectorPaired, paired = TRUE, name = "d_sPLSDAPlot_paired", groupName1 = "Stimulation 1", 
-    groupName2 = "Stimulation 2", createOutput = FALSE)
+sPLSDAObject <- dSplsda(
+    xYData = testDataSNE$Y, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, 
+    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
+    groupName2 = 'Stimulation 2')
 
 # Alternative usage
 subsetVector <- sample(1:nrow(testData), size = 10000)

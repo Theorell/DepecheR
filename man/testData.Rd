@@ -6,7 +6,7 @@
 \title{A 14 color flow cytometry dataset for example execution and playing around}
 \format{An object of class \code{'data.frame'};}
 \usage{
-data(testData)
+data("testData")
 }
 \description{
 This dataset is a 14 color pre-compensated, transformed flow cytometry dataset focusing

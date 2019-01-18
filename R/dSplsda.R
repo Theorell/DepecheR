@@ -45,22 +45,21 @@
 #'   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
 #' )
 #' 
-#' # Here, pairing is used
-#' # First, an artificial pairing vector is introduced and a subset of the data is used, to make the
-#' # number of donors identical. NB! Paired execution CAN ONLY BE USED
-#' # in instances where true pairing is present, such as when identical individuals are
-#' # compared across different treatments. This artificial example is only present to show how to
-#' # use the function, it is not good practive to set up artificial pairing vectors!
-#' xYDataPaired <- as.data.frame(testDataSNE$Y)[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
-#' testDataPaired <- testData[c(1:30000, 67001:nrow(testDataSNE$Y)), ]
-#' clusterVectorPaired <- testDataDepeche$clusterVector[c(1:30000, 67001:nrow(testDataSNE$Y))]
+#' # Here, pairing is used. NB!! This artificial example is only present to show how to
+#' # use the function. In reality, pairing should only be used in situations 
+#' where true paired data is present! The only reason this works although this is
+#' non-paired data is that the number of donors is identical. As it is, the algorithm
+#' internally converts the idsVector so that the first individual in group1 is 
+#' associated with the first individual in group2. This can lead to erratic 
+#' problems, so make sure that either a valid id vector, with the same id occuring two
+#' times for each individual is provided, or that the individuals occur in the
+#' exact same order in both groups. 
 #' 
-#' # Then the actual multilevel sPLS-DA is run.
 #' sPLSDAObject <- dSplsda(
-#'   xYData = xYDataPaired, idsVector = testDataPaired$ids,
-#'   groupVector = testDataPaired$label, clusterVector = clusterVectorPaired, paired = TRUE,
-#'   name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', groupName2 = 'Stimulation 2'
-#' )
+#'    xYData = testDataSNE$Y, idsVector = testData$ids,
+#'    groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, 
+#'    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
+#'    groupName2 = 'Stimulation 2')
 #' 
 #' # Here is an example of how the display vector can be used.
 #' subsetVector <- sample(1:nrow(testData), size = 10000)
