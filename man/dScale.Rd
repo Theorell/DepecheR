@@ -6,7 +6,7 @@
 \usage{
 dScale(x, control, scale = TRUE, robustVarScale = TRUE,
   center = "peak", truncate = FALSE, multiplicationFactor = 1,
-  multiCore = FALSE, returnCenter = FALSE)
+  multiCore = FALSE, returnCenter = FALSE, nCores = "default")
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -26,6 +26,8 @@ dScale(x, control, scale = TRUE, robustVarScale = TRUE,
 \item{multiCore}{If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 
 \item{returnCenter}{Boolean. If center=TRUE, should the value at the center be returned?}
+
+\item{nCores}{If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5 percent with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers.}
 }
 \value{
 A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled. In addition, if returnCenter=TRUE, a value, or a vector if x is a matrix or a data frame

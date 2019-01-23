@@ -19,7 +19,7 @@
 #' @param log2Off If the automatic detection for high kurtosis, and followingly, the log2 transformation, should be turned off.
 #' @param optimARI Above this level of ARI, all solutions are considered equally valid, and the median solution is selected among them.
 #' @param center If centering should be performed. Alternatives are 'default', 'mean', 'peak' and FALSE. 'peak' results in centering around the highest peak in the data, which is useful in most cytometry situations. 'mean' results in mean centering. 'default' gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. FALSE results in no centering, mainly for testing purposes.
-#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5% with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
+#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5 percent with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{

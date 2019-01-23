@@ -12,7 +12,7 @@
 #' @param center If centering should be performed. Alternatives are mean', 'peak' and FALSE. 'peak' results in centering around the highest peak in the data, which is useful in most cytometry situations. 'mean' results in mean centering.
 #' @param truncate If truncation of the most extreme values should be performed. Three possible values: TRUE, FALSE, and a vector with two values indicating the low and high threshold quantiles for truncation.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases speed in situations when very large datasets (eg >1 000 000 rows) are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
-#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5% with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
+#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5 percent with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
 #' @param multiplicationFactor A value that all values will be multiplied with. Useful e.g. if the results preferrably should be returned as percent. Defaults to FALSE.
 #' @param returnCenter Boolean. If center=TRUE, should the value at the center be returned?
 #' @return A vector or dataframe with the same size but where all values in the vector or column of the dataframe have been internally scaled. In addition, if returnCenter=TRUE, a value, or a vector if x is a matrix or a data frame

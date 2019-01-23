@@ -10,7 +10,7 @@ dColorPlot(colorData, controlData, xYData, names = "default",
   directoryName = "Variables displayed as color on SNE field",
   truncate = TRUE, bandColor = "black",
   dotSize = 500/sqrt(nrow(xYData)), multiCore = "default",
-  createPlot = TRUE)
+  nCores = "default", createPlot = TRUE)
 }
 \arguments{
 \item{colorData}{A vector, matrix or dataframe of numeric observations that will be displayed as color on the plot.}
@@ -42,6 +42,8 @@ dColorPlot(colorData, controlData, xYData, names = "default",
 \item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
 
 \item{multiCore}{If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.}
+
+\item{nCores}{If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5 percent with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers.}
 
 \item{createPlot}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
 }

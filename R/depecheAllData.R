@@ -16,7 +16,7 @@ depecheAllData <- function(inDataFrameScaled,
         if(nCores>10){
             nCores <- 10
         }
-    
+    }
     cl <- makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)
     i <- 1
