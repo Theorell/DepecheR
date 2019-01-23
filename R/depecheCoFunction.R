@@ -10,7 +10,7 @@ depecheCoFunction <- function(inDataFrameScaled,
     firstClusterNumber = 1, directoryName, 
     penalties, sampleSize, selectionSampleSize, 
     k, minARIImprovement, optimARI, maxIter, 
-    newNumbers, createDirectory = FALSE, 
+    newNumbers, createDirectory = FALSE, nCores=nCores,
     createOutput, logCenterSd) {
     if (createDirectory == TRUE) {
         workingDirectory <- getwd()
@@ -48,7 +48,7 @@ depecheCoFunction <- function(inDataFrameScaled,
         k = k, maxIter = maxIter, sampleSize = sampleSize, 
         penalties = penalties, makeGraph = createOutput, 
         minARIImprovement = minARIImprovement, 
-        optimARI = optimARI)
+        optimARI = optimARI, nCores=nCores)
     
     # Now over to creating the final solution
     # Here, the selectionDataSet is created
@@ -73,7 +73,8 @@ depecheCoFunction <- function(inDataFrameScaled,
         penalty <- dOptPenaltyResult[[1]][1, 
             1]
         depecheAllDataResult <- depecheAllData(inDataFrameUsed, 
-            penalty = penalty, k = k, firstClusterNumber = firstClusterNumber)
+            penalty = penalty, k = k, firstClusterNumber = firstClusterNumber,
+            nCores=nCores)
         clusterVectorEquidistant <- depecheAllDataResult[[1]]
         reducedClusterCenters <- depecheAllDataResult[[2]]
     } else {
@@ -97,8 +98,13 @@ depecheCoFunction <- function(inDataFrameScaled,
         # each allocationResult as the first
         # vector vector and all the others as
         # individual second vectors is identified
-        n_cores <- floor(detectCores()*0.875)
-        cl <- makeCluster(n_cores, type = "SOCK")
+        if( nCores=="default"){
+            nCores <- floor(detectCores()*0.875) 
+            if(nCores>10){
+                nCores <- 10
+            }
+        }
+        cl <- makeCluster(nCores, type = "SOCK")
         registerDoSNOW(cl)
         meanARIList <- foreach(i = seq_len(length(allocationResultList))) %dopar% 
             mean(vapply(allocationResultList, 

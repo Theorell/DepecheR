@@ -5,15 +5,19 @@
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
 depecheAllData <- function(inDataFrameScaled, 
-    penalty, firstClusterNumber = 1, k) {
+    penalty, firstClusterNumber = 1, k, nCores) {
     penaltyForRightSize <- penalty * ((nrow(inDataFrameScaled) * 
         sqrt(ncol(inDataFrameScaled)))/1450)
     
     dataMat <- data.matrix(inDataFrameScaled)
     
-    n_cores <- floor(detectCores()*0.875)
+    if( nCores=="default"){
+        nCores <- floor(detectCores()*0.875) 
+        if(nCores>10){
+            nCores <- 10
+        }
     
-    cl <- makeCluster(n_cores, type = "SOCK")
+    cl <- makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)
     i <- 1
     return_all <- foreach(i = seq_len(21), 

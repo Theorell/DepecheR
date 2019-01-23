@@ -19,6 +19,7 @@
 #' @param log2Off If the automatic detection for high kurtosis, and followingly, the log2 transformation, should be turned off.
 #' @param optimARI Above this level of ARI, all solutions are considered equally valid, and the median solution is selected among them.
 #' @param center If centering should be performed. Alternatives are 'default', 'mean', 'peak' and FALSE. 'peak' results in centering around the highest peak in the data, which is useful in most cytometry situations. 'mean' results in mean centering. 'default' gives different results depending on the data: datasets with 100+ variables are mean centered, and otherwise, peak centering is used. FALSE results in no centering, mainly for testing purposes.
+#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5% with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{
@@ -68,7 +69,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 
         2^5), sampleSize = "default", selectionSampleSize = "default", 
     k = 30, minARIImprovement = 0.01, optimARI = 0.95, 
-    maxIter = 100, log2Off = FALSE, center = "default", 
+    maxIter = 100, log2Off = FALSE, center = "default", nCores="default",
     createOutput = TRUE) {
     print(paste0("Files will be saved to ", 
         getwd()))
@@ -177,7 +178,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             firstClusterNumber = 1, penalties = penalties, 
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize, 
             k = k, minARIImprovement = minARIImprovement, 
-            optimARI = optimARI, maxIter = maxIter, 
+            optimARI = optimARI, maxIter = maxIter, nCores=nCores,
             createOutput = createOutput, 
             logCenterSd = logCenterSd)
         return(depecheResult)
@@ -199,7 +200,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize, 
             k = k, minARIImprovement = minARIImprovement, 
             optimARI == optimARI, maxIter = maxIter, 
-            createDirectory = TRUE, createOutput = createOutput, 
+            createDirectory = TRUE,  nCores=nCores, createOutput = createOutput, 
             logCenterSd = logCenterSd)
         
         print(paste("Done with level one clustering where ", 
@@ -243,8 +244,8 @@ depeche <- function(inDataFrame, dualDepecheSetup,
                 selectionSampleSize = selectionSampleSize, 
                 k = k, minARIImprovement = minARIImprovement, 
                 optimARI = optimARI, maxIter = maxIter, 
-                createDirectory = TRUE, createOutput = createOutput, 
-                logCenterSd = logCenterSd), 
+                createDirectory = TRUE, nCores=nCores, 
+                createOutput = createOutput, logCenterSd = logCenterSd), 
             SIMPLIFY = FALSE)
         
         # Now, all the clustering data is

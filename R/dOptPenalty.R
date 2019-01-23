@@ -7,7 +7,7 @@
 dOptPenalty <- function(inDataFrameScaled, 
     k, maxIter, minARIImprovement, sampleSize, 
     penalties, makeGraph, disableWarnings = FALSE, 
-    optimARI) {
+    optimARI, nCores=nCores) {
     
     # The constant k is empirically
     # identified by running a large number of
@@ -16,7 +16,12 @@ dOptPenalty <- function(inDataFrameScaled,
     realPenalties <- penalties * penaltyConstant
     roundPenalties <- round(penalties, digits = 1)
     
-    chunkSize <- floor(detectCores()*0.875)
+    if( nCores=="default"){
+        nCores <- floor(detectCores()*0.875) 
+        if(nCores>10){
+            nCores <- 10
+        }
+    }
     
     dataMat <- data.matrix(inDataFrameScaled, 
         rownames.force = NA)
@@ -27,19 +32,19 @@ dOptPenalty <- function(inDataFrameScaled,
     iter <- 1
     std <- 1
     # distanceBetweenMinAndBestPrevious=-1
-    iterTimesChunkSize <- 1
+    iterTimesNCores <- 1
     allClusterCentersPenaltySorted <- list()
-    cl <- makeCluster(chunkSize, type = "SOCK")
+    cl <- makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)
     
     interestingPenalties <- realPenalties
     usedPositions <- seq_len(length(realPenalties))
     
-    while (iterTimesChunkSize < 20 || (iterTimesChunkSize < 
+    while (iterTimesNCores < 20 || (iterTimesNCores < 
         maxIter && (std >= minARIImprovement || 
         distanceBetweenMaxAndSecond > 0))) {
         ptm <- proc.time()
-        optimList <- foreach(i = seq_len(chunkSize), 
+        optimList <- foreach(i = seq_len(nCores), 
             .packages = "DepecheR") %dopar% 
             grid_search(dataMat, k, interestingPenalties, 
                 1, sampleSize, i)
@@ -110,7 +115,7 @@ dOptPenalty <- function(inDataFrameScaled,
         }
         
         stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter * 
-            chunkSize))
+            nCores))
         meanOptimDf <- data.frame(meanOptimList[[1]], 
             meanOptimList[[3]])
         
@@ -191,7 +196,7 @@ dOptPenalty <- function(inDataFrameScaled,
         # Finally, another criterion on the gain
         # of adding more rows is included
         std <- stdOptimVector[maxPos]
-        iterTimesChunkSize <- iter * chunkSize
+        iterTimesNCores <- iter * nCores
         
         # Here, the cluster center information
         # for each run is saved: First all
@@ -227,7 +232,7 @@ dOptPenalty <- function(inDataFrameScaled,
         
         fullTime <- proc.time() - ptm
         print(paste("Set ", iter, " with ", 
-            chunkSize, " iterations completed in ", 
+            nCores, " iterations completed in ", 
             round(fullTime[3]), " seconds.", 
             sep = ""))
         iter <- iter + 1
@@ -236,10 +241,10 @@ dOptPenalty <- function(inDataFrameScaled,
     stopCluster(cl)
     
     print(paste("The optimization was iterated ", 
-        (iter - 1) * chunkSize, " times.", 
+        (iter - 1) * nCores, " times.", 
         sep = ""))
     
-    if (iter * chunkSize >= maxIter && std > 
+    if (iter * nCores >= maxIter && std > 
         minARIImprovement) {
         warning("The maximum number of iterations was reached before stable optimal solution was found")
     }

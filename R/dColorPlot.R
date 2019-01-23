@@ -21,6 +21,7 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
 #' @param multiCore If the algorithm should be performed on multiple cores. This increases the speed if the dataset is medium-large (>100000 rows) and has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and FALSE otherwise.
+#' @param nCores If multiCore is TRUE, then this sets the number of parallel processes. The default is currently 87.5% with a cap on 10 cores, as no speed increase is generally seen above 10 cores for normal computers. 
 #' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
@@ -54,7 +55,7 @@ dColorPlot <- function(colorData, controlData,
     title = FALSE, createDirectory = TRUE, 
     directoryName = "Variables displayed as color on SNE field", 
     truncate = TRUE, bandColor = "black", 
-    dotSize = 500/sqrt(nrow(xYData)), multiCore = "default", 
+    dotSize = 500/sqrt(nrow(xYData)), multiCore = "default", nCores="default",
     createPlot = TRUE) {
     if (any(is(colorData) == "matrix")) {
         colorData <- as.data.frame(colorData)
@@ -146,8 +147,14 @@ dColorPlot <- function(colorData, controlData,
             }
         }
         if (multiCore == TRUE) {
-            no_cores <- floor(detectCores()*0.875)
-            cl <- makeCluster(no_cores, type = "SOCK")
+            if( nCores=="default"){
+                nCores <- floor(detectCores()*0.875) 
+                if(nCores>10){
+                    nCores <- 10
+                }
+            }
+            
+            cl <- makeCluster(nCores, type = "SOCK")
             registerDoSNOW(cl)
             i <- 1
             foreach(i = seq_len(ncol(colorVectors)), 
