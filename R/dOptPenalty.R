@@ -16,7 +16,7 @@ dOptPenalty <- function(inDataFrameScaled,
     realPenalties <- penalties * penaltyConstant
     roundPenalties <- round(penalties, digits = 1)
     
-    chunkSize <- detectCores() - 1
+    chunkSize <- floor(detectCores()*0.875)
     
     dataMat <- data.matrix(inDataFrameScaled, 
         rownames.force = NA)

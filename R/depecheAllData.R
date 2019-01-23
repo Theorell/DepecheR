@@ -11,7 +11,7 @@ depecheAllData <- function(inDataFrameScaled,
     
     dataMat <- data.matrix(inDataFrameScaled)
     
-    n_cores <- detectCores() - 1
+    n_cores <- floor(detectCores()*0.875)
     
     cl <- makeCluster(n_cores, type = "SOCK")
     registerDoSNOW(cl)

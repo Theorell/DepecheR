@@ -95,7 +95,7 @@ dScale <- function(x, control, scale = TRUE,
     }
     if (any(is(x) == "data.frame")) {
         if (multiCore == TRUE) {
-            no_cores <- detectCores() - 1
+            no_cores <- floor(detectCores()*0.875)
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
             if (returnCenter == FALSE) {

@@ -146,7 +146,7 @@ dColorPlot <- function(colorData, controlData,
             }
         }
         if (multiCore == TRUE) {
-            no_cores <- detectCores() - 1
+            no_cores <- floor(detectCores()*0.875)
             cl <- makeCluster(no_cores, type = "SOCK")
             registerDoSNOW(cl)
             i <- 1

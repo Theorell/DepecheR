@@ -97,7 +97,7 @@ depecheCoFunction <- function(inDataFrameScaled,
         # each allocationResult as the first
         # vector vector and all the others as
         # individual second vectors is identified
-        n_cores <- detectCores() - 1
+        n_cores <- floor(detectCores()*0.875)
         cl <- makeCluster(n_cores, type = "SOCK")
         registerDoSNOW(cl)
         meanARIList <- foreach(i = seq_len(length(allocationResultList))) %dopar% 
