@@ -47,6 +47,7 @@ A sne based plot showing which events that belong to a cluster dominated by the 
 This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
 }
 \examples{
+\dontrun{
 # Load some data
 data(testData)
 
@@ -66,6 +67,7 @@ dResidualPlot(
   xYData = testDataSNE$Y, groupVector = testData[, 16],
   clusterVector = testDataDepeche$clusterVector
 )
+}
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}

@@ -23,6 +23,7 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function always returns a dataframe showing the Wilcoxon statistic and the p-value for each cluster, with an included adjustment for multiple comparisons (see above). It also returns a sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
+#' \dontrun{
 #' # Load some data
 #' data(testData)
 #' 
@@ -58,6 +59,7 @@
 #'   xYData = testDataSNESubset, idsVector = testData$ids,
 #'   groupVector = testData$label, clusterVector = 
 #'   testDataDepeche$clusterVector, displayVector = subsetVector)
+#' }
 #' @export dWilcox
 dWilcox <- function(xYData, idsVector, groupVector, 
     clusterVector, displayVector, paired = FALSE, 

@@ -26,6 +26,7 @@
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
+#' \dontrun{
 #' # Load some data
 #' data(testData)
 #'
@@ -48,6 +49,7 @@
 #'   colorData = testColor, xYData = testDataSNESubset,
 #'   names = 'separate samplings', addLegend = TRUE, idsVector = testDataSubset$ids
 #' )
+#' }
 #' @export dColorPlot
 dColorPlot <- function(colorData, controlData, 
     xYData, names = "default", densContour = TRUE, 

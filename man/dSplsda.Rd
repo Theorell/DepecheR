@@ -56,6 +56,7 @@ This function returns the full result of the sPLS-DA. It also returns a SNE base
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
 }
 \examples{
+\dontrun{
 # Load some data
 data(testData)
 
@@ -119,6 +120,7 @@ sPLSDAObject <- dSplsda(
   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
   testSampleRows = testDataRows
 )
+}
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}

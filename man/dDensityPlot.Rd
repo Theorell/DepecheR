@@ -52,6 +52,7 @@ Plots showing the densities of the specific xYData (subset) displayed as color o
 Function to show density for a set of observations on a field created by two variables. The plot is constructed primarily for displaying density of 2D-stochastic neighbour embedding fields, but can be used for any sets of two known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 }
 \examples{
+\dontrun{
 # Load some data
 data(testData)
 
@@ -82,6 +83,7 @@ dDensityPlot(
   xYData = testDataSNESubset, color = testColor, idsVector = testDataSubset$ids,
   commonName = 'all samplings'
 )
+}
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}

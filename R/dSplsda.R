@@ -25,6 +25,7 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function returns the full result of the sPLS-DA. It also returns a SNE based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
 #' @examples
+#' \dontrun{
 #' # Load some data
 #' data(testData)
 #' 
@@ -88,6 +89,7 @@
 #'   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
 #'   testSampleRows = testDataRows
 #' )
+#' }
 #' @export dSplsda
 dSplsda <- function(xYData, idsVector, groupVector, 
     clusterVector, displayVector, testSampleRows, 

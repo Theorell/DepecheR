@@ -1,4 +1,13 @@
-DepecheR v0.99.20 (Release date: 2019-01-18)
+DepecheR v0.99.24 (Release date: 2019-01-24)
+==============
+
+Changes:
+
+* Technical, internal changes: tests have been made more efficient. Redundant 
+* and time consuming examples have been given a dontrun command. No changes to
+* user functions. 
+
+DepecheR v0.99.20 (Release date: 2019-01-23)
 ==============
 
 Changes:

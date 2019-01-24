@@ -26,6 +26,7 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
 #' @examples
+#' \dontrun{
 #' # Load some data
 #' data(testData)
 #'
@@ -56,6 +57,7 @@
 #'   xYData = testDataSNESubset, color = testColor, idsVector = testDataSubset$ids,
 #'   commonName = 'all samplings'
 #' )
+#' }
 #' @export dDensityPlot
 dDensityPlot <- function(xYData, color = "blue", 
     commonName = "All_density", plotEachIdSeparately = FALSE, 
