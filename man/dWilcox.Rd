@@ -57,7 +57,7 @@ This function always returns a dataframe showing the Wilcoxon statistic and the 
 This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
 }
 \examples{
-\dontrun{
+
 # Load some data
 data(testData)
 
@@ -72,6 +72,7 @@ data(testDataSNE)
 # testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
+\dontrun{
 # Run the function
 dWilcoxResult <- dWilcox(
   xYData = testDataSNE$Y, idsVector = testData$ids,

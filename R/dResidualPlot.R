@@ -19,7 +19,6 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
 #' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
 #' @examples
-#' \dontrun{
 #' # Load some data
 #' data(testData)
 #' 
@@ -34,6 +33,7 @@
 #' # testDataDepeche <- depeche(testData[,2:15])
 #' data(testDataDepeche)
 #' 
+#' \dontrun{
 #' # And finally run the function
 #' dResidualPlot(
 #'   xYData = testDataSNE$Y, groupVector = testData[, 16],

@@ -26,7 +26,7 @@
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created by xYData.
 #' @examples
-#' \dontrun{
+#' 
 #' # Load some data
 #' data(testData)
 #'
@@ -35,7 +35,8 @@
 #' # library(Rtsne)
 #' # testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
-#'
+#' 
+#' \dontrun{
 #' # Run the function for two of the variables
 #' dColorPlot(colorData = testData[2:3], xYData = testDataSNE$Y,
 #' drawColorPalette = TRUE)

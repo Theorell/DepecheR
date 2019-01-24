@@ -26,7 +26,7 @@
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed as color on the field created by the same xYData (subset).
 #' @examples
-#' \dontrun{
+#' 
 #' # Load some data
 #' data(testData)
 #'
@@ -35,6 +35,7 @@
 #' # testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
 #'
+#' \dontrun{
 #' # Plot all ids together and use a fixed color
 #' dDensityPlot(
 #'   xYData = testDataSNE$Y, commonName = 'All_samplings',

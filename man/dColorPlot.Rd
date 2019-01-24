@@ -54,7 +54,7 @@ Plots showing the colorData displayed as color on the field created by xYData.
 Function to overlay one variable for a set of observations on a field created by two other variables known for the same observations. The plot is constructed primarily for displaying variables on 2D-stochastic neighbour embedding fields, but can be used for any sets of (two or) three variables known for the same observations. As the number of datapoints is often very high, the files would, if saved as pdf of another vector based file type become extremely big. For this reason, the plots are saved as jpeg and no axes or anything alike are added, to simplify usage in publications.
 }
 \examples{
-\dontrun{
+
 # Load some data
 data(testData)
 
@@ -64,6 +64,7 @@ data(testData)
 # testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 data(testDataSNE)
 
+\dontrun{
 # Run the function for two of the variables
 dColorPlot(colorData = testData[2:3], xYData = testDataSNE$Y,
 drawColorPalette = TRUE)
