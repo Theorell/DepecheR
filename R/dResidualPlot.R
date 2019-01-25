@@ -22,6 +22,7 @@
 #' # Load some data
 #' data(testData)
 #' 
+#' \dontrun{
 #' # Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
 #' # data is inluded
 #' # library(Rtsne)
@@ -33,7 +34,7 @@
 #' # testDataDepeche <- depeche(testData[,2:15])
 #' data(testDataDepeche)
 #' 
-#' \dontrun{
+#' 
 #' # And finally run the function
 #' dResidualPlot(
 #'   xYData = testDataSNE$Y, groupVector = testData[, 16],

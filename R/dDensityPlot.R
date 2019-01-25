@@ -29,13 +29,14 @@
 #' 
 #' # Load some data
 #' data(testData)
-#'
+#' 
+#' \dontrun{
 #' # Run Barnes Hut tSNE on this. For more rapid example execution, a pre-run SNE is inluded
 #' # library(Rtsne)
 #' # testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 #' data(testDataSNE)
 #'
-#' \dontrun{
+#' 
 #' # Plot all ids together and use a fixed color
 #' dDensityPlot(
 #'   xYData = testDataSNE$Y, commonName = 'All_samplings',

@@ -12,7 +12,8 @@
 #' @examples
 #' # Retrieve some example data
 #' data(testData)
-#'
+#' 
+#' \dontrun{
 #' # Now arbitrarily (for the sake of the example) divide the data into a
 #' # training- and a test set.
 #' testDataSample <- sample(1:nrow(testData), size = 48500)
@@ -20,7 +21,6 @@
 #' testDataTest <- testData[-testDataSample, ]
 #'
 #' # Run the depeche function for the train set
-#' \dontrun{
 #'
 #' x_depeche_train <- depeche(testDataTrain[, 2:15], maxIter = 20,
 #'sampleSize = 1000)

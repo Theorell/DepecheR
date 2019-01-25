@@ -18,13 +18,13 @@
 #' # Load some data
 #' data(testData)
 #' 
+#' \dontrun{
 #' # Run the clustering function. For more rapid example execution,
 #' # a depeche clustering of the data is inluded
 #' # testDataDepeche <- depeche(testData[,2:15])
 #' data(testDataDepeche)
 #' 
 #' # Create the plots of the variables that contribute to creating each cluster
-#' \dontrun{
 #' dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, 
 #' inDataFrame = testData[, 2:15])
 #' }

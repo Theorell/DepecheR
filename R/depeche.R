@@ -40,15 +40,11 @@
 #' # First, just run with the standard settings
 #' \dontrun{
 #' testDataDepecheResult <- depeche(testData[, 2:15])
-#' }
 #' 
 #' # Look at the result
-#' \dontrun{
 #' str(testDataDepecheResult)
-#' }
 #' 
 #' # Now, a dual depeche setup is used
-#' \dontrun{
 #' testDataDepecheResultDual <- depeche(testData[, 2:15],
 #'   dualDepecheSetup = data.frame(
 #'     rep(1:2, each = 7),
@@ -56,10 +52,8 @@
 #'   ), penalties = c(64, 128), sampleSize = 500, selectionSampleSize = 500,
 #'   maxIter = 20
 #' )
-#' }
 #' 
 #' # Look at the result
-#' \dontrun{
 #' str(testDataDepecheResultDual)
 #' }
 #' 
