@@ -13,7 +13,7 @@
 #' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE. a
 #' @param addLegend If this is set to true, a separate legend plot is produced. This is most useful when the color data contains specific info about separate ids, such as clusters. Default is FALSE.
 #' @param idsVector If a legend is added, this argument controls the naming in the legend.
-#' @param drawColorPalette If a separate plot with the color palette used for the plots should be printed and saved.
+#' @param drawColorPalette If a separate plot with the color palette used for the plots should be ed and saved.
 #' @param title If there should be a title displayed on the plotting field. As the plotting field is saved a jpeg, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
 #' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be created.
@@ -56,24 +56,24 @@ dColorPlot <- function(colorData, controlData,
     xYData, names = "default", densContour = TRUE, 
     addLegend = FALSE, idsVector, drawColorPalette = FALSE, 
     title = FALSE, createDirectory = TRUE, 
-    directoryName = "Variables displayed as color on SNE field", 
+    directoryName = "dColorPlot_results", 
     truncate = TRUE, bandColor = "black", 
     dotSize = 500/sqrt(nrow(xYData)), multiCore = "default", nCores="default",
     createPlot = TRUE) {
-    if (any(is(colorData) == "matrix")) {
+    if (is.matrix(colorData)) {
         colorData <- as.data.frame(colorData)
     }
     
-    if (any(is(colorData) == "numeric") == 
-        FALSE && any(is(colorData) == "integer") == 
-        FALSE && any(is(colorData) == "data.frame") == 
-        FALSE && any(is(colorData) == "character") == 
+    if (is.numeric(colorData) == 
+        FALSE && is.integer(colorData) == 
+        FALSE && is.data.frame(colorData) == 
+        FALSE && is.character(colorData) == 
         FALSE) {
         stop("ColorData needs to be either a numeric vector, a character vector
         of colors or a matrix or dataframe of numbers.")
     }
     
-    if (any(is(xYData) == "matrix")) {
+    if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     if (ncol(xYData) != 2) {
@@ -81,26 +81,21 @@ dColorPlot <- function(colorData, controlData,
     }
     
     if (createDirectory == TRUE) {
-        workingDirectory <- getwd()
         dir.create(directoryName)
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
-    if (names == "default" && any(is(colorData) == 
-        "numeric")) {
+    
+    if (names == "default" && is.numeric(colorData)) {
         names <- "testVariable"
     }
-    if (names == "default" && any(is(colorData) == 
-        "character")) {
+    if (names == "default" && is.character(colorData)) {
         names <- "Ids"
     }
     
-    if (names == "default" && any(is(colorData) == 
-        "data.frame")) {
+    if (names == "default" && is.data.frame(colorData)) {
         names <- colnames(colorData)
     }
     
-    if (missing(controlData) == TRUE) {
+    if (missing(controlData)) {
         controlData <- colorData
     }
     
@@ -113,13 +108,17 @@ dColorPlot <- function(colorData, controlData,
     
     if (drawColorPalette == TRUE && createPlot == 
         TRUE) {
-        pdf("palette.pdf")
+        if (createDirectory == TRUE) {
+            pdf(file.path(directoryName, "palette.pdf"))
+        } else {
+            pdf("palette.pdf") 
+        }
         palette(rev(rich.colors(100, plot = TRUE)))
         dev.off()
     }
     
     
-    if (any(is(colorData) == "numeric")) {
+    if (is.numeric(colorData)) {
         colorDataPercent <- dScale(colorData, 
             control = controlData, scale = c(0, 
                 1), robustVarScale = FALSE, 
@@ -130,18 +129,18 @@ dColorPlot <- function(colorData, controlData,
         dColorPlotCoFunction(colorVariable = colorVector, 
             name = names, xYData = xYData, 
             title = title, densContour = densContour, 
-            bandColor = bandColor, dotSize = dotSize, 
+            bandColor = bandColor, dotSize = dotSize, createDirectory = 
+                createDirectory, directoryName = directoryName,
             createPlot = createPlot)
     }
-    if (any(is(colorData) == "data.frame")) {
+    if (is.data.frame(colorData)) {
         colorDataPercent <- dScale(x = colorData, 
             control = controlData, scale = c(0, 
                 1), robustVarScale = FALSE, 
             center = FALSE, multiplicationFactor = 100, 
             truncate = truncate)
-        colorVectors <- apply(round(colorDataPercent), 
-            2, dColorVector, colorScale = "rich_colors", 
-            order = c(0:100))
+        colorVectors <- apply(round(colorDataPercent), 2, dColorVector, 
+                              colorScale = "rich_colors", order = c(0:100))
         if (multiCore == "default") {
             if (nrow(colorData) > 1e+05) {
                 multiCore <- TRUE
@@ -156,33 +155,38 @@ dColorPlot <- function(colorData, controlData,
                     nCores <- 10
                 }
             }
-            
             cl <- makeCluster(nCores, type = "SOCK")
             registerDoSNOW(cl)
-            i <- 1
-            foreach(i = seq_len(ncol(colorVectors)), 
-                .inorder = FALSE) %dopar% 
-                dColorPlotCoFunction(colorVariable = colorVectors[, 
-                  i], name = names[i], xYData = xYData, 
-                  title = title, densContour = densContour, 
-                  bandColor = bandColor, 
-                  dotSize = dotSize, createPlot = createPlot)
+            return_all <- 
+                foreach(i = seq_len(ncol(colorVectors)), 
+                                    .packages = "DepecheR") %dopar% 
+                dColorPlotCoFunction(
+                    colorVariable = colorVectors[,i],
+                    name = names[i], xYData = xYData,
+                    title = title, densContour = densContour,
+                    bandColor = bandColor, dotSize = dotSize,
+                    createDirectory = createDirectory, 
+                    directoryName = directoryName, createPlot = createPlot)
             stopCluster(cl)
+
         } else {
             mapply(dColorPlotCoFunction, 
                 as.data.frame.matrix(colorVectors, 
                   stringsAsFactors = FALSE), 
                 names, MoreArgs = list(xYData = xYData, 
                   title = title, densContour = densContour, 
-                  bandColor = bandColor, 
-                  dotSize = dotSize, createPlot = createPlot))
+                  bandColor = bandColor, dotSize = dotSize, 
+                  createDirectory = createDirectory, 
+                  directoryName = directoryName, createPlot = createPlot))
         }
     }
-    if (any(is(colorData) == "character")) {
+    if (is.character(colorData)) {
         dColorPlotCoFunction(colorVariable = colorData, 
             name = names, xYData = xYData, 
             title = title, densContour = densContour, 
             bandColor = bandColor, dotSize = dotSize, 
+            createDirectory = createDirectory, 
+            directoryName = directoryName, 
             createPlot = createPlot)
     }
     
@@ -195,8 +199,12 @@ dColorPlot <- function(colorData, controlData,
             unique(idsVector), stringsAsFactors = FALSE)
         colorIdsDataFrame <- colorIdsDataFrame[order(colorIdsDataFrame[, 
             2]), ]
-        pdf(paste("Legend for ", names, ".pdf", 
-            sep = ""))
+        if (createDirectory == TRUE) {
+            pdf(file.path(directoryName, paste0("Legend for ", names, ".pdf")))
+        } else {
+            pdf(paste0("Legend for ", names, ".pdf")) 
+        }
+        
         plot.new()
         legend("center", legend = colorIdsDataFrame[, 
             2], col = colorIdsDataFrame[, 
@@ -204,11 +212,6 @@ dColorPlot <- function(colorData, controlData,
             pch = 19)
         dev.off()
     }
-    
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
-    }
-    
-    print(paste0("Files were saved at ", 
-        getwd()))
+
+    message("Files were saved at ", getwd())
 }

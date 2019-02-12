@@ -1,7 +1,8 @@
 dDensityPlotCoFunction <- function(xYData, 
     multipleColors = FALSE, cols, colorList, 
     name, densContour, bandColor, dotSize, 
-    title, createPlot = TRUE) {
+    title, createDirectory, directoryName,
+    createPlot = FALSE) {
     if (length(densContour) > 1) {
         xlim <- c(min(densContour[[1]]), 
             max(densContour[[1]]))
@@ -40,21 +41,18 @@ dDensityPlotCoFunction <- function(xYData,
             1]]
         color <- colorList[[length(colorList)]]
         dfList <- list()
-        for (i in seq_len(length(colors))) {
-            x1 <- xYData[color == colors[i], 
-                1]
-            x2 <- xYData[color == colors[i], 
-                2]
+        for (i in seq_along(colors)) {
+            x1 <- xYData[color == colors[i],1]
+            x2 <- xYData[color == colors[i],2]
             df <- data.frame(x1, x2)
             cols <- colorList[[i]]
             ## Use densCols() output to get density at
             ## each point. The colors here are only
             ## supporting the coming order of the rows
             ## further down the script.
-            x <- densCols(x1, x2, colramp = colorRampPalette(c("black", 
-                "white")))
-            df$dens <- col2rgb(x)[1, ] + 
-                1L
+            x <- densCols(x1, x2, colramp = colorRampPalette(c("black",
+                                                               "white")))
+            df$dens <- col2rgb(x)[1, ] + 1L
             df$col <- cols[df$dens]
             dfList[[i]] <- df
         }
@@ -62,8 +60,15 @@ dDensityPlotCoFunction <- function(xYData,
         df <- do.call("rbind", dfList)
     }
     
-    png(paste(name, ".png", sep = ""), width = 2500, 
-        height = 2500, units = "px", bg = "transparent")
+    if (createDirectory == TRUE) {
+        png(file.path(directoryName, paste0(name, ".png")), width = 2500, 
+                      height = 2500, units = "px", bg = "transparent")
+    } else {
+        png(paste0(name, ".png"), width = 2500, 
+            height = 2500, units = "px", bg = "transparent")
+    }
+    
+    
     # Plot it, reordering rows so that
     # densest points are plotted on top
     if (createPlot == TRUE) {

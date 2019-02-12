@@ -1,5 +1,6 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
+#' @importFrom foreach foreach %dopar%
 #' @importFrom moments kurtosis
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
@@ -17,13 +18,14 @@ depecheAllData <- function(inDataFrameScaled,
             nCores <- 10
         }
     }
+    
     cl <- makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)
-    i <- 1
     return_all <- foreach(i = seq_len(21), 
         .packages = "DepecheR") %dopar% sparse_k_means(dataMat, 
         round(k * 3), penaltyForRightSize, 
         1, i)
+    stopCluster(cl)
     
     # Here, the best iteration is retrieved,
     # if this is not one with only 1 cluster
@@ -38,9 +40,6 @@ depecheAllData <- function(inDataFrameScaled,
     maxN <- max(logMaxLikNotOne)
     returnLowest <- return_all[[which(logMaxLik == 
         maxN)[1]]]
-    
-    
-    stopCluster(cl)
     
     # And here, the optimal results, given if
     # an origo cluster should be included or

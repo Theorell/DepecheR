@@ -13,10 +13,7 @@ depecheCoFunction <- function(inDataFrameScaled,
     newNumbers, createDirectory = FALSE, nCores=nCores,
     createOutput, logCenterSd) {
     if (createDirectory == TRUE) {
-        workingDirectory <- getwd()
         dir.create(directoryName)
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
     
     # First, if the dataset is very, very
@@ -48,7 +45,8 @@ depecheCoFunction <- function(inDataFrameScaled,
         k = k, maxIter = maxIter, sampleSize = sampleSize, 
         penalties = penalties, makeGraph = createOutput, 
         minARIImprovement = minARIImprovement, 
-        optimARI = optimARI, nCores=nCores)
+        optimARI = optimARI, nCores=nCores, createDirectory=createDirectory, 
+        directoryName=directoryName)
     
     # Now over to creating the final solution
     # Here, the selectionDataSet is created
@@ -107,10 +105,8 @@ depecheCoFunction <- function(inDataFrameScaled,
         cl <- makeCluster(nCores, type = "SOCK")
         registerDoSNOW(cl)
         meanARIList <- foreach(i = seq_len(length(allocationResultList))) %dopar% 
-            mean(vapply(allocationResultList, 
-                FUN.VALUE = 0.5, rand_index, 
-                inds2 = allocationResultList[[i]], 
-                k = k))
+            mean(vapply(allocationResultList, FUN.VALUE = 0.5, rand_index, 
+                inds2 = allocationResultList[[i]], k = k))
         stopCluster(cl)
         meanARIVector <- unlist(meanARIList)
         
@@ -196,7 +192,9 @@ depecheCoFunction <- function(inDataFrameScaled,
     # centers is saved. Only true if the
     # number of clusters exceeds one.
     if (ncol(reducedClusterCenters) > 500) {
-        print("as the number of variables in the result exceeds 500, it is not meaningful to produce a cluster center heatmap, so it is omitted")
+        message("As the number of variables in the result exceeds 500, 
+                it is not meaningful to produce a cluster center heatmap, 
+                so it is omitted")
     } else if (nrow(reducedClusterCenters) > 
         1 && ncol(reducedClusterCenters) > 
         1) {
@@ -226,7 +224,12 @@ depecheCoFunction <- function(inDataFrameScaled,
         
         if (createOutput == TRUE) {
             if (logCenterSd[1] == FALSE) {
-                pdf("Cluster_centers.pdf")
+                if(createDirectory == TRUE){
+                    pdf(file.path(directoryName, "Cluster_centers.pdf"))
+                } else {
+                    pdf("Cluster_centers.pdf") 
+                }
+                
                 heatmap.2(as.matrix(graphicClusterCenters), 
                   Rowv = FALSE, Colv = FALSE, 
                   dendrogram = "none", scale = "none", 
@@ -238,7 +241,12 @@ depecheCoFunction <- function(inDataFrameScaled,
                   na.color = "#A2A2A2")
                 dev.off()
             } else {
-                pdf("Log2 transformed cluster centers.pdf")
+                if(createDirectory == TRUE){
+                    pdf(file.path(directoryName, 
+                                  "Log2 transformed cluster centers.pdf"))
+                } else {
+                    pdf("Log2 transformed cluster centers.pdf") 
+                }
                 heatmap.2(as.matrix(graphicClusterCenters), 
                   Rowv = FALSE, Colv = FALSE, 
                   dendrogram = "none", scale = "none", 
@@ -246,7 +254,8 @@ depecheCoFunction <- function(inDataFrameScaled,
                     1, length.out = 12), 
                   trace = "none", keysize = 1.5, 
                   density.info = "none", 
-                  key.xlab = "0=no expression, 1=high expression\ngrey=penalized", 
+                  key.xlab = "0=no expression, 1=high 
+                  expression\ngrey=penalized", 
                   na.color = "#A2A2A2")
                 dev.off()
             }
@@ -267,10 +276,6 @@ depecheCoFunction <- function(inDataFrameScaled,
             "log2ClusterCenters", "sparsityMatrix", 
             "penaltyOptList")
     }
-    
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
-    }
-    
+
     return(depecheResult)
 }

@@ -1,6 +1,6 @@
 dColorPlotCoFunction <- function(colorVariable, 
     name, xYData, title = FALSE, densContour, 
-    bandColor, dotSize, createPlot = TRUE) {
+    bandColor, dotSize, createDirectory, directoryName, createPlot = TRUE) {
     colnames(xYData) <- c("V1", "V2")
     
     
@@ -19,10 +19,14 @@ dColorPlotCoFunction <- function(colorVariable,
         ylim <- c(minY - abs(minY * 0.05), 
             maxY + abs(maxY * 0.05))
     }
-    
-    png(paste(name, ".png", sep = ""), width = 2500, 
-        height = 2500, units = "px", bg = "transparent")
-    
+    if(createDirectory==TRUE){
+        png(file.path(directoryName, paste(name, ".png", sep = "")), 
+            width = 2500, height = 2500, units = "px", bg = "transparent")
+    } else {
+        png(paste(name, ".png", sep = ""), width = 2500, 
+            height = 2500, units = "px", bg = "transparent")
+    }
+
     # Plot it
     if (createPlot == TRUE) {
         if (title == TRUE) {

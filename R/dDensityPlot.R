@@ -64,17 +64,14 @@
 dDensityPlot <- function(xYData, color = "blue", 
     commonName = "All_density", plotEachIdSeparately = FALSE, 
     idsVector, densContour = TRUE, title = FALSE, 
-    createDirectory = TRUE, directoryName = paste("Density plots for ", 
-        commonName, "s", sep = ""), bandColor = "black", 
+    createDirectory = TRUE, directoryName = paste0("Density plots for ", 
+        commonName), bandColor = "black", 
     dotSize = 500/sqrt(nrow(xYData)), createPlot = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
-        workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
     
-    if (any(is(xYData) == "matrix")) {
+    if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     
@@ -98,21 +95,23 @@ dDensityPlot <- function(xYData, color = "blue",
                 cols = cols, name = commonName, 
                 densContour = densContour, 
                 bandColor = bandColor, dotSize = dotSize, 
-                title = title, createPlot = createPlot)
+                title = title, createDirectory = createDirectory, directoryName 
+                = directoryName, createPlot = createPlot)
         }
         
         if (plotEachIdSeparately == TRUE) {
             uniqueIds <- unique(idsVector)
             
-            for (i in seq_len(length(uniqueIds))) {
+            for (i in seq_along(uniqueIds)) {
                 dDensityPlotCoFunction(xYData = xYData[idsVector == 
-                  uniqueIds[i], ], cols = cols, 
-                  name = paste(commonName, 
+                    uniqueIds[i], ], cols = cols, 
+                    name = paste(commonName, 
                     uniqueIds[i], "density", 
                     sep = " "), densContour = densContour, 
-                  bandColor = bandColor, 
-                  dotSize = dotSize, title = title, 
-                  createPlot = createPlot)
+                    bandColor = bandColor, 
+                    dotSize = dotSize, title = title, createDirectory = 
+                    createDirectory, directoryName = directoryName,
+                    createPlot = createPlot)
             }
         }
     }
@@ -121,11 +120,10 @@ dDensityPlot <- function(xYData, color = "blue",
         # Here, the colors are defined
         colors <- vapply(unique(color), FUN.VALUE = "xyz", 
             as.character)
-        colorList <- list()
-        for (i in seq_len(length(colors))) {
-            colorList[[i]] <- colorRampPalette(c("black", 
-                "grey", colors[i]))(256)
-        }
+        
+        colorList <- lapply(colors, function(x) 
+            colorRampPalette(c("black", "grey", x))(256))
+        
         colorList[[length(colors) + 1]] <- colors
         colorList[[length(colors) + 2]] <- color
         
@@ -135,9 +133,10 @@ dDensityPlot <- function(xYData, color = "blue",
                 multipleColors = TRUE, colorList = colorList, 
                 name = commonName, densContour = densContour, 
                 bandColor = bandColor, dotSize = dotSize, 
-                title = title, createPlot = createPlot)
+                title = title, createDirectory = createDirectory, 
+                directoryName = directoryName, createPlot = createPlot)
             
-            # Some preparations for the legend Create
+            # Some preparations for the legend. Create
             # a dataframe from the ids and the color
             # vectors
             colorIdsDataFrame <- data.frame(unique(color), 
@@ -146,13 +145,18 @@ dDensityPlot <- function(xYData, color = "blue",
                 2]), ]
             
             if (createPlot == TRUE) {
-                pdf(paste("Legend for ", 
-                  commonName, ".pdf", sep = ""))
+                
+                if (createDirectory == TRUE) {
+                    pdf(file.path(directoryName, 
+                                  paste0("Legend for ", commonName, ".pdf")))
+                } else {
+                    pdf(paste0("Legend for ", commonName, ".pdf")) 
+                }
                 plot.new()
-                legend("center", legend = colorIdsDataFrame[, 
-                  2], col = colorIdsDataFrame[, 
-                  1], cex = 15/length(unique(idsVector)), 
-                  pch = 19)
+                legend("center", legend = colorIdsDataFrame[,2], 
+                    col = colorIdsDataFrame[,1], 
+                    cex = 15/length(unique(idsVector)), 
+                    pch = 19)
                 dev.off()
             }
         }
@@ -160,23 +164,21 @@ dDensityPlot <- function(xYData, color = "blue",
         if (plotEachIdSeparately == TRUE) {
             uniqueIds <- unique(idsVector)
             
-            for (i in seq_len(length(uniqueIds))) {
+            for (i in seq_along(uniqueIds)) {
                 dDensityPlotCoFunction(xYData = xYData[idsVector == 
                   uniqueIds[i], ], cols = colorList[[i]], 
                   name = paste(commonName, 
-                    uniqueIds[i], "density", 
-                    sep = " "), densContour = densContour, 
+                      uniqueIds[i], "density", 
+                      sep = " "), 
+                  densContour = densContour, 
                   bandColor = bandColor, 
                   dotSize = dotSize, title = title, 
+                  createDirectory = createDirectory, 
+                  directoryName = directoryName,
                   createPlot = createPlot)
             }
         }
     }
-    
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
-    }
-    
-    print(paste0("Files were saved at ", 
-        getwd()))
+
+    message("Files were saved at ", getwd())
 }

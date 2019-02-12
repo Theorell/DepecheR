@@ -49,11 +49,9 @@ dResidualPlot <- function(xYData, groupVector,
     bandColor = "black", createDirectory = FALSE, 
     directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)), 
     createPlot = TRUE) {
+    
     if (createDirectory == TRUE) {
         dir.create(directoryName)
-        workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -61,7 +59,7 @@ dResidualPlot <- function(xYData, groupVector,
     }
     
     
-    if (any(is(xYData) == "matrix")) {
+    if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     
@@ -161,10 +159,16 @@ dResidualPlot <- function(xYData, groupVector,
             maxY + abs(maxY * 0.05))
     }
     
-    
-    png(paste(name, "_residuals.png", sep = ""), 
-        width = 2500, height = 2500, units = "px", 
-        bg = "transparent")
+    if (createDirectory == TRUE) {
+        png(file.path(directoryName, paste0(name, "_residuals.png")), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    } else {
+        png(paste0(name, "_residuals.png"), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    }
+
     if (createPlot == TRUE) {
         if (title == TRUE) {
             plot(V2 ~ V1, data = xYData, 
@@ -202,9 +206,13 @@ dResidualPlot <- function(xYData, groupVector,
         sep = "")
     bottomText <- paste(groupName2, " is more abundant", 
         sep = "")
-    legendTitle <- paste("Color scale for", 
-        name, "residual analysis.pdf", sep = " ")
-    
+    if (createDirectory == TRUE) {
+        legendTitle <- file.path(directoryName, paste0("Color scale for ", 
+                              name, " residual analysis.pdf"))
+    } else {
+        legendTitle <- paste0("Color scale for ", 
+                             name, " residual analysis.pdf")
+    }
     
     if (createPlot == TRUE) {
         pdf(legendTitle)
@@ -224,9 +232,5 @@ dResidualPlot <- function(xYData, groupVector,
         dev.off()
     }
     
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
-    }
-    print(paste0("Files were saved at ", 
-        getwd()))
+    message("Files were saved at ", getwd())
 }

@@ -34,8 +34,7 @@ generateSparseData <- function(modeN = 5,
     dataCols = 100, observations = 10000) {
     # Check if input ok
     if ((observations/modeN)%%1 != 0) {
-        print("observations has to be divisible by modeN")
-        stop()
+        stop("Observations has to be divisible by modeN")
     }
     obsPerMode <- observations/modeN
     

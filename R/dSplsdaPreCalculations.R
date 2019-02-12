@@ -1,6 +1,5 @@
 dSplsdaPreCalculations <- function(clusterVector, 
-    idsVector, groupVector, pairingVector, 
-    groupName1, groupName2) {
+    idsVector, groupVector, pairingVector, groupName1, groupName2) {
     # Here, the statistical evaluation is
     # performed.  First, the data is divided
     # into each group.

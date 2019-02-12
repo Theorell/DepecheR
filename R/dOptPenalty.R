@@ -7,11 +7,11 @@
 dOptPenalty <- function(inDataFrameScaled, 
     k, maxIter, minARIImprovement, sampleSize, 
     penalties, makeGraph, disableWarnings = FALSE, 
-    optimARI, nCores=nCores) {
+    optimARI, nCores=nCores, createDirectory, directoryName) {
     
-    # The constant k is empirically
+    # The constant 1450 was empirically
     # identified by running a large number of
-    # penalty values for a few datasets.
+    # penalty values for a few test datasets.
     penaltyConstant <- ((sampleSize * sqrt(ncol(inDataFrameScaled)))/1450)
     realPenalties <- penalties * penaltyConstant
     roundPenalties <- round(penalties, digits = 1)
@@ -39,6 +39,9 @@ dOptPenalty <- function(inDataFrameScaled,
     
     interestingPenalties <- realPenalties
     usedPositions <- seq_len(length(realPenalties))
+    
+    #That the while loop should never terminate before 20 iterations is 
+    #arbitrary.
     
     while (iterTimesNCores < 20 || (iterTimesNCores < 
         maxIter && (std >= minARIImprovement || 
@@ -104,14 +107,10 @@ dOptPenalty <- function(inDataFrameScaled,
         meanOptimList <- list()
         stdOptimList <- list()
         for (i in seq_len(4)) {
-            x <- do.call("rbind", lapply(optimListFull, 
-                "[[", i))
-            xNumeric <- suppressWarnings(apply(x, 
-                2, as.numeric))
-            meanOptimList[[i]] <- apply(xNumeric, 
-                2, mean, na.rm = TRUE)
-            stdOptimList[[i]] <- apply(xNumeric, 
-                2, sd, na.rm = TRUE)
+            x <- do.call("rbind", lapply(optimListFull, "[[", i))
+            xNumeric <- suppressWarnings(apply(x, 2, as.numeric))
+            meanOptimList[[i]] <- apply(xNumeric, 2, mean, na.rm = TRUE)
+            stdOptimList[[i]] <- apply(xNumeric, 2, sd, na.rm = TRUE)
         }
         
         stdOptimDf <- (as.data.frame(stdOptimList))/(sqrt(iter * 
@@ -157,30 +156,28 @@ dOptPenalty <- function(inDataFrameScaled,
             # either overlap with uncertainity with
             # the optimal solution, or that are very
             # similar to it. In the first iterations,
-            # the critera are more inclusive.
+            # the critera are more inclusive, to avoid 
+            # discarding solutions due to coincidence.
             if (iter == 1) {
                 usedPositions <- which(realPenalties %in% 
                   interestingPenalties & 
                   (meanPlus2StdAll >= (meanMinus2StdMax - 
                     (2 * stdOptimVector[maxPos])) | 
                     meanOptimDf[, 1] >= max(meanOptimDf[, 
-                      1]) - ((1 - optimARI) * 
-                      4)))
+                      1]) - ((1 - optimARI) * 4)))
             } else if (iter == 2) {
                 usedPositions <- which(realPenalties %in% 
                   interestingPenalties & 
                   (meanPlus2StdAll >= (meanMinus2StdMax - 
                     stdOptimVector[maxPos]) | 
                     meanOptimDf[, 1] >= max(meanOptimDf[, 
-                      1]) - ((1 - optimARI) * 
-                      3)))
+                      1]) - ((1 - optimARI) * 3)))
             } else {
                 usedPositions <- which(realPenalties %in% 
                   interestingPenalties & 
                   (meanPlus2StdAll >= meanMinus2StdMax | 
                     meanOptimDf[, 1] >= max(meanOptimDf[, 
-                      1]) - ((1 - optimARI) * 
-                      2)))
+                      1]) - ((1 - optimARI) * 2)))
             }
             
             # Here, all penalties and solutions that
@@ -212,15 +209,12 @@ dOptPenalty <- function(inDataFrameScaled,
         for (i in seq_len(length(allClusterCenters[[1]]))) {
             funval <- allClusterCenters[[1]][i]
             tempPenaltyList <- vapply(allClusterCenters, 
-                FUN.VALUE = funval, "[", 
-                i)
+                FUN.VALUE = funval, "[", i)
             funval1 <- allClusterCenters[[1]][2]
             funval2 <- allClusterCenters[[1]][2]
-            tempClusterCenters <- c(vapply(tempPenaltyList, 
-                FUN.VALUE = funval1, "[", 
-                1), vapply(tempPenaltyList, 
-                FUN.VALUE = funval2, "[", 
-                2))
+            tempClusterCenters <- c(
+                vapply(tempPenaltyList, FUN.VALUE = funval1, "[", 1), 
+                vapply(tempPenaltyList, FUN.VALUE = funval2, "[", 2))
             
             if (iter == 1) {
                 allClusterCentersPenaltySorted[[i]] <- tempClusterCenters
@@ -231,22 +225,21 @@ dOptPenalty <- function(inDataFrameScaled,
         }
         
         fullTime <- proc.time() - ptm
-        print(paste("Set ", iter, " with ", 
+        message("Set ", iter, " with ", 
             nCores, " iterations completed in ", 
-            round(fullTime[3]), " seconds.", 
-            sep = ""))
+            round(fullTime[3]), " seconds.")
         iter <- iter + 1
     }
     
     stopCluster(cl)
     
-    print(paste("The optimization was iterated ", 
-        (iter - 1) * nCores, " times.", 
-        sep = ""))
+    message("The optimization was iterated ", 
+        (iter - 1) * nCores, " times.")
     
     if (iter * nCores >= maxIter && std > 
         minARIImprovement) {
-        warning("The maximum number of iterations was reached before stable optimal solution was found")
+        warning("The maximum number of iterations was reached before stable 
+                optimal solution was found")
     }
     
     rownames(meanOptimDf) <- roundPenalties
@@ -265,7 +258,9 @@ dOptPenalty <- function(inDataFrameScaled,
     # with the even number among the two most
     # centrally placed, in the case of an
     # even number of optimal solutions.
-    penaltyOpt.df <- data.frame(bestPenalty = optimalPenalties[round(mean(c(seq_len(length(optimalPenalties)))))], 
+    penaltyOpt.df <- 
+        data.frame(bestPenalty = 
+                       optimalPenalties[round(mean(c(seq_len(length(optimalPenalties)))))], 
         k)
     
     lowestPenalty <- roundPenalties[1]
@@ -274,24 +269,34 @@ dOptPenalty <- function(inDataFrameScaled,
     if (length(penalties) > 1) {
         if (penaltyOpt.df$bestPenalty == 
             lowestPenalty) {
-            warning("The lowest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
+            warning("The lowest penalty was the most optimal in the range. 
+                    This might be either due to using a to small samle size, 
+                    or because the penalty range is suboptimal. ")
         }
         if (penaltyOpt.df$bestPenalty == 
             highestPenalty) {
-            warning("The highest penalty was the most optimal in the range. This might be either due to using a to small samle size, or because the penalty range is suboptimal. ")
+            warning("The highest penalty was the most optimal in the range. 
+                    This might be either due to using a to small samle size, 
+                    or because the penalty range is suboptimal. ")
         }
     }
     
     # Here, the optimization is plotted if
     # wanted.
     if (makeGraph == TRUE) {
-        pdf("Distance_as_a_function_of_penalty_values.pdf")
+        if(createDirectory == TRUE){
+            pdf(file.path(directoryName, 
+                          "Distance_as_a_function_of_penalty_values.pdf"))
+        } else {
+            pdf("Distance_as_a_function_of_penalty_values.pdf") 
+        }
         par(mar = c(5, 4, 4, 6) + 0.1)
         # Plot the data
         plot(log10(roundPenalties), meanOptimDf[, 
             1], pch = 16, axes = FALSE, ylim = c(0, 
             1), xlab = "", ylab = "", type = "b", 
-            col = "black", main = "Distance between bootstraps as a function of penalties values")
+            col = "black", main = "Distance between bootstraps as a function 
+            of penalties values")
         axis(2, ylim = c(0, 1), col = "black", 
             las = 1)  ## las=1 makes horizontal labels
         mtext("Adjusted rand index (ARI) between data resamplings", 

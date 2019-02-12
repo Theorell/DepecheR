@@ -2,6 +2,7 @@
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
+#' @importFrom matrixStats rowMedians
 #' @importFrom mixOmics splsda tune.splsda
 #' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual scale_x_continuous theme element_blank element_rect ggsave
 #' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
@@ -104,17 +105,17 @@ dSplsda <- function(xYData, idsVector, groupVector,
     createOutput = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
-        workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
-        stop("More or less than two groups are present. This is currently not supported.")
+        stop("More or less than two groups are present. This is currently not 
+             supported.")
     }
     
     if (length(unique(idsVector)) < 8) {
-        warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
+        warning("NB! The number of unique ids is smaller than 8, so statistical 
+                comparison is not suitable. Use dResidualPlot instead to view 
+                differences.")
     }
     
     if (name == "default") {
@@ -143,11 +144,12 @@ dSplsda <- function(xYData, idsVector, groupVector,
                 idsVector[groupVector == 
                   unique(groupVector)[1]])
         } else {
-            print("Pairing cannot be performed, as the first and second datasets contain different number of individual Ids")
+            stop("Pairing cannot be performed, as the first and second 
+                    datasets contain different number of individual Ids")
         }
     }
     
-    if (any(is(xYData) == "matrix")) {
+    if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     
@@ -193,9 +195,7 @@ dSplsda <- function(xYData, idsVector, groupVector,
     
     # And here the sPLS-DA is performed.
     # Scaling is performed internally in the
-    # algorithm. The number of components is
-    # set to one, as this situation is by far
-    # the most interpretable.
+    # algorithm. 
     sPLSDAObject <- splsda(X = t(dSplsdaInData[[1]]), 
         Y = dSplsdaInData[[2]], ncomp = 1, 
         keepX = nVarSPLSDA$choice.keepX, 
@@ -223,8 +223,15 @@ dSplsda <- function(xYData, idsVector, groupVector,
             0.3)) + theme(line = element_blank(), 
         panel.background = element_rect(fill = "white"))
     if (createOutput == TRUE) {
-        ggsave("Individuals_distributed_along_sPLS-DA_vector.pdf", 
-            dpi = 300)
+        
+        if (createDirectory == TRUE) {
+            ggsave(file.path(directoryName, 
+                             "Individuals_on_sPLS-DA_vector.pdf"), 
+                   dpi = 300)
+        } else {
+            ggsave("Individuals_on_sPLS-DA_vector.pdf", 
+                   dpi = 300)
+        }
     }
     
     # Retrieve the sparse loadings
@@ -261,19 +268,20 @@ dSplsda <- function(xYData, idsVector, groupVector,
     misclassRate <- (lowErrors + highErrors)/sum(length(highGroup), 
         length(lowGroup))
     if (max(lowGroup) < min(highGroup)) {
-        print("The separation of the datasets was perfect, with no overlap between the groups")
+        message("The separation of the datasets was perfect, with no overlap 
+              between the groups")
         lowestPlottedOverlap <- 0
         absSPLSDALoadings <- abs(sPLSDALoadings)
     } else if (misclassRate <= thresholdMisclassRate) {
-        print(paste("The separation of the datasets was very clear, with the misclassification rate being ", 
-            round(100 * misclassRate), " percent", 
-            sep = ""))
+        message("The separation of the datasets was very clear, with the 
+                misclassification rate being ", round(100 * misclassRate), 
+                " percent")
         lowestPlottedOverlap <- misclassRate
         absSPLSDALoadings <- abs(sPLSDALoadings)
     } else {
-        print(paste("The separation of the datasets was not clear, with the misclassification rate being ", 
-            round(100 * misclassRate), " percent", 
-            sep = ""))
+        message("The separation of the datasets was not clear, with the 
+                misclassification rate being ", round(100 * misclassRate), 
+                " percent")
         scalingValue <- thresholdMisclassRate/misclassRate
         absSPLSDALoadings <- abs(sPLSDALoadings * 
             scalingValue)
@@ -290,8 +298,8 @@ dSplsda <- function(xYData, idsVector, groupVector,
     group2Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) == 
         groupName2)]
     
-    median1 <- apply(group1Data, 1, median)
-    median2 <- apply(group2Data, 1, median)
+    median1 <- rowMedians(group1Data)
+    median2 <- rowMedians(group2Data)
     correctSPLSDALoadings <- absSPLSDALoadings
     for (i in seq_len(nrow(group1Data))) {
         if (median1[i] >= median2[i]) {
@@ -355,9 +363,16 @@ dSplsda <- function(xYData, idsVector, groupVector,
             maxY + abs(maxY * 0.05))
     }
     
-    png(paste(name, "_sPLSDA_result.png", 
-        sep = ""), width = 2500, height = 2500, 
-        units = "px", bg = "transparent")
+    if (createDirectory == TRUE) {
+        png(file.path(directoryName, paste0(name, "_sPLSDA_result.png")), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    } else {
+        png(paste0(name, "_sPLSDA_result.png"), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    }
+    
     if (createOutput == TRUE) {
         if (title == TRUE) {
             plot(V2 ~ V1, data = xYData, 
@@ -395,8 +410,13 @@ dSplsda <- function(xYData, idsVector, groupVector,
         sep = "")
     bottomText <- paste(groupName2, " is more abundant", 
         sep = "")
-    legendTitle <- paste("Color scale for", 
-        name, "sPLS-DA analysis.pdf", sep = " ")
+    if (createDirectory == TRUE) {
+        legendTitle <- file.path(directoryName, paste0("Color_scale_for_", 
+                                                       name, "_sPLS-DA_analysis.pdf"))
+    } else {
+        legendTitle <- paste0("Color_scale_for_", 
+                              name, "_sPLS-DA_analysis.pdf")
+    }
     
     if (createOutput == TRUE) {
         pdf(legendTitle)
@@ -418,15 +438,17 @@ dSplsda <- function(xYData, idsVector, groupVector,
     # Return data from the sPLS-DA that was
     # needed for the generation of the graphs
     if (createOutput == TRUE) {
-        write.csv(sPLSDALoadings, paste0(name, 
-            "_sPLSDALoadings.csv"))
-        write.csv(sPLSDA_vector, paste0(name, 
-            "_sPLSDA_vector.csv"))
-    }
-    
-    
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
+        if (createDirectory == TRUE) {
+            write.csv(sPLSDALoadings, file.path(
+                directoryName, paste0(name, "_sPLSDALoadings.csv")))
+            write.csv(sPLSDA_vector, file.path(
+                directoryName, paste0(name, "_sPLSDA_vector.csv")))
+        } else {
+            write.csv(sPLSDALoadings, paste0(name, "_sPLSDALoadings.csv"))
+            write.csv(sPLSDA_vector, paste0(name, "_sPLSDA_vector.csv"))
+        }
+        
+        
     }
     
     # Now, prediction is performed, if the
@@ -444,11 +466,7 @@ dSplsda <- function(xYData, idsVector, groupVector,
                 groupName2 = groupName2, 
                 pairingVector = pairingVectorTest)
         }
-        # And here the sPLS-DA is performed.
-        # Scaling is performed internally in the
-        # algorithm. The number of components is
-        # set to one, as this situation is by far
-        # the most interpretable.
+        # And here the preciction is performed.
         sPLSDAPredictObject <- predict(object = sPLSDAObject, 
             newdata = t(dSplsdaInDataTest[[1]]), 
             multilevel = dSplsdaInDataTest[[4]])
@@ -474,15 +492,21 @@ dSplsda <- function(xYData, idsVector, groupVector,
                 0.3)) + theme(line = element_blank(), 
             panel.background = element_rect(fill = "white"))
         if (createOutput == TRUE) {
-            ggsave("Predicted_individuals_distributed_along_sPLS-DA_vector.pdf", 
-                dpi = 300)
+            if (createDirectory == TRUE) {
+                ggsave(file.path(directoryName, 
+                        "Predicted_individuals_on_sPLS-DA_vector.pdf"), 
+                       dpi = 300)
+            } else {
+                ggsave("Predicted_individuals_on_sPLS-DA_vector.pdf", 
+                       dpi = 300)
+            }
+            
         }
     }
     
-    print(paste0("Files were saved at ", 
-        getwd()))
+    message("Files were saved at ", getwd())
     
-    if (missing(testSampleRows) == TRUE) {
+    if (missing(testSampleRows)) {
         return(sPLSDAObject)
     } else {
         return(list(sPLSDAObject, sPLSDAPredictObject))

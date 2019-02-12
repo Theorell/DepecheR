@@ -1,9 +1,10 @@
 truncateData <- function(x, control, lowQuantile = 0.001, 
     highQuantile = 0.999) {
-    if (any(is(x) == "numeric") == FALSE && 
-        any(is(x) == "integer") == FALSE && 
-        any(is(x) == "data.frame") == FALSE) {
-        stop("Data needs to be either a numeric/integer vector or a dataframe. Change to a suitable object and try again.")
+    if (is.numeric(x) == FALSE && 
+        is.integer(x) == FALSE && 
+        is.data.frame(x) == FALSE) {
+        stop("Data needs to be either a numeric/integer vector or a dataframe. 
+             Change to a suitable object and try again.")
     }
     
     if (missing("control")) {
@@ -12,16 +13,18 @@ truncateData <- function(x, control, lowQuantile = 0.001,
     
     if (identical(colnames(x), colnames(control)) == 
         FALSE) {
-        print("Warning. Column names of the x data and the control data are mismatched or are ordered differently, which may affect the result. Consider correcting this.")
+        warning("Column names of the x data and the control data are mismatched
+                or are ordered differently, which may be wrong. 
+                Consider correcting this.")
     }
     
     
-    if (any(is(x) == "data.frame") == FALSE) {
+    if (is.data.frame(x) == FALSE) {
         result <- truncateDataCoFunction(x, 
             control = control, lowQuantile = lowQuantile, 
             highQuantile = highQuantile)
     }
-    if (any(is(x) == "data.frame")) {
+    if (is.data.frame(x)) {
         result <- as.data.frame(mapply(truncateDataCoFunction, 
             x, control, MoreArgs = list(lowQuantile = lowQuantile, 
                 highQuantile = highQuantile), 

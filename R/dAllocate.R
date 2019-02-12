@@ -51,7 +51,7 @@
 #' @export dAllocate
 dAllocate <- function(inDataFrame, clusterCenters, 
     log2Off = FALSE) {
-    if (any(is(inDataFrame) == "matrix")) {
+    if (is.matrix(inDataFrame)) {
         inDataFrame <- as.data.frame.matrix(inDataFrame)
     }
     
@@ -72,20 +72,18 @@ dAllocate <- function(inDataFrame, clusterCenters,
             # values, but still without loosing
             # resolution.
             inDataMatrixLog <- log2(apply(inDataFrame, 
-                2, function(x) x - min(x)) + 
-                1)
+                2, function(x) x - min(x)) + 1)
             # Then, the extreme negative values will
             # be replaced by 0, as they give rise to
             # artefacts.
             inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
             inDataFrame <- as.data.frame(inDataMatrixLog)
-            rm(inDataMatrixLog)
         }
         
         kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-        print(paste("The data was found to be heavily tailed (kurtosis", 
-            kurtosisValue1, "). Therefore, it was log2-transformed, leading to a new kurtosis value of", 
-            kurtosisValue2, "."))
+        message("The data was found to be heavily tailed (kurtosis ", 
+            kurtosisValue1, "). Therefore, it was log2-transformed, leading to a
+            new kurtosis value of ", kurtosisValue2, ".")
     }
     
     # If some variables have been excluded as

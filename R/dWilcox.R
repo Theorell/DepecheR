@@ -2,6 +2,7 @@
 #'
 #'
 #' This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated.
+#' @importFrom matrixStats rowMedians
 #' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
 #' @param idsVector Vector with the same length as xYData containing information about the id of each observation.
 #' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
@@ -73,9 +74,6 @@ dWilcox <- function(xYData, idsVector, groupVector,
     createOutput = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
-        workingDirectory <- getwd()
-        setwd(paste(workingDirectory, directoryName, 
-            sep = "/"))
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -86,7 +84,7 @@ dWilcox <- function(xYData, idsVector, groupVector,
         warning("NB! The number of unique ids is smaller than 8, so statistical comparison is not suitable. Use dResidualPlot instead to view differences.")
     }
     
-    if (any(is(xYData) == "matrix")) {
+    if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     
@@ -193,10 +191,8 @@ dWilcox <- function(xYData, idsVector, groupVector,
     
     # Now, the statistics and the p-values
     # are retrieved
-    statistic <- unlist(lapply(statisticList, 
-        `[[`, 1))
-    p_values <- unlist(lapply(statisticList, 
-        `[[`, 3))
+    statistic <- unlist(lapply(statisticList, `[[`, 1))
+    p_values <- unlist(lapply(statisticList, `[[`, 3))
     
     # Here, adjustments for multiple
     # comparisons are performed
@@ -204,21 +200,19 @@ dWilcox <- function(xYData, idsVector, groupVector,
     
     # Now the median for each group and
     # cluster is calculated
-    median1 <- 100 * apply(clusterFractionsForAllIds1, 
-        1, median)
-    median2 <- 100 * apply(clusterFractionsForAllIds2, 
-        1, median)
+    median1 <- 100 * rowMedians(clusterFractionsForAllIds1)
+    median2 <- 100 * rowMedians(clusterFractionsForAllIds2)
     
     # Combine the four
     result <- data.frame(as.numeric(names(p_values)), 
         median1, median2, statistic, p_values, 
         p_adjusted)
     row.names(result) <- c(seq_len(nrow(result)))
-    colnames(result) <- c("Cluster", paste("Median percentage for", 
-        groupName1, sep = " "), paste("Median percentage for", 
-        groupName2, sep = " "), "Wilcoxon_statistic", 
-        "p-value", paste(multipleCorrMethod, 
-            "corrected p-value", sep = " "))
+    colnames(result) <- c("Cluster", paste0("Median_%_for_", 
+        groupName1), paste0("Median_%_for_", 
+        groupName2), "Wilcoxon_statistic", 
+        "p-value", paste0(multipleCorrMethod, 
+            "_corrected_p-value"))
     
     # Here, a vector with the same length as
     # the cluster vector is generated, but
@@ -256,9 +250,9 @@ dWilcox <- function(xYData, idsVector, groupVector,
     # data.
     
     if (min(p_adjusted) < lowestPlottedP) {
-        print(paste("NB!, The lowest p-value with this dataset was ", 
-            min(p_adjusted), ". Therefore, this p-value will define the color scale instead than the chosen value of ", 
-            lowestPlottedP, ".", sep = ""))
+        message("NB!, The lowest p-value with this dataset was ", 
+            min(p_adjusted), ". Therefore, this p-value will define the color 
+            scale instead than the chosen value of ", lowestPlottedP, ".")
         lowestPlottedP <- min(p_adjusted)
     }
     
@@ -304,9 +298,16 @@ dWilcox <- function(xYData, idsVector, groupVector,
             maxY + abs(maxY * 0.05))
     }
     
-    png(paste(name, "_Wilcox_result.png", 
-        sep = ""), width = 2500, height = 2500, 
-        units = "px", bg = "transparent")
+    if (createDirectory == TRUE) {
+        png(file.path(directoryName, paste0(name, "_Wilcox_result.png")), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    } else {
+        png(paste0(name, "_Wilcox_result.png"), 
+            width = 2500, height = 2500, units = "px", 
+            bg = "transparent")
+    }
+    
     if (createOutput == TRUE) {
         if (title == TRUE) {
             plot(V2 ~ V1, data = xYData, 
@@ -344,8 +345,15 @@ dWilcox <- function(xYData, idsVector, groupVector,
         sep = "")
     bottomText <- paste(groupName2, " is more abundant", 
         sep = "")
-    legendTitle <- paste("Color scale for", 
-        name, "Wilcoxon analysis.pdf", sep = " ")
+
+    if (createDirectory == TRUE) {
+        legendTitle <- file.path(directoryName, 
+                                 paste0("Color_scale_for_", 
+                                        name, "_Wilcoxon_analysis.pdf"))
+    } else {
+        legendTitle <- paste0("Color_scale_for_", 
+                              name, "_Wilcoxon_analysis.pdf")
+    }
     
     if (createOutput == TRUE) {
         pdf(legendTitle)
@@ -374,19 +382,20 @@ dWilcox <- function(xYData, idsVector, groupVector,
         dev.off()
     }
     
-    
     if (createOutput == TRUE) {
-        name
-        write.csv(result, file = paste0(name, 
-            "_WilcoxResult.csv"), row.names = FALSE)
+        if (createDirectory == TRUE) {
+            write.csv(result, file.path(
+                directoryName, paste0(name, "_WilcoxResult.csv")), 
+                row.names = FALSE)
+        } else {
+            write.csv(result,
+                      paste0(name, "_WilcoxResult.csv"), row.names = FALSE)
+        }
+
     }
     
-    if (createDirectory == TRUE) {
-        setwd(workingDirectory)
-    }
     
-    print(paste0("Files were saved at ", 
-        getwd()))
+    message("Files were saved at ", getwd())
     
     return(result)
 }

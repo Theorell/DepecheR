@@ -49,24 +49,24 @@ dScale <- function(x, control, scale = TRUE,
     robustVarScale = TRUE, center = "peak", 
     truncate = FALSE, multiplicationFactor = 1, 
     multiCore = FALSE, returnCenter = FALSE, nCores="default") {
-    if (any(is(x) == "matrix")) {
+    if (is.matrix(x)) {
         x <- as.data.frame(x)
     }
     
-    if (any(is(x) == "numeric") == FALSE && 
-        any(is(x) == "integer") == FALSE && 
-        any(is(x) == "data.frame") == FALSE) {
-        stop("The data is incorrectly formatted, as it is not a vector, a 
-            matrix or a dataframe. Change this and try again.")
+    if (is.numeric(x) == FALSE && 
+        is.integer(x) == FALSE && 
+        is.data.frame(x) == FALSE) {
+        stop("The data is incorrectly formatted, as it is not a numeric vector, 
+             a matrix or a dataframe. Change this and try again.")
     }
     
     if (missing("control")) {
         control <- x
     } else {
-        if (any(is(control) == "matrix")) {
+        if (is.matrix(control)) {
             control <- as.data.frame(control)
         }
-        if (any(is(x) == "data.frame")) {
+        if (is.data.frame(x)) {
             control <- rbind(x, control)
         } else {
             control <- c(x, control)
@@ -87,14 +87,14 @@ dScale <- function(x, control, scale = TRUE,
         }
     }
     
-    if (any(is(x) == "data.frame") == FALSE) {
+    if (is.data.frame(x) == FALSE) {
         result <- dScaleCoFunction(x, control = control, 
             scale = scale, robustVarScale = robustVarScale, 
             truncate = truncate, center = center, 
             multiplicationFactor = multiplicationFactor, 
             returnCenter = returnCenter)
     }
-    if (any(is(x) == "data.frame")) {
+    if (is.data.frame(x)) {
         if (multiCore == TRUE) {
             if( nCores=="default"){
                 nCores <- floor(detectCores()*0.875) 
@@ -124,10 +124,8 @@ dScale <- function(x, control, scale = TRUE,
                     center = center, multiplicationFactor = multiplicationFactor, 
                     returnCenter = TRUE)
                 resultDf <- as.data.frame(do.call("cbind", 
-                  lapply(resultComplex, "[[", 
-                    1)))
-                resultCenters <- unlist(lapply(resultComplex, 
-                  "[[", 2))
+                  lapply(resultComplex, "[[", 1)))
+                resultCenters <- unlist(lapply(resultComplex,  "[[", 2))
                 result <- list(resultDf, 
                   resultCenters)
             }
