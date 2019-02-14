@@ -9,20 +9,27 @@ testDataSNESubset <- testDataSNE$Y[allDataRows,]
 
 dColorPlot(colorData = testData[1:100, 2], xYData = testDataSNE$Y[1:100,], 
            drawColorPalette = TRUE, createDirectory = FALSE, 
-           createPlot = FALSE)
+           createOutput = FALSE)
 
 testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
-dColorPlot(colorData = testColor, xYData = testDataSNESubset, names = "separate samplings", addLegend = TRUE, idsVector = testDataSubset$ids, 
-    createDirectory = FALSE, createPlot = FALSE)
+dColorPlot(colorData = testColor, xYData = testDataSNESubset, names = 
+               "separate samplings", addLegend = TRUE, idsVector = 
+               testDataSubset$ids, 
+    createDirectory = FALSE, createOutput = FALSE)
 
-###################### dColorPlotCoFunction
+###################### dPlotCoFunction
 densContour <- DepecheR:::dContours(as.data.frame(testDataSNESubset))
-testDataSNESubsetFraction <- DepecheR:::dScale(as.data.frame(testDataSNESubset), scale = c(0, 1), robustVarScale = FALSE, 
+testDataSNESubsetFraction <- DepecheR:::dScale(as.data.frame(testDataSNESubset),
+                                               scale = c(0, 1), 
+                                               robustVarScale = FALSE, 
     center = FALSE)
 testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
-DepecheR:::dColorPlotCoFunction(colorVariable = testColor, name = "separate samplings", xYData = testDataSNESubsetFraction, 
-    title = FALSE, densContour = densContour, bandColor = "black", dotSize = 400/sqrt(nrow(testDataSNESubsetFraction)), 
-    createPlot = FALSE)
+DepecheR:::dPlotCoFunction(colorVariable = testColor, name = 
+                               "separate samplings", 
+                           xYData = testDataSNESubsetFraction, 
+    title = FALSE, densContour = densContour, bandColor = "black", 
+    dotSize = 400/sqrt(nrow(testDataSNESubsetFraction)), 
+    createDirectory = FALSE, createOutput = FALSE)
 
 ###################### dColorVector
 testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
@@ -31,17 +38,18 @@ testColor <- dColorVector(testDataSubset$ids, colorScale = "plasma")
 xContours <- DepecheR:::dContours(testDataSNESubset)
 
 ###################### dDensityPlot
-dDensityPlot(xYData = testDataSNESubset, createDirectory=FALSE, createPlot = FALSE)
+dDensityPlot(xYData = testDataSNESubset, createDirectory=FALSE, 
+             createOutput = FALSE)
 
 # Alternative usage
 dDensityPlot(xYData = testDataSNESubset, color = testColor, 
              plotEachIdSeparately = TRUE, idsVector = testDataSubset$ids, 
-             createDirectory = FALSE, createPlot = FALSE)
+             createDirectory = FALSE, createOutput = FALSE)
 
 # Alternative usage
 dDensityPlot(xYData = testDataSNESubset, color = testColor, 
              idsVector = testDataSubset$ids, createDirectory = FALSE, 
-             createPlot = FALSE)
+             createOutput = FALSE)
 
 ###################### dDensityPlotCoFunction
 xYData <- dScale(testDataSNESubset, testDataSNESubset, scale = c(0, 1), 
@@ -51,11 +59,12 @@ densContour <- DepecheR:::dContours(testDataSNESubset)
 DepecheR:::dDensityPlotCoFunction(xYData = xYData, cols = cols, name = "test", 
                                   densContour = densContour, 
                                   bandColor = "black", dotSize = 1.5, 
-                                  title = FALSE, createPlot = FALSE)
+                                  title = FALSE, createDirectory = FALSE,
+                                  createOutput = FALSE)
 
 
 ###################### dResidualPlot
 data(testDataDepeche)
 dResidualPlot(xYData = testDataSNESubset, groupVector = testDataSubset$label, 
               clusterVector = testDataDepeche$clusterVector[allDataRows], 
-    createPlot = FALSE)
+    createOutput = FALSE)

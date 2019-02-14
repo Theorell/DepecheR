@@ -2,7 +2,8 @@
 % Please edit documentation in R/dSplsda.R
 \name{dSplsda}
 \alias{dSplsda}
-\title{Sparse partial least squares discriminant analysis with paired and unpaired data}
+\title{Sparse partial least squares discriminant analysis with paired and unpaired 
+data}
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
   testSampleRows, paired = FALSE, densContour = TRUE,
@@ -13,21 +14,37 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
   createOutput = TRUE)
 }
 \arguments{
-\item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
+\item{xYData}{A dataframe or matrix with two columns. Each row contains 
+information about the x and y positition in the field for that observation.}
 
-\item{idsVector}{Vector with the same length as xYData containing information about the id of each observation.}
+\item{idsVector}{Vector with the same length as xYData containing information
+about the id of each observation.}
 
-\item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
+\item{groupVector}{Vector with the same length as xYData containing 
+information about the group identity of each observation.}
 
-\item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
+\item{clusterVector}{Vector with the same length as xYData containing 
+information about the cluster identity of each observation.}
 
-\item{displayVector}{Optionally, if the dataset is very large (>100 000 observations) and hence the SNE calculation becomes impossible to perform for the full dataset, this vector can be included. It should contain the set of rows from the data used for statistics, that has been used to generate the xYData.}
+\item{displayVector}{Optionally, if the dataset is very large 
+(>100 000 observations) and hence the SNE calculation becomes impossible to 
+perform for the full dataset, this vector can be included. It should contain
+the set of rows from the data used for statistics, that has been used to 
+generate the xYData.}
 
-\item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows specified in this vector are used to divide the dataset into a training set, used to generate the analysis, and a test set, where the outcome is predicted based on the outcome of the training set. All rows that are not labeled as test rows are assumed to be train rows.}
+\item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows
+specified in this vector are used to divide the dataset into a training set,
+used to generate the analysis, and a test set, where the outcome is predicted
+based on the outcome of the training set. All rows that are not labeled as
+test rows are assumed to be train rows.}
 
-\item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and Wilcoxon rank sum-test is performed. If true, the software will by default pair the first id in the first group with the firs id in the second group and so forth, so make sure the order is correct!}
+\item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and
+Wilcoxon rank sum-test is performed. If true, the software will by default
+pair the first id in the first group with the firs id in the second group 
+and so forth, so make sure the order is correct!}
 
-\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE. a}
+\item{densContour}{If density contours should be created for the plot(s) or
+not. Defaults to TRUE. a}
 
 \item{name}{The main name for the graph and the analysis.}
 
@@ -35,31 +52,56 @@ dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
 
 \item{groupName2}{The name for the second group}
 
-\item{thresholdMisclassRate}{This threshold corresponds to the usefulness of the model in separating the groups: a misclassification rate of the default 0.05 means that 5 percent of the individuals are on the wrong side of the theoretical robust middle line between the groups along the sPLS-DA axis, defined as the middle point between the 3:rd quartile of the lower group and the 1:st quartile of the higher group.}
+\item{thresholdMisclassRate}{This threshold corresponds to the usefulness of
+the model in separating the groups: a misclassification rate of the default
+0.05 means that 5 percent of the individuals are on the wrong side of the
+theoretical robust middle line between the groups along the sPLS-DA axis,
+defined as the middle point between the 3:rd quartile of the lower group and
+the 1:st quartile of the higher group.}
 
-\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
+\item{title}{If there should be a title displayed on the plotting field. As
+the plotting field is saved as a png, this title cannot be removed as an
+object afterwards, as it is saved as coloured pixels. To simplify usage for
+publication, the default is FALSE, as the files are still named, eventhough
+no title appears on the plot.}
 
-\item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
+\item{createDirectory}{If a directory (i.e. folder) should be created.
+Defaults to TRUE.}
 
-\item{directoryName}{The name of the created directory, if it should be created.}
+\item{directoryName}{The name of the created directory, if it should be 
+created.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+\item{dotSize}{Simply the size of the dots. The default makes the dots 
+smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no output is generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+output is generated.}
 }
 \value{
-This function returns the full result of the sPLS-DA. It also returns a SNE based plot showing which events that belong to a cluster dominated by the first or the second group defined by the sparse partial least squares loadings of the clusters.
+This function returns the full result of the sPLS-DA. It also returns
+a SNE based plot showing which events that belong to a cluster dominated by
+the first or the second group defined by the sparse partial least squares 
+loadings of the clusters.
 }
 \description{
-This function is used to compare groups of individuals from whom comparable cytometry or other complex data has been generated. It is superior to just running a Wilcoxon analysis in that it does not consider each cluster individually, but instead uses a sparse partial least squares discriminant analysis to first identify which vector thourgh the multidimensional data cloud, created by the cluster-donor matrix, that optimally separates the groups, and as it is a sparse algorithm, applies a penalty to exclude the clusters that are orthogonal, or almost orthogonal to the discriminant vector, i.e. that do not contribute to separating the groups.
+This function is used to compare groups of individuals from whom comparable 
+cytometry or other complex data has been generated. It is superior to just 
+running a Wilcoxon analysis in that it does not consider each cluster 
+individually, but instead uses a sparse partial least squares discriminant 
+analysis to first identify which vector thourgh the multidimensional data 
+cloud, created by the cluster-donor matrix, that optimally separates the 
+groups, and as it is a sparse algorithm, applies a penalty to exclude the 
+clusters that are orthogonal, or almost orthogonal to the discriminant 
+vector, i.e. that do not contribute to separating the groups.
 }
 \examples{
 
 # Load some data
 data(testData)
 
+\dontrun{
 # Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
 # data is inluded
 # library(Rtsne)
@@ -71,26 +113,28 @@ data(testDataSNE)
 # testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-\dontrun{
+
 # Run the function. This time without pairing.
 sPLSDAObject <- dSplsda(
   xYData = testDataSNE$Y, idsVector = testData$ids,
   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
 )
 
-# Here, pairing is used. NB!! This artificial example is only present to show how to
-# use the function. In reality, pairing should only be used in situations 
-# where true paired data is present! The only reason this works although this is
-# non-paired data is that the number of donors is identical. As it is, the algorithm
-# internally converts the idsVector so that the first individual in group1 is 
-# associated with the first individual in group2. This can lead to erratic 
-# problems, so make sure that either a valid id vector, with the same id occuring two
-# times for each individual is provided, or that the individuals occur in the
-# exact same order in both groups. 
+# Here, pairing is used. NB!! This artificial example is only present to 
+# show how to use the function. In reality, pairing should only be used in 
+# situations where true paired data is present! The only reason this works 
+# although this is non-paired data is that the number of donors is identical.
+# As it is, the algorithm internally converts the idsVector so that the first
+# individual in group1 is associated with the first individual in group2. 
+# This can lead to erratic problems, so make sure that either a valid id
+# vector, with the same id occuring two times for each individual is 
+# provided, or that the individuals occur in the exact same order in both
+# groups. 
 
 sPLSDAObject <- dSplsda(
    xYData = testDataSNE$Y, idsVector = testData$ids,
-   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector, 
+   groupVector = testData$label, clusterVector = 
+   testDataDepeche$clusterVector, 
    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
    groupName2 = 'Stimulation 2')
 
@@ -107,14 +151,15 @@ testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 # the data is used for the sPLS-DA calculations
 sPLSDAObject <- dSplsda(
   xYData = testDataSNESubset, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
+  groupVector = testData$label, clusterVector = 
+  testDataDepeche$clusterVector,
   displayVector = subsetVector
 )
 
-# Finally, an example of a train-test set situation, where a random half the dataset
-# is used for training and the second half is used for testing. It is naturally more
-# biologically interesting to use two independent datasets for training and testing
-# in the real world.
+# Finally, an example of a train-test set situation, where a random half the
+# dataset is used for training and the second half is used for testing. It 
+# is naturally more biologically interesting to use two independent datasets
+# for training and testing in the real world.
 testDataRows <- sample(1:nrow(testData), size = 48500)
 sPLSDAObject <- dSplsda(
   xYData = testDataSNE$Y, idsVector = testData$ids,
@@ -124,5 +169,6 @@ sPLSDAObject <- dSplsda(
 }
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
+\code{\link{dResidualPlot}}
 }

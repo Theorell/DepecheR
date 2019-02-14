@@ -1,12 +1,15 @@
 ---
-title: "Example of a full analysis of cytometry data with DepecheR"
+title: "Example of a cytometry data analysis with DepecheR"
 author: "Jakob Theorell"
-date: "01/09/2019"
-output: rmarkdown::html_vignette
+package: DepecheR
+date: "02/12/2019"
+output: 
+  BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{DepecheR_example_workflow}
+  %\VignetteIndexEntry{Example of a cytometry data analysis with DepecheR}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}  
 ---
 
 ```{r setup, include=FALSE}
@@ -38,9 +41,7 @@ compensation/spectral unmixing of flow cytometry files. The clustering function
 does have an internal algorithm to detect data with extreme tails, but this does
 not circumvent the need to transform flow- or mass cytometry data. This can be 
 done using either commercially available software or with R packages, such as 
-[flowCore](https://bioconductor.org/packages/release/bioc/html/flowCore.html) or 
-[flowVS](https://bioconductor.org/packages/release/bioc/html/flowVS.html).
-
+Biocpkg("flowCore") or Biocpkg("flowVS").
 
 ```{r}
 library(DepecheR)
@@ -49,11 +50,11 @@ str(testData)
 ```
 
 As can be noted here, the expected input format is either a 
-dataframe or a matrix with cells as rows and markers/variables as columns. This is
-in accordance with the .fcs file convention. In this case, however, the different 
-samples (coming from donors) should be added to the same dataframe, and a donor
-column should specify which cells that belong to which donor. This setup is 
-chosen to make the software available to more different kinds of data. 
+dataframe or a matrix with cells as rows and markers/variables as columns. This 
+is in accordance with the .fcs file convention. In this case, however, the 
+different samples (coming from donors) should be added to the same dataframe, 
+and a donor column should specify which cells that belong to which donor. This 
+setup is chosen to make the software available to more different kinds of data. 
 
 ## Step 1: depeche clustering
 
@@ -99,7 +100,7 @@ totally random distribution. The adjustment in "Adjusted" Rand index takes the
 divering probabilities of ending up with a high or low overlap in the special 
 cases of very few and very many clusters into consideration. 
 
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Distance_as_a_function_of_penalty_values.jpg "Adjusted Rand Index as a function of penalty values. Each value is based on at least 7 clustering pairs (DepecheR standard in a 8 core machine)."){ width=90% }
+![Adjusted Rand Index as a function of penalty values. Each value is based on at least 7 clustering pairs (DepecheR standard in a 8 core machine).](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Distance_as_a_function_of_penalty_values.jpg){ width=90% }
 
 #### Cluster centers
 This graph shows in a heatmap format where the cluster center is located for each
@@ -113,7 +114,7 @@ an internal, and for stability reasons necessary, effect of the algotihm: a spec
 penalty will have a larger effect on a cluster with fewer observations, than on 
 a cluster with many observations.
 
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Cluster_centers.jpg "Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis."){ width=90% }
+![Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Cluster_centers.jpg){ width=90% }
 
 
 
@@ -160,7 +161,7 @@ dColorPlot(colorData = clusterColor, xYData = testDataSNE$Y, addLegend = TRUE,
 
 The files will always be saved to the current directory. 
 
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_3_DepecheR_markdown.jpg "Cluster distribution over the tSNE field."){ width=90% }
+![Cluster distribution over the tSNE field.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_3_DepecheR_markdown.jpg){ width=90% }
 
 
 ## Step 4: visualization of markers on tSNE
@@ -171,7 +172,7 @@ picture, this is not the standard, for publication reasons.
 dColorPlot(colorData = testData[2:15], xYData = testDataSNE$Y, title=TRUE)
 
 ```
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_4_DepecheR_markdown.png "Example of a few markers distribution over the tSNE field."){ width=90% }
+![Example of a few markers distribution over the tSNE field.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_4_DepecheR_markdown.png){ width=90% }
 
 
 ## Step 5: density distribution of groups
@@ -200,7 +201,7 @@ dDensityPlot(
 )
 
 ```
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_5_DepecheR_markdown.jpg "Distribution of events in the different groups."){ width=90% }
+![Distribution of events in the different groups.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_5_DepecheR_markdown.jpg){ width=90% }
 
 ## Step 6: separating groups from each other with dSplsda
 Now, we have arrived at a crucial point:  we are now going to see which 
@@ -260,7 +261,7 @@ statistic, the p-value and a p-value corrected for multiple comparisons.
 In addition to the graphs, the dWilcox and the dSplsda functions also output
 result files. See ?dSplsda and ?dWilcox for more information. 
 
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_6_DepecheR_markdown.jpg "Residual, Wilcoxon, sPLS-DA plots."){ width=90% }
+![Residual, Wilcoxon, sPLS-DA plots.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_6_DepecheR_markdown.jpg){ width=90% }
 
 When investigating the results from the sPLS-DA or the dWilcox analysis, it was
 clear that half of the clusters were highly significantly different between the
@@ -279,7 +280,7 @@ dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFr
 
 ```
 
-![alt text](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_7_DepecheR_markdown.jpg "Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters."){ width=90% }
+![Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_7_DepecheR_markdown.jpg){ width=90% }
 
 ## Summary
 In this document, a typical analysis of a cytometry dataset is shown. There are

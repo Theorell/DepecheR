@@ -1,3 +1,7 @@
+#Used internally in dScale. 
+#The purpose of having this deeper function is to easily allow for different 
+#input formats, such as vectors and dataframes. 
+#For information about the parameters, see dScale. 
 dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, 
                              center, multiplicationFactor, 
                              returnCenter = FALSE) {

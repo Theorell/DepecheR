@@ -4,25 +4,40 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataFrame, clusterCenters, log2Off = FALSE)
+dAllocate(inDataMatrix, clusterCenters, log2Off = FALSE,
+  noZeroNum = TRUE)
 }
 \arguments{
-\item{inDataFrame}{A dataframe or matrix with the data that that the cluster centers will be allocated to. This data should be scaled in the same way as the data for the original depeche was scaled  when it entered the algorithm, i.e. in the normal case, not at all.}
+\item{inDataMatrix}{A dataframe or matrix with the data that that the cluster
+centers will be allocated to. This data should be scaled in the same way as 
+the data for the original depeche was scaled  when it entered the algorithm,
+i.e. in the normal case, not at all.}
 
-\item{clusterCenters}{A matrix that needs to be inherited from a depeche run. It contains the information about which clusters and variables that have been sparsed away and where the cluster centers are located for the remaining clusters and variables.}
+\item{clusterCenters}{A matrix that needs to be inherited from a depeche run.
+It contains the information about which clusters and variables that have been
+sparsed away and where the cluster centers are located for the remaining 
+clusters and variables.}
 
-\item{log2Off}{If the automatic detection for high kurtosis, and followingly, the log2 transformation, should be turned off.}
+\item{log2Off}{If the automatic detection for high kurtosis, and followingly,
+the log2 transformation, should be turned off.}
+
+\item{noZeroNum}{For internal use. Controls the that the internal 
+algorithm returns a cluster with number 0.}
 }
 \value{
-A vector with the same length as number of rows in the inDataFrame, where the cluster identity of each observation is noted.
+A vector with the same length as number of rows in the inDataFrame, 
+where the cluster identity of each observation is noted.
 }
 \description{
-Here, observations of a dataset are allocated to a set of preestablished cluster centers. This is intended to be used for the test set in train-test dataset situations.
+Here, observations of a dataset are allocated to a set of preestablished 
+cluster centers. This is intended to be used for the test set in train-test 
+dataset situations.
 }
 \examples{
 # Retrieve some example data
 data(testData)
 
+\dontrun{
 # Now arbitrarily (for the sake of the example) divide the data into a
 # training- and a test set.
 testDataSample <- sample(1:nrow(testData), size = 48500)
@@ -30,7 +45,6 @@ testDataTrain <- testData[testDataSample, ]
 testDataTest <- testData[-testDataSample, ]
 
 # Run the depeche function for the train set
-\dontrun{
 
 x_depeche_train <- depeche(testDataTrain[, 2:15], maxIter = 20,
 sampleSize = 1000)

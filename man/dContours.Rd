@@ -7,29 +7,43 @@
 dContours(xYData, control, n = 100)
 }
 \arguments{
-\item{xYData}{A dataframe with two columns containing position information for each observation in the dataset. Typically, this is the raw result from the SNE analysis.}
+\item{xYData}{A dataframe with two columns containing position information 
+for each observation in the dataset. Typically, this is the raw result from 
+the SNE analysis.}
 
-\item{control}{A numeric/integer vector or dataframe of values that could be used to define the range in the internal dScale. If no control data is present, the function defaults to using the indata as control data.}
+\item{control}{A numeric/integer vector or dataframe of values that could be
+used to define the range in the internal dScale. If no control data is 
+present, the function defaults to using the indata as control data.}
 
 \item{n}{The number fo grid points. Default is 100.}
 }
 \value{
 A list of three components
 \describe{
-    \item{x, y}{The x and y coordinates of the grid points, vectors of length n.}
-    \item{z}{An n[1] by n[2] matrix of the estimated density: rows correspond to the value of x, columns to the value of y.}
+    \item{x, y}{The x and y coordinates of the grid points, 
+    vectors of length n.}
+    \item{z}{An n[1] by n[2] matrix of the estimated density: rows 
+    correspond to the value of x, columns to the value of y.}
 }
 }
 \description{
-Here, contour lines for two-dimensional data are construced. It is primarily thought to be used in the context of SNE plots in this package. This function is used both internally in other functions suchas sneFluoroPlot and sneDensityPlot, but also as a standalone function, as it increases speed greatly to generate the density curves only once per overall analysis.
+Here, contour lines for two-dimensional data are construced. It is primarily
+thought to be used in the context of SNE plots in this package. This function
+is used both internally in other functions suchas sneFluoroPlot and 
+sneDensityPlot, but also as a standalone function, as it increases speed 
+greatly to generate the density curves only once per overall analysis.
 }
 \examples{
 # Load the test SNE data
 data(testDataSNE)
 
+
 # Run the function
+\dontrun{
 contour_result <- dContours(testDataSNE$Y)
 }
+}
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, \code{\link{dWilcox}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
+\code{\link{dResidualPlot}}, \code{\link{dWilcox}}
 }

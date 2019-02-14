@@ -258,26 +258,26 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     
     # Density plots with semi-transparent
     # fill
-    ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) 
-    + geom_density(adjust = 0.2, alpha = 0.4) 
-    + scale_fill_manual(values = c("red", "blue")) 
-    + scale_x_continuous(limits = 
+    ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) +
+    geom_density(adjust = 0.2, alpha = 0.4) + 
+    scale_fill_manual(values = c("red", "blue")) + 
+    scale_x_continuous(limits = 
                              c(min(densityHist$sPLSDA_vector) - 
                                    abs(max(densityHist$sPLSDA_vector) -
                                            min(densityHist$sPLSDA_vector)) * 
                                    0.3, max(densityHist$sPLSDA_vector) 
                                + abs(max(densityHist$sPLSDA_vector) -
-                                         min(densityHist$sPLSDA_vector)) * 0.3))
-    + theme(line = element_blank(), 
+                                         min(densityHist$sPLSDA_vector)) 
+                               * 0.3)) + 
+    theme(line = element_blank(), 
             panel.background = element_rect(fill = "white"))
+    
     if (createOutput == TRUE) {
-        
+        fileName <- "Individuals_on_sPLS-DA_vector.pdf"
         if (createDirectory == TRUE) {
-            ggsave(file.path(directoryName, 
-                             "Individuals_on_sPLS-DA_vector.pdf"), dpi = 300)
-        } else {
-            ggsave("Individuals_on_sPLS-DA_vector.pdf", dpi = 300)
-        }
+            fileName <- file.path(directoryName, fileName)
+        } 
+        ggsave(fileName, dpi = 300)
     }
     
     # Retrieve the sparse loadings
@@ -380,74 +380,34 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     
     # assign each value to a bin
     grps <- cut(statisticVector, breaks = brks, include.lowest = TRUE)
-    colors <- colorRampPalette(c("#FF0000", 
-        "white", "#0000FF"))(9)
+    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
-    # Create the density matrix for xYData.
-    if (is.logical(densContour)) {
-        if (densContour == TRUE) {
-            densContour <- dContours(xYData)
-        }
-    }
-    if (length(densContour) > 1) {
-        xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
-        ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
-    } else {
-        minX <- min(xYData[, 1])
-        maxX <- max(xYData[, 1])
-        minY <- min(xYData[, 2])
-        maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 0.05))
-        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 0.05))
-    }
+    dPlotCoFunction(colorVariable = xYData$col, name = 
+                        paste0(name, "_sPLSDA_result"), 
+                    xYData = xYData, title = title, 
+                    densContour = densContour, bandColor = bandColor, 
+                    dotSize = dotSize, 
+                    createDirectory = createDirectory, 
+                    directoryName = directoryName, 
+                    createOutput = createOutput)
     
-    if (createDirectory == TRUE) {
-        png(file.path(directoryName, paste0(name, "_sPLSDA_result.png")), 
-            width = 2500, height = 2500, units = "px", bg = "transparent")
-    } else {
-        png(paste0(name, "_sPLSDA_result.png"), width = 2500, height = 2500, 
-            units = "px", bg = "transparent")
-    }
-    
-    if (createOutput == TRUE) {
-        if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, main = name, pch = 20, cex = dotSize, 
-                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
-                 axes = FALSE, xaxs = "i", yaxs = "i")
-        }
-        
-        if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, main = "", pch = 20, cex = dotSize, 
-                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
-                 axes = FALSE, xaxs = "i", yaxs = "i")
-        }
-        if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), new = TRUE)
-            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
-                    xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
-                    lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
-                    yaxs = "i")
-        }
-    }
-    dev.off()
     # Create a color legend with text
     
     yname <- "Misclass-corrected sPLS-DA loadings"
+
     topText <- paste0(groupName1, " is more abundant")
     bottomText <- paste0(groupName2, " is more abundant")
+    
+    legendName <- paste0("Color_scale_for_", name, "_sPLS-DA_analysis.pdf")
     if (createDirectory == TRUE) {
-        legendTitle <- file.path(directoryName, 
-                                 paste0("Color_scale_for_", 
-                                        name, "_sPLS-DA_analysis.pdf"))
-    } else {
-        legendTitle <- paste0("Color_scale_for_", name, "_sPLS-DA_analysis.pdf")
-    }
+        legendName <- file.path(directoryName, legendName)
+        } 
     
     if (createOutput == TRUE) {
-        pdf(legendTitle)
+        pdf(legendName)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
-        z <- matrix(seq_len(9), nrow = 1)
+       z <- matrix(seq_len(9), nrow = 1)
         x <- 1
         y <- seq(-1, 1, len = 9)
         image(x, y, z, col = colors, axes = FALSE, xlab = "", ylab = yname)
@@ -460,19 +420,17 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     
     # Return data from the sPLS-DA that was
     # needed for the generation of the graphs
+    file1Name <- paste0(name, "_sPLSDALoadings.csv")
+    file2Name <- paste0(name, "_sPLSDA_vector.csv")
+    if (createDirectory == TRUE) {
+        file1Name <- file.path(directoryName, file1Name)
+        file2Name <- file.path(directoryName, file2Name)
+        } 
+    
     if (createOutput == TRUE) {
-        if (createDirectory == TRUE) {
-            write.csv(sPLSDALoadings, file.path(
-                directoryName, paste0(name, "_sPLSDALoadings.csv")))
-            write.csv(sPLSDA_vector, file.path(
-                directoryName, paste0(name, "_sPLSDA_vector.csv")))
-        } else {
-            write.csv(sPLSDALoadings, paste0(name, "_sPLSDALoadings.csv"))
-            write.csv(sPLSDA_vector, paste0(name, "_sPLSDA_vector.csv"))
+        write.csv(sPLSDALoadings, file1Name)
+        write.csv(sPLSDA_vector, file2Name)
         }
-        
-        
-    }
     
     # Now, prediction is performed, if the
     # setup is train-test.
@@ -486,9 +444,10 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
             dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, 
                                                         idsVectorTest, 
                                                         groupVectorTest, 
-                groupName1 = groupName1, 
-                groupName2 = groupName2, 
-                pairingVector = pairingVectorTest)
+                                                        groupName1 = groupName1, 
+                                                        groupName2 = groupName2, 
+                                                        pairingVector = 
+                                                            pairingVectorTest)
         }
         # And here the preciction is performed.
         sPLSDAPredictObject <- predict(object = sPLSDAObject, 
@@ -503,10 +462,10 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         
         # Density plots with semi-transparent
         # fill
-        ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) 
-        + geom_density(adjust = 0.2, alpha = 0.4) 
-        + scale_fill_manual(values = c("red", "blue")) 
-        + scale_x_continuous(limits 
+        ggplot(densityHist, aes(x = sPLSDA_vector, fill = Group)) + 
+        geom_density(adjust = 0.2, alpha = 0.4) + 
+        scale_fill_manual(values = c("red", "blue")) + 
+        scale_x_continuous(limits 
                              = c(min(densityHist$sPLSDA_vector) - 
                                      abs(max(densityHist$sPLSDA_vector) - 
                                              min(densityHist$sPLSDA_vector)) 
@@ -518,14 +477,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
                                                    = element_rect(fill 
                                                                   = "white"))
         if (createOutput == TRUE) {
+            fileName <- "Predicted_individuals_on_sPLS-DA_vector.pdf"
             if (createDirectory == TRUE) {
-                ggsave(file.path(directoryName, 
-                                 "Predicted_individuals_on_sPLS-DA_vector.pdf"), 
-                       dpi = 300)
-            } else {
-                ggsave("Predicted_individuals_on_sPLS-DA_vector.pdf", dpi = 300)
-            }
-            
+                fileName <- file.path(directoryName, fileName)
+            } 
+            ggsave(fileName, dpi = 300)
         }
     }
     

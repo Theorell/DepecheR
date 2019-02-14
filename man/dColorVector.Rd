@@ -4,20 +4,31 @@
 \alias{dColorVector}
 \title{Create a vector of colors of the same length as the data}
 \usage{
-dColorVector(x, order = unique(x), colorScale = "viridis")
+dColorVector(x, colorOrder = unique(x), colorScale = "viridis")
 }
 \arguments{
-\item{x}{A vector, in most cases of identities of individuals or clusters, et cetera.}
+\item{x}{A vector, in most cases of identities of individuals or clusters, 
+etc.}
 
-\item{order}{The order, folowing a rainbow distribution, that the colors should be in in the output vector. Defaults to the order that the unique values in x occurs.}
+\item{colorOrder}{The order, folowing a rainbow distribution, that the colors 
+should be in in the output vector. Defaults to the order that the unique 
+values in x occurs.}
 
-\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific 'dark_rainbow'). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c('#FF0033', '#03AF49')) are also accepted.}
+\item{colorScale}{The color scale. Inherited from the viridis, gplots and 
+grDevices packages (and the package-specific 'dark_rainbow'). Seven possible
+scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow 
+and dark_rainbow. User specified vectors of colors 
+(e.g. c('#FF0033', '#03AF49')) are also accepted.}
 }
 \value{
-A vector, the same length as x with each unique value substitutet with a color.
+A vector, the same length as x with each unique value substitutet 
+with a color.
 }
 \description{
-This function takes a vector x and a shorter ordering vector with all the unique values of the x vector in the specific order that the colors should be in and returns a vector of RGB colors the same length as the initial x vector.
+This function takes a vector x and a shorter ordering vector with all the 
+unique values of the x vector in the specific order that the colors should be
+in and returns a vector of RGB colors the same length as the initial x 
+vector.
 }
 \examples{
 # Load some data
@@ -25,9 +36,11 @@ data(testData)
 
 testColor <- dColorVector(testData$ids, colorScale = 'plasma')
 
-# In this case, each of the 97 individual donors in the dataset has gotten their own color code:
+# In this case, each of the 97 individual donors in the dataset has gotten 
+their own color code:
 table(testColor)
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dViolins}}
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, 
+\code{\link{dViolins}}
 }

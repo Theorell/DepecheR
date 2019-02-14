@@ -53,7 +53,7 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots 
 #' smaller the more observations that are included.
-#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no output
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no output
 #' is generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, 
 #' \code{\link{dWilcox}}
@@ -108,7 +108,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
                          directoryName = paste0("Density plots for ", 
                                                 commonName), 
                          bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
-                         createPlot = TRUE) {
+                         createOutput = TRUE) {
     if (createDirectory == TRUE) {
         dir.create(directoryName)
     }
@@ -139,7 +139,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
                                    title = title, 
                                    createDirectory = createDirectory, 
                                    directoryName = directoryName, 
-                                   createPlot = createPlot)
+                                   createOutput = createOutput)
         }
         
         if (plotEachIdSeparately == TRUE) {
@@ -156,7 +156,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
                                        title = title, 
                                        createDirectory = createDirectory, 
                                        directoryName = directoryName,
-                                       createPlot = createPlot)
+                                       createOutput = createOutput)
             }
         }
     }
@@ -180,7 +180,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
                                    title = title, 
                                    createDirectory = createDirectory, 
                                    directoryName = directoryName, 
-                                   createPlot = createPlot)
+                                   createOutput = createOutput)
             
             # Some preparations for the legend. Create
             # a dataframe from the ids and the color
@@ -190,7 +190,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
             colorIdsDataFrame <- 
                 colorIdsDataFrame[order(colorIdsDataFrame[, 2]), ]
             
-            if (createPlot == TRUE) {
+            if (createOutput == TRUE) {
                 
                 if (createDirectory == TRUE) {
                     pdf(file.path(directoryName, 
@@ -221,7 +221,7 @@ dDensityPlot <- function(xYData, color = "blue", commonName = "All_density",
                                        title = title, 
                                        createDirectory = createDirectory, 
                                        directoryName = directoryName,
-                                       createPlot = createPlot)
+                                       createOutput = createOutput)
             }
         }
     }

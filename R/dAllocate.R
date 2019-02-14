@@ -5,7 +5,7 @@
 #' cluster centers. This is intended to be used for the test set in train-test 
 #' dataset situations.
 #' @importFrom moments kurtosis
-#' @param inDataFrame A dataframe or matrix with the data that that the cluster
+#' @param inDataMatrix A dataframe or matrix with the data that that the cluster
 #' centers will be allocated to. This data should be scaled in the same way as 
 #' the data for the original depeche was scaled  when it entered the algorithm,
 #' i.e. in the normal case, not at all.
@@ -15,6 +15,8 @@
 #' clusters and variables.
 #' @param log2Off If the automatic detection for high kurtosis, and followingly,
 #' the log2 transformation, should be turned off.
+#' @param noZeroNum For internal use. Controls the that the internal 
+#' algorithm returns a cluster with number 0. 
 #' @seealso \code{\link{depeche}}
 #' @return A vector with the same length as number of rows in the inDataFrame, 
 #' where the cluster identity of each observation is noted.
@@ -59,58 +61,69 @@
 #' title(ylab = 'Fraction')
 #' }
 #' @export dAllocate
-dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE) {
-    if (is.matrix(inDataFrame)) {
-        inDataFrame <- as.data.frame.matrix(inDataFrame)
+dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE, 
+                      noZeroNum=TRUE) {
+    if (is.data.frame(inDataMatrix)) {
+        inDataMatrix <- as.matrix(inDataMatrix)
     }
     
-    if (log2Off == FALSE && kurtosis(as.vector(as.matrix(inDataFrame))) > 100) {
-        kurtosisValue1 <- kurtosis(as.vector(as.matrix(inDataFrame)))
+    if (log2Off == FALSE && kurtosis(as.vector(inDataMatrix)) > 100) {
+        kurtosisValue1 <- kurtosis(as.vector(inDataMatrix))
         # Here, the log transformation is
         # performed. In cases where the lowest
         # value is 0, everything is simple. In
         # other cases, a slightly more
         # complicated formula is needed
-        if (min(inDataFrame) >= 0) {inDataFrame <- log2(inDataFrame + 1)
+        if (min(inDataMatrix) >= 0) {inDataMatrix <- log2(inDataMatrix + 1)
         } else {
             # First, the data needs to be reasonably
             # log transformed to not too extreme
             # values, but still without loosing
             # resolution.
-            inDataMatrixLog <- log2(apply(inDataFrame, 2, 
+            inDataMatrixLog <- log2(apply(inDataMatrix, 2, 
                                           function(x) x - min(x)) + 1)
             # Then, the extreme negative values will
             # be replaced by 0, as they give rise to
             # artefacts.
             inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
-            inDataFrame <- as.data.frame(inDataMatrixLog)
         }
         
-        kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
+        kurtosisValue2 <- kurtosis(as.vector(inDataMatrix))
         message("The data was found to be heavily tailed (kurtosis ", 
             kurtosisValue1, "). Therefore, it was log2-transformed, leading to a
             new kurtosis value of ", kurtosisValue2, ".")
     }
     
+    # Here, all variables that do not
+    # contribute to defining a single cluster
+    # is removed. A specific case, namely
+    # that only one variable contains
+    # meaningful information, is taken into
+    # account.
+    clusterCentersReduced <- 
+        clusterCenters[, which(colSums(clusterCenters) != 0)]
+    if (length(which(colSums(clusterCenters) != 0) == 1)) {
+        clusterCentersReduced <- as.matrix(clusterCentersReduced)
+    }
+    
     # If some variables have been excluded as
     # they did not contribute to construction
     # of any cluster, they are removed from
-    # the inData here
-    inDataFrameReduced <- inDataFrame[, colnames(clusterCenters)]
-    
-    dataMat <- data.matrix(inDataFrameReduced)
-    centersMat <- data.matrix(clusterCenters)
-    
-    clusterReallocationResult <- allocate_points(dataMat, centersMat, 1)[[1]]
-    
-    # Here, the individual numbers are
-    # changed to accomodate the difference
-    # between the inclusion or exclusion of
-    # an origo cluster
-    newNumbers <- rownames(clusterCenters)
-    clusterReallocationResult <- 
-        turnVectorEquidistant(clusterReallocationResult, 
-                              newNumbers = newNumbers)
+    # the inData here. The special case with only one variable is taken
+    #into account. 
+    inDataMatrixReduced <- inDataMatrix[, colnames(clusterCenters)]
+    if (length(colnames(clusterCenters)) == 1) {
+        inDataMatrixReduced <- as.matrix(inDataMatrixReduced)
+    }
+
+    clusterReallocationResult <- allocate_points(inDataMatrixReduced, 
+                                                 clusterCentersReduced, 1)[[1]]
+
+    #As allocate_points spontaneously likes to through out a cluster called 0, 
+    #this behaviour is controlled here
+    if(noZeroNum==TRUE){
+        clusterReallocationResult <- clusterReallocationResult+1 
+    }
     
     return(clusterReallocationResult)
 }

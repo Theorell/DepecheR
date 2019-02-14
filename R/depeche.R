@@ -275,8 +275,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         # in a correct manner
         directoryNames <- 
             file.path(dirName1, 
-                      paste0("Cluster_", 
-                             seq_along(unique(depecheResultFirst$clusterVector)), 
+                      paste0("Cluster_", seq_along(allClusterN), 
                              "_level_two_depeche"))
 
         # Here, the secondary clusters are

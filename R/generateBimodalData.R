@@ -1,3 +1,10 @@
+#Function that generates synthetic data from a bimodal distribution.
+#centers: A list with two items, each item a vector specifying the center of a 
+#data cluster.
+#prop: A scalar determining relative number of data points in the two clusters
+#dataCols: A scalar determining the number of dimensions. Superfluous if centers
+#is provided.
+#observations: A scalar determining the number of sampled data points.
 generateBimodalData <- function(centers, 
     prop = 0.3, dataCols = 5, observations = 10000) {
     if (missing(centers)) {
@@ -23,6 +30,15 @@ generateBimodalData <- function(centers,
     
     return(result)
 }
+
+#Function that generates synthetic data, divided over a number of cluster with 
+#increasing number of zero-dimensions (starting from 0). The sampled points are 
+#generated equally between the clusters.
+
+#modeN: A scalar determining the number of clusters.
+#dataCols: A scalar determing the number of dimensions. DataCols must be 
+#greater than modeN, to avoid clusters with only zeros.
+#obsrevations: A scalar determining the number of sampled data points.
 
 generateSparseData <- function(modeN = 5, dataCols = 100, 
                                observations = 10000) {

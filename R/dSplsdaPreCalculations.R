@@ -1,3 +1,7 @@
+#Used internally in dSplsda. 
+#This function creates the necessary tables with each patient id and each 
+#cluster separated and the settings for the sPLS-DA analysis. 
+#For information about hte parameters, see dSplsda. 
 dSplsdaPreCalculations <- function(clusterVector, 
     idsVector, groupVector, pairingVector, groupName1, groupName2) {
     # Here, the statistical evaluation is

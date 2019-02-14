@@ -6,8 +6,8 @@ x_scaled <- dScale(x$samples, center = FALSE)
 dOPR <- DepecheR:::dOptPenalty(x_scaled, sampleSize = 100, k = 30, 
                                penalties = c(0, 2, 4, 8, 16, 32, 128), 
                                maxIter = 10, minARIImprovement = 0.01, 
-                               optimARI = 0.95, makeGraph = FALSE, 
-                               nCores=2)
+                               optimARI = 0.95, createOutput = FALSE, 
+                               nCores=2, createDirectory=FALSE)
 
 ARI <- dOPR[[2]][, 1]
 nClust <- dOPR[[2]][, 2]

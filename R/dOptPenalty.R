@@ -1,3 +1,10 @@
+#This function is used by depecheCoFunction, and thus indirectly by depeche. 
+#Here, the optimal penalty is defined. 
+#"Unique" parameters
+#inDataFrameScaled: the scaled version of inDataFrame. See initial part of
+#depeche function for details.
+#disableWarnings: Should warnings be disabled?
+#For information on the other parameters, see depeche. 
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
@@ -5,8 +12,8 @@
 #' @importFrom graphics box
 
 dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement, 
-                        sampleSize, penalties, makeGraph, 
-                        disableWarnings = FALSE, optimARI, nCores=nCores, 
+                        sampleSize, penalties, createOutput, 
+                        disableWarnings = FALSE, optimARI, nCores, 
                         createDirectory, directoryName) {
     
     # The constant 1450 was empirically
@@ -262,13 +269,13 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     
     # Here, the optimization is plotted if
     # wanted.
-    if (makeGraph == TRUE) {
+    if (createOutput == TRUE) {
+        plotName <- "Distance_as_a_function_of_penalties.pdf"
         if(createDirectory == TRUE){
-            pdf(file.path(directoryName, 
-                          "Distance_as_a_function_of_penalties.pdf"))
-        } else {
-            pdf("Distance_as_a_function_of_penalties.pdf") 
-        }
+            plotName <- file.path(directoryName, plotName)
+        } 
+        
+        pdf(plotName)
         par(mar = c(5, 4, 4, 6) + 0.1)
         # Plot the data
         plot(log10(roundPenalties), meanOptimDf[, 1], pch = 16, axes = FALSE, 

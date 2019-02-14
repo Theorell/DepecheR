@@ -1,3 +1,11 @@
+#This function is used by depecheCoFunction. 
+#It is only used for datasets with less than 10 000 total observations. 
+#"Unique" parameters
+#inDataFrameScaled: the scaled version of inDataFrame. See initial part of
+#depeche function for details. 
+#firstClusterNumber: this defines if the first number for the cluster 
+#definitions.
+#For information on the other parameters, see depeche. 
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%

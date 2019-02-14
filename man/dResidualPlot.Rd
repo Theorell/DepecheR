@@ -2,23 +2,28 @@
 % Please edit documentation in R/dResidualPlot.R
 \name{dResidualPlot}
 \alias{dResidualPlot}
-\title{Showing the residuals when subtracting the values from one group from another on a SNE plot}
+\title{Showing the residuals when subtracting the values from one group from 
+another on a SNE plot}
 \usage{
 dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], name = "default",
   title = FALSE, maxAbsPlottingValues, bandColor = "black",
   createDirectory = FALSE, directoryName = "dResidualPlot",
-  dotSize = 400/sqrt(nrow(xYData)), createPlot = TRUE)
+  dotSize = 400/sqrt(nrow(xYData)), createOutput = TRUE)
 }
 \arguments{
-\item{xYData}{A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.}
+\item{xYData}{A dataframe or matrix with two columns. Each row contains 
+information about the x and y positition in the field for that observation.}
 
-\item{groupVector}{Vector with the same length as xYData containing information about the group identity of each observation.}
+\item{groupVector}{Vector with the same length as xYData containing 
+information about the group identity of each observation.}
 
-\item{clusterVector}{Vector with the same length as xYData containing information about the cluster identity of each observation.}
+\item{clusterVector}{Vector with the same length as xYData containing 
+information about the cluster identity of each observation.}
 
-\item{densContour}{If density contours should be created for the plot(s) or not. Defaults to TRUE.}
+\item{densContour}{If density contours should be created for the plot(s) or
+not. Defaults to TRUE.}
 
 \item{groupName1}{The name for the first group}
 
@@ -26,30 +31,45 @@ dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
 
 \item{name}{The main name for the graph and the analysis.}
 
-\item{title}{If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.}
+\item{title}{If there should be a title displayed on the plotting field. As
+the plotting field is saved as a png, this title cannot be removed as an 
+object afterwards, as it is saved as coloured pixels. To simplify usage for 
+publication, the default is FALSE, as the files are still named, eventhough 
+no title appears on the plot.}
 
-\item{maxAbsPlottingValues}{If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
+\item{maxAbsPlottingValues}{If multiple plots should be compared, it might 
+be useful to define a similar color scale for all plots, so that the same 
+color always means the same value. Such a value can be added here. It 
+defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{createDirectory}{If a directory (i.e. folder) should be created. Defaults to TRUE.}
+\item{createDirectory}{If a directory (i.e. folder) should be created. 
+Defaults to TRUE.}
 
-\item{directoryName}{The name of the created directory, if it should be created.}
+\item{directoryName}{The name of the created directory, if it should be 
+created.}
 
-\item{dotSize}{Simply the size of the dots. The default makes the dots smaller the more observations that are included.}
+\item{dotSize}{Simply the size of the dots. The default makes the dots 
+smaller the more observations that are included.}
 
-\item{createPlot}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots
+are generated.}
 }
 \value{
-A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
+A sne based plot showing which events that belong to a cluster 
+dominated by the first or the second group.
 }
 \description{
-This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
+This function is used to visually compare groups of individuals from whom 
+comparable cytometry or other complex data has been generated, but where the
+number of individuals does not permit any statistical comparisons.
 }
 \examples{
 # Load some data
 data(testData)
 
+\dontrun{
 # Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
 # data is inluded
 # library(Rtsne)
@@ -61,7 +81,7 @@ data(testDataSNE)
 # testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-\dontrun{
+
 # And finally run the function
 dResidualPlot(
   xYData = testDataSNE$Y, groupVector = testData[, 16],
@@ -70,5 +90,6 @@ dResidualPlot(
 }
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
+\code{\link{dWilcox}}
 }

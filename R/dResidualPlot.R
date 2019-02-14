@@ -32,7 +32,7 @@
 #' Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be 
 #' created.
-#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots
 #' are generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
 #' \code{\link{dWilcox}}
@@ -70,7 +70,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
                           bandColor = "black", createDirectory = FALSE, 
                           directoryName = "dResidualPlot", 
                           dotSize = 400/sqrt(nrow(xYData)), 
-                          createPlot = TRUE) {
+                          createOutput = TRUE) {
     
     if (createDirectory == TRUE) {
         dir.create(directoryName)
@@ -156,73 +156,27 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
-    # Create the density matrix for xYData.
-    if (is.logical(densContour)) {
-        if (densContour == TRUE) {
-            densContour <- dContours(xYData)
-        }
-    }
-    if (length(densContour) > 1) {
-        xlim <- c(min(densContour[[1]]), 
-            max(densContour[[1]]))
-        ylim <- c(min(densContour[[2]]), 
-            max(densContour[[2]]))
-    } else {
-        minX <- min(xYData[, 1])
-        maxX <- max(xYData[, 1])
-        minY <- min(xYData[, 2])
-        maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), 
-            maxX + abs(maxX * 0.05))
-        ylim <- c(minY - abs(minY * 0.05), 
-            maxY + abs(maxY * 0.05))
-    }
+    dPlotCoFunction(colorVariable = xYData$col, name = 
+                        paste0(name, "_residuals"), 
+                    xYData = xYData, title = title, 
+                    densContour = densContour, bandColor = bandColor, 
+                    dotSize = dotSize, 
+                    createDirectory = createDirectory, 
+                    directoryName = directoryName, 
+                    createOutput = createOutput)
     
-    if (createDirectory == TRUE) {
-        png(file.path(directoryName, paste0(name, "_residuals.png")), 
-            width = 2500, height = 2500, units = "px", bg = "transparent")
-    } else {
-        png(paste0(name, "_residuals.png"), width = 2500, height = 2500, 
-            units = "px", bg = "transparent")
-    }
-
-    if (createPlot == TRUE) {
-        if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, main = name, pch = 20, cex = dotSize,
-                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
-                 axes = FALSE, xaxs = "i", yaxs = "i")
-        }
-        
-        if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, main = "", pch = 20, cex = dotSize, 
-                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
-                 axes = FALSE, xaxs = "i", yaxs = "i")
-        }
-        if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), new = TRUE)
-            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
-                    xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
-                    lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
-                    yaxs = "i")
-        }
-    }
-    dev.off()
     # Create a color legend with text
     
     yname <- "Residual values"
     topText <- paste0(groupName1, " is more abundant")
     bottomText <- paste0(groupName2, " is more abundant")
+    legendName <- paste0("Color_scale_for_", name, "_residuals.pdf")
     if (createDirectory == TRUE) {
-        legendTitle <- file.path(directoryName, 
-                                 paste0("Color scale for ", 
-                                        name, " residual analysis.pdf"))
-    } else {
-        legendTitle <- paste0("Color scale for ", 
-                              name, " residual analysis.pdf")
-    }
+        legendName <- file.path(directoryName, legendName)
+    } 
     
-    if (createPlot == TRUE) {
-        pdf(legendTitle)
+    if (createOutput == TRUE) {
+        pdf(legendName)
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
         z <- matrix(seq_len(9), nrow = 1)
         x <- 1

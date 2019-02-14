@@ -59,7 +59,7 @@
 #' @param nCores If multiCore is TRUE, then this sets the number of parallel 
 #' processes. The default is currently 87.5 percent with a cap on 10 cores, as 
 #' no speed increase is generally seen above 10 cores for normal computers. 
-#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots
 #' are generated.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, 
 #' \code{\link{dWilcox}}, \code{\link{dColorVector}}
@@ -101,7 +101,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
                        directoryName = "dColorPlot_results", 
                        truncate = TRUE, bandColor = "black", 
                        dotSize = 500/sqrt(nrow(xYData)), multiCore = "default",
-                       nCores="default", createPlot = TRUE) {
+                       nCores="default", createOutput = TRUE) {
     if (is.matrix(colorData)) {
         colorData <- as.data.frame(colorData)
     }
@@ -145,7 +145,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
         }
     }
     
-    if (drawColorPalette == TRUE && createPlot == TRUE) {
+    if (drawColorPalette == TRUE && createOutput == TRUE) {
         if (createDirectory == TRUE) {
             pdf(file.path(directoryName, "palette.pdf"))
         } else {
@@ -163,14 +163,14 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
                                     truncate = truncate)
         colorVector <- dColorVector(round(colorDataPercent),
                                     colorScale = "rich_colors", 
-                                    order = c(0:100))
-        dColorPlotCoFunction(colorVariable = colorVector, name = names, 
+                                    colorOrder = c(0:100))
+        dPlotCoFunction(colorVariable = colorVector, name = names, 
                             xYData = xYData, title = title, 
                             densContour = densContour, bandColor = bandColor, 
                             dotSize = dotSize, createDirectory = 
                                 createDirectory, 
                             directoryName = directoryName,
-                            createPlot = createPlot)
+                            createOutput = createOutput)
     }
     if (is.data.frame(colorData)) {
         colorDataPercent <- dScale(x = colorData, control = controlData, 
@@ -178,7 +178,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
                                    center = FALSE, multiplicationFactor = 100, 
                                    truncate = truncate)
         colorVectors <- apply(round(colorDataPercent), 2, dColorVector, 
-                              colorScale = "rich_colors", order = c(0:100))
+                              colorScale = "rich_colors", colorOrder = c(0:100))
         if (multiCore == "default") {
             if (nrow(colorData) > 1e+05) {
                 multiCore <- TRUE
@@ -198,17 +198,17 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
             return_all <- 
                 foreach(i = seq_len(ncol(colorVectors)), 
                                     .packages = "DepecheR") %dopar% 
-                dColorPlotCoFunction(
+                dPlotCoFunction(
                     colorVariable = colorVectors[,i],
                     name = names[i], xYData = xYData,
                     title = title, densContour = densContour,
                     bandColor = bandColor, dotSize = dotSize,
                     createDirectory = createDirectory, 
-                    directoryName = directoryName, createPlot = createPlot)
+                    directoryName = directoryName, createOutput = createOutput)
             stopCluster(cl)
 
         } else {
-            mapply(dColorPlotCoFunction, 
+            mapply(dPlotCoFunction, 
                    as.data.frame.matrix(colorVectors, stringsAsFactors = FALSE), 
                    names, MoreArgs = list(xYData = xYData, 
                                           title = title, 
@@ -217,20 +217,20 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
                                           dotSize = dotSize, 
                                           createDirectory = createDirectory, 
                                           directoryName = directoryName, 
-                                          createPlot = createPlot))
+                                          createOutput = createOutput))
         }
     }
     if (is.character(colorData)) {
-        dColorPlotCoFunction(colorVariable = colorData, name = names, 
+        dPlotCoFunction(colorVariable = colorData, name = names, 
                              xYData = xYData, title = title, 
                              densContour = densContour, bandColor = bandColor, 
                              dotSize = dotSize, 
                              createDirectory = createDirectory, 
                              directoryName = directoryName, 
-                             createPlot = createPlot)
+                             createOutput = createOutput)
     }
     
-    if (addLegend == TRUE && createPlot == 
+    if (addLegend == TRUE && createOutput == 
         TRUE) {
         # Some preparations for the legend Create
         # a dataframe from the ids and the color

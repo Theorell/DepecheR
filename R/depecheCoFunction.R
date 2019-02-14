@@ -1,3 +1,15 @@
+#This function is used by depeche
+#The reason this level of complexity is needed is to handle both single-run
+#depeche and dual-run depeche. In the latter case, this function is called
+#multiple times. 
+#"Unique" parameters
+#inDataFrameScaled: the scaled version of inDataFrame. See initial part of
+#depeche function for details. 
+#firstClusterNumber: this defines if the first number for the cluster 
+#definitions.
+#createDirectory: should a directory be created? In practice, FALSE for single
+#depeche and TRUE for the second part of dual depeche. 
+#For information on the other parameters, see depeche. 
 #' @importFrom gplots heatmap.2
 #' @importFrom graphics box
 #' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
@@ -10,7 +22,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                               directoryName, penalties, sampleSize, 
                               selectionSampleSize, k, minARIImprovement, 
                               optimARI, maxIter, newNumbers, 
-                              createDirectory = FALSE, nCores=nCores, 
+                              createDirectory = FALSE, nCores, 
                               createOutput, logCenterSd) {
     
     if (createDirectory == TRUE) { dir.create(directoryName) }
@@ -41,7 +53,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, k = k, maxIter = maxIter,
                                      sampleSize = sampleSize, 
                                      penalties = penalties, 
-                                     makeGraph = createOutput, 
+                                     createOutput = createOutput, 
                                      minARIImprovement = minARIImprovement, 
                                      optimARI = optimARI, nCores=nCores, 
                                      createDirectory=createDirectory, 
@@ -87,11 +99,11 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # allocate the selectionDataSet.
         allocationResultList <- list()
         selectionDataSetMatrix <- data.matrix(selectionDataSet)
-        allocationResultList <- foreach(i = seq_len(length(allSolutions))) %do% 
-            removeEmptyVariablesAndAllocatePoints(selectionDataSet = 
-                                                      selectionDataSetMatrix, 
-                                                  clusterCenters = 
-                                                      allSolutions[[i]])
+        allocationResultList <- 
+            foreach(i = seq_len(length(allSolutions))) %dopar% 
+            dAllocate(inDataMatrix = selectionDataSetMatrix, 
+                      clusterCenters = allSolutions[[i]], log2Off=TRUE, 
+                      noZeroNum==FALSE)
         
         # Here, the corrected Rand index with
         # each allocationResult as the first
@@ -143,7 +155,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # And here, the optimal solution is
         # created with the full dataset
         clusterVectorEquidistant <- dAllocate(inDataFrameScaled, 
-            reducedClusterCenters)
+            reducedClusterCenters, log2Off=TRUE, noZeroNum==FALSE)
     }
     
     # Here, the optPenalty information is
@@ -218,39 +230,24 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                            "#FCCE25FF"))
         
         if (createOutput == TRUE) {
-            if (logCenterSd[1] == FALSE) {
-                if(createDirectory == TRUE){
-                    pdf(file.path(directoryName, "Cluster_centers.pdf"))
-                } else {
-                    pdf("Cluster_centers.pdf") 
-                }
-                
-                heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
-                          Colv = FALSE, dendrogram = "none", scale = "none", 
-                          col = colorLadder, 
-                          breaks = seq(0, 1, length.out = 12), 
-                          trace = "none", keysize = 1.5, density.info = "none", 
-                          key.xlab = "0=no expression, 
-                          1=high expression\ngrey=penalized", 
-                          na.color = "#A2A2A2")
-                dev.off()
-            } else {
-                if(createDirectory == TRUE){
-                    pdf(file.path(directoryName, 
-                                  "Log2 transformed cluster centers.pdf"))
-                } else {
-                    pdf("Log2 transformed cluster centers.pdf") 
-                }
-                heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
-                          Colv = FALSE, dendrogram = "none", scale = "none", 
-                          col = colorLadder, 
-                          breaks = seq(0, 1, length.out = 12), trace = "none", 
-                          keysize = 1.5, density.info = "none", 
-                          key.xlab = "0=no expression, 
-                          1=high expression\ngrey=penalized", 
-                          na.color = "#A2A2A2")
-                dev.off()
-            }
+            #First, the name is defined, depending on two criteria: if the data
+            #was log transformed, and if a directory should be created or not. 
+            logOrNoLogName <- ifelse (logCenterSd[1] == FALSE, "Cluster",
+                                          "Log2_transformed_cluster")
+            clusterCenterName <- ifelse (createDirectory == TRUE, 
+                                         file.path(directoryName, 
+                                                   paste0(logOrNoLogName,
+                                                   "_centers.pdf")), 
+                                         paste0(logOrNoLogName, "_centers.pdf"))
+            pdf(clusterCenterName)
+            heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
+                      Colv = FALSE, dendrogram = "none", scale = "none", 
+                      col = colorLadder, breaks = seq(0, 1, length.out = 12), 
+                      trace = "none", keysize = 1.5, density.info = "none", 
+                      key.xlab = 
+                          "0=no expression, 1=high expression\ngrey=penalized", 
+                      na.color = "#A2A2A2")
+            dev.off()
         }
     }
     
@@ -258,13 +255,11 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     # returned is compiled
     depecheResult <- list(clusterVectorEquidistant, correctClusterCenters, 
                           sparsityMatrix, optPenalty)
-    if (logCenterSd[1] == FALSE) {
-        names(depecheResult) <- c("clusterVector", "clusterCenters", 
-                                  "sparsityMatrix", "penaltyOptList")
-    } else {
-        names(depecheResult) <- c("clusterVector", "log2ClusterCenters", 
-                                  "sparsityMatrix", "penaltyOptList")
-    }
+    names(depecheResult) <- c("clusterVector", "clusterCenters", 
+                              "sparsityMatrix", "penaltyOptList")
+    if(logCenterSd[1] == TRUE){
+        names(depecheResult)[2] <- "log2ClusterCenters"
+        }
 
     return(depecheResult)
 }
