@@ -6,15 +6,14 @@
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %do% %dopar%
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, 
-    firstClusterNumber = 1, directoryName, 
-    penalties, sampleSize, selectionSampleSize, 
-    k, minARIImprovement, optimARI, maxIter, 
-    newNumbers, createDirectory = FALSE, nCores=nCores,
-    createOutput, logCenterSd) {
-    if (createDirectory == TRUE) {
-        dir.create(directoryName)
-    }
+depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1, 
+                              directoryName, penalties, sampleSize, 
+                              selectionSampleSize, k, minARIImprovement, 
+                              optimARI, maxIter, newNumbers, 
+                              createDirectory = FALSE, nCores=nCores, 
+                              createOutput, logCenterSd) {
+    
+    if (createDirectory == TRUE) { dir.create(directoryName) }
     
     # First, if the dataset is very, very
     # big, a subset of it is used to subset
@@ -23,10 +22,8 @@ depecheCoFunction <- function(inDataFrameScaled,
     # strapping becomes so consuming, that
     # the process stalls.
     if (nrow(inDataFrameScaled) > 1e+06) {
-        sampleRows <- sample(seq_len(nrow(inDataFrameScaled)), 
-            1e+06)
-        inDataFrameUsed <- inDataFrameScaled[sampleRows, 
-            ]
+        sampleRows <- sample(seq_len(nrow(inDataFrameScaled)), 1e+06)
+        inDataFrameUsed <- inDataFrameScaled[sampleRows,]
     } else {
         inDataFrameUsed <- inDataFrameScaled
     }
@@ -41,12 +38,14 @@ depecheCoFunction <- function(inDataFrameScaled,
         }
     }
     
-    dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, 
-        k = k, maxIter = maxIter, sampleSize = sampleSize, 
-        penalties = penalties, makeGraph = createOutput, 
-        minARIImprovement = minARIImprovement, 
-        optimARI = optimARI, nCores=nCores, createDirectory=createDirectory, 
-        directoryName=directoryName)
+    dOptPenaltyResult <- dOptPenalty(inDataFrameUsed, k = k, maxIter = maxIter,
+                                     sampleSize = sampleSize, 
+                                     penalties = penalties, 
+                                     makeGraph = createOutput, 
+                                     minARIImprovement = minARIImprovement, 
+                                     optimARI = optimARI, nCores=nCores, 
+                                     createDirectory=createDirectory, 
+                                     directoryName=directoryName)
     
     # Now over to creating the final solution
     # Here, the selectionDataSet is created
@@ -56,9 +55,9 @@ depecheCoFunction <- function(inDataFrameScaled,
     if (nrow(inDataFrameUsed) <= selectionSampleSize) {
         selectionDataSet <- inDataFrameUsed
     } else {
-        selectionDataSet <- inDataFrameUsed[sample(seq_len(nrow(inDataFrameUsed)), 
-            selectionSampleSize, replace = TRUE), 
-            ]
+        selectionDataSet <- 
+            inDataFrameUsed[sample(seq_len(nrow(inDataFrameUsed)), 
+            selectionSampleSize, replace = TRUE), ]
     }
     
     # If the dataset is small, a new set of
@@ -68,11 +67,11 @@ depecheCoFunction <- function(inDataFrameScaled,
     # likelihood solution is returned as the
     # result
     if (nrow(inDataFrameUsed) < 10000) {
-        penalty <- dOptPenaltyResult[[1]][1, 
-            1]
-        depecheAllDataResult <- depecheAllData(inDataFrameUsed, 
-            penalty = penalty, k = k, firstClusterNumber = firstClusterNumber,
-            nCores=nCores)
+        penalty <- dOptPenaltyResult[[1]][1, 1]
+        depecheAllDataResult <- 
+            depecheAllData(inDataFrameUsed, penalty = penalty, k = k, 
+                           firstClusterNumber = firstClusterNumber,
+                           nCores=nCores)
         clusterVectorEquidistant <- depecheAllDataResult[[1]]
         reducedClusterCenters <- depecheAllDataResult[[2]]
     } else {
@@ -89,8 +88,10 @@ depecheCoFunction <- function(inDataFrameScaled,
         allocationResultList <- list()
         selectionDataSetMatrix <- data.matrix(selectionDataSet)
         allocationResultList <- foreach(i = seq_len(length(allSolutions))) %do% 
-            removeEmptyVariablesAndAllocatePoints(selectionDataSet = selectionDataSetMatrix, 
-                clusterCenters = allSolutions[[i]])
+            removeEmptyVariablesAndAllocatePoints(selectionDataSet = 
+                                                      selectionDataSetMatrix, 
+                                                  clusterCenters = 
+                                                      allSolutions[[i]])
         
         # Here, the corrected Rand index with
         # each allocationResult as the first
@@ -104,7 +105,8 @@ depecheCoFunction <- function(inDataFrameScaled,
         }
         cl <- makeCluster(nCores, type = "SOCK")
         registerDoSNOW(cl)
-        meanARIList <- foreach(i = seq_len(length(allocationResultList))) %dopar% 
+        meanARIList <- 
+            foreach(i = seq_len(length(allocationResultList))) %dopar% 
             mean(vapply(allocationResultList, FUN.VALUE = 0.5, rand_index, 
                 inds2 = allocationResultList[[i]], k = k))
         stopCluster(cl)
@@ -117,9 +119,9 @@ depecheCoFunction <- function(inDataFrameScaled,
         colnames(optimalClusterCenters) <- colnames(inDataFrameUsed)
         # Remove all rows and columns that do not
         # contain any information
-        reducedClusterCenters <- optimalClusterCenters[which(rowSums(optimalClusterCenters) != 
-            0), which(colSums(optimalClusterCenters) != 
-            0)]
+        reducedClusterCenters <- 
+            optimalClusterCenters[which(rowSums(optimalClusterCenters) != 0), 
+                                  which(colSums(optimalClusterCenters) != 0)]
         
         # In the specific case that only one row
         # is left, due to a high penalty, the
@@ -127,18 +129,16 @@ depecheCoFunction <- function(inDataFrameScaled,
         # matrix from a vector. The same is done
         # if the number of informative variables
         # is just one.
-        if (length(which(rowSums(optimalClusterCenters) != 
-            0)) == 1) {
+        if (length(which(rowSums(optimalClusterCenters) != 0)) == 1) {
             reducedClusterCenters <- t(reducedClusterCenters)
-        } else if (length(which(colSums(optimalClusterCenters) != 
-            0) == 1)) {
+        } else if (length(which(colSums(optimalClusterCenters) != 0) == 1)) {
             reducedClusterCenters <- as.matrix(reducedClusterCenters)
         }
         
         # Make the row names nice
-        rownames(reducedClusterCenters) <- rep(firstClusterNumber:(firstClusterNumber + 
-            (nrow(reducedClusterCenters)) - 
-            1))
+        rownames(reducedClusterCenters) <- 
+            seq(firstClusterNumber,(firstClusterNumber + 
+                                        (nrow(reducedClusterCenters)) - 1))
         
         # And here, the optimal solution is
         # created with the full dataset
@@ -149,8 +149,7 @@ depecheCoFunction <- function(inDataFrameScaled,
     # Here, the optPenalty information is
     # retrieved from the optimal sample size
     # run.
-    optPenalty <- list(dOptPenaltyResult[[1]], 
-        dOptPenaltyResult[[2]])
+    optPenalty <- list(dOptPenaltyResult[[1]], dOptPenaltyResult[[2]])
     
     # Here, a cluster center matrix is
     # created that relates its values to the
@@ -159,8 +158,7 @@ depecheCoFunction <- function(inDataFrameScaled,
     # First, the cluster centers are
     # multiplied by the standar deviation of
     # the data
-    clusterCentersMultSd <- reducedClusterCenters * 
-        logCenterSd[[3]]
+    clusterCentersMultSd <- reducedClusterCenters * logCenterSd[[3]]
     
     # Then, the center term is added to all
     # variables separately
@@ -169,11 +167,10 @@ depecheCoFunction <- function(inDataFrameScaled,
         for (i in seq_len(ncol(clusterCentersMultSd))) {
             focusMean <- logCenterSd[[2]][which(names(logCenterSd[[2]]) %in% 
                 colnames(clusterCentersMultSd)[i])]
-            correctClusterCentersList[[i]] <- clusterCentersMultSd[, 
-                i] + focusMean
+            correctClusterCentersList[[i]] <- clusterCentersMultSd[,i] 
+            + focusMean
         }
-        correctClusterCenters <- do.call("cbind", 
-            correctClusterCentersList)
+        correctClusterCenters <- do.call("cbind", correctClusterCentersList)
         colnames(correctClusterCenters) <- colnames(reducedClusterCenters)
     } else {
         correctClusterCenters <- clusterCentersMultSd
@@ -195,32 +192,30 @@ depecheCoFunction <- function(inDataFrameScaled,
         message("As the number of variables in the result exceeds 500, 
                 it is not meaningful to produce a cluster center heatmap, 
                 so it is omitted")
-    } else if (nrow(reducedClusterCenters) > 
-        1 && ncol(reducedClusterCenters) > 
-        1) {
+    } else if (nrow(reducedClusterCenters) > 1 && 
+               ncol(reducedClusterCenters) > 1) {
         graphicClusterCenters <- reducedClusterCenters
         # Here we scale each center value to the
         # range between the lowest and highest
         # permille of the observations in the
         # inDataScaled for that variable
         for (i in seq_len(ncol(graphicClusterCenters))) {
-            scaledFocus <- inDataFrameUsed[, 
-                colnames(inDataFrameUsed) == 
-                  colnames(graphicClusterCenters)[i]]
-            graphicClusterCenters[, i] <- dScale(reducedClusterCenters[, 
-                i], scaledFocus, robustVarScale = FALSE, 
-                center = FALSE, truncate = TRUE)
+            scaledFocus <- 
+                inDataFrameUsed[, colnames(inDataFrameUsed) == 
+                                    colnames(graphicClusterCenters)[i]]
+            graphicClusterCenters[, i] <- dScale(reducedClusterCenters[, i], 
+                                                 scaledFocus, 
+                                                 robustVarScale = FALSE, 
+                                                 center = FALSE, 
+                                                 truncate = TRUE)
         }
         
-        graphicClusterCenters[sparsityMatrix == 
-            0] <- NA
+        graphicClusterCenters[sparsityMatrix == 0] <- NA
         
         colorLadder <- dColorVector(seq_len(11), 
-            colorScale = c("#0D0887FF", "#6A00A8FF", 
-                "#900DA4FF", "#B12A90FF", 
-                "#CC4678FF", "#E16462FF", 
-                "#F1844BFF", "#FCA636FF", 
-                "#FCCE25FF"))
+            colorScale = c("#0D0887FF", "#6A00A8FF", "#900DA4FF", "#B12A90FF", 
+                           "#CC4678FF", "#E16462FF", "#F1844BFF", "#FCA636FF", 
+                           "#FCCE25FF"))
         
         if (createOutput == TRUE) {
             if (logCenterSd[1] == FALSE) {
@@ -230,15 +225,14 @@ depecheCoFunction <- function(inDataFrameScaled,
                     pdf("Cluster_centers.pdf") 
                 }
                 
-                heatmap.2(as.matrix(graphicClusterCenters), 
-                  Rowv = FALSE, Colv = FALSE, 
-                  dendrogram = "none", scale = "none", 
-                  col = colorLadder, breaks = seq(0, 
-                    1, length.out = 12), 
-                  trace = "none", keysize = 1.5, 
-                  density.info = "none", 
-                  key.xlab = "0=no expression, 1=high expression\ngrey=penalized", 
-                  na.color = "#A2A2A2")
+                heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
+                          Colv = FALSE, dendrogram = "none", scale = "none", 
+                          col = colorLadder, 
+                          breaks = seq(0, 1, length.out = 12), 
+                          trace = "none", keysize = 1.5, density.info = "none", 
+                          key.xlab = "0=no expression, 
+                          1=high expression\ngrey=penalized", 
+                          na.color = "#A2A2A2")
                 dev.off()
             } else {
                 if(createDirectory == TRUE){
@@ -247,16 +241,14 @@ depecheCoFunction <- function(inDataFrameScaled,
                 } else {
                     pdf("Log2 transformed cluster centers.pdf") 
                 }
-                heatmap.2(as.matrix(graphicClusterCenters), 
-                  Rowv = FALSE, Colv = FALSE, 
-                  dendrogram = "none", scale = "none", 
-                  col = colorLadder, breaks = seq(0, 
-                    1, length.out = 12), 
-                  trace = "none", keysize = 1.5, 
-                  density.info = "none", 
-                  key.xlab = "0=no expression, 1=high 
-                  expression\ngrey=penalized", 
-                  na.color = "#A2A2A2")
+                heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
+                          Colv = FALSE, dendrogram = "none", scale = "none", 
+                          col = colorLadder, 
+                          breaks = seq(0, 1, length.out = 12), trace = "none", 
+                          keysize = 1.5, density.info = "none", 
+                          key.xlab = "0=no expression, 
+                          1=high expression\ngrey=penalized", 
+                          na.color = "#A2A2A2")
                 dev.off()
             }
         }
@@ -264,17 +256,14 @@ depecheCoFunction <- function(inDataFrameScaled,
     
     # And now, the result that should be
     # returned is compiled
-    depecheResult <- list(clusterVectorEquidistant, 
-        correctClusterCenters, sparsityMatrix, 
-        optPenalty)
+    depecheResult <- list(clusterVectorEquidistant, correctClusterCenters, 
+                          sparsityMatrix, optPenalty)
     if (logCenterSd[1] == FALSE) {
-        names(depecheResult) <- c("clusterVector", 
-            "clusterCenters", "sparsityMatrix", 
-            "penaltyOptList")
+        names(depecheResult) <- c("clusterVector", "clusterCenters", 
+                                  "sparsityMatrix", "penaltyOptList")
     } else {
-        names(depecheResult) <- c("clusterVector", 
-            "log2ClusterCenters", "sparsityMatrix", 
-            "penaltyOptList")
+        names(depecheResult) <- c("clusterVector", "log2ClusterCenters", 
+                                  "sparsityMatrix", "penaltyOptList")
     }
 
     return(depecheResult)

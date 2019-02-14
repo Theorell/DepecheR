@@ -1,23 +1,43 @@
-#' Showing the residuals when subtracting the values from one group from another on a SNE plot
+#' Showing the residuals when subtracting the values from one group from 
+#' another on a SNE plot
 #'
 #'
-#' This function is used to visually compare groups of individuals from whom comparable cytometry or other complex data has been generated, but where the number of individuals does not permit any statistical comparisons.
-#' @param xYData A dataframe or matrix with two columns. Each row contains information about the x and y positition in the field for that observation.
-#' @param groupVector Vector with the same length as xYData containing information about the group identity of each observation.
-#' @param clusterVector Vector with the same length as xYData containing information about the cluster identity of each observation.
-#' @param densContour If density contours should be created for the plot(s) or not. Defaults to TRUE.
+#' This function is used to visually compare groups of individuals from whom 
+#' comparable cytometry or other complex data has been generated, but where the
+#' number of individuals does not permit any statistical comparisons.
+#' @param xYData A dataframe or matrix with two columns. Each row contains 
+#' information about the x and y positition in the field for that observation.
+#' @param groupVector Vector with the same length as xYData containing 
+#' information about the group identity of each observation.
+#' @param clusterVector Vector with the same length as xYData containing 
+#' information about the cluster identity of each observation.
+#' @param densContour If density contours should be created for the plot(s) or
+#' not. Defaults to TRUE.
 #' @param name The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
-#' @param maxAbsPlottingValues If multiple plots should be compared, it might be useful to define a similar color scale for all plots, so that the same color always means the same value. Such a value can be added here. It defaults to the maximum Wilcoxon statistic that is generated in the analysis.
-#' @param title If there should be a title displayed on the plotting field. As the plotting field is saved as a png, this title cannot be removed as an object afterwards, as it is saved as coloured pixels. To simplify usage for publication, the default is FALSE, as the files are still named, eventhough no title appears on the plot.
+#' @param maxAbsPlottingValues If multiple plots should be compared, it might 
+#' be useful to define a similar color scale for all plots, so that the same 
+#' color always means the same value. Such a value can be added here. It 
+#' defaults to the maximum Wilcoxon statistic that is generated in the analysis.
+#' @param title If there should be a title displayed on the plotting field. As
+#' the plotting field is saved as a png, this title cannot be removed as an 
+#' object afterwards, as it is saved as coloured pixels. To simplify usage for 
+#' publication, the default is FALSE, as the files are still named, eventhough 
+#' no title appears on the plot.
 #' @param bandColor The color of the contour bands. Defaults to black.
-#' @param dotSize Simply the size of the dots. The default makes the dots smaller the more observations that are included.
-#' @param createDirectory If a directory (i.e. folder) should be created. Defaults to TRUE.
-#' @param directoryName The name of the created directory, if it should be created.
-#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.
-#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, \code{\link{dWilcox}}
-#' @return A sne based plot showing which events that belong to a cluster dominated by the first or the second group.
+#' @param dotSize Simply the size of the dots. The default makes the dots 
+#' smaller the more observations that are included.
+#' @param createDirectory If a directory (i.e. folder) should be created. 
+#' Defaults to TRUE.
+#' @param directoryName The name of the created directory, if it should be 
+#' created.
+#' @param createPlot For testing purposes. Defaults to TRUE. If FALSE, no plots
+#' are generated.
+#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
+#' \code{\link{dWilcox}}
+#' @return A sne based plot showing which events that belong to a cluster 
+#' dominated by the first or the second group.
 #' @examples
 #' # Load some data
 #' data(testData)
@@ -42,13 +62,15 @@
 #' )
 #' }
 #' @export dResidualPlot
-dResidualPlot <- function(xYData, groupVector, 
-    clusterVector, densContour = TRUE, groupName1 = unique(groupVector)[1], 
-    groupName2 = unique(groupVector)[2], 
-    name = "default", title = FALSE, maxAbsPlottingValues, 
-    bandColor = "black", createDirectory = FALSE, 
-    directoryName = "dResidualPlot", dotSize = 400/sqrt(nrow(xYData)), 
-    createPlot = TRUE) {
+dResidualPlot <- function(xYData, groupVector, clusterVector, 
+                          densContour = TRUE, 
+                          groupName1 = unique(groupVector)[1], 
+                          groupName2 = unique(groupVector)[2], 
+                          name = "default", title = FALSE, maxAbsPlottingValues, 
+                          bandColor = "black", createDirectory = FALSE, 
+                          directoryName = "dResidualPlot", 
+                          dotSize = 400/sqrt(nrow(xYData)), 
+                          createPlot = TRUE) {
     
     if (createDirectory == TRUE) {
         dir.create(directoryName)
@@ -58,14 +80,12 @@ dResidualPlot <- function(xYData, groupVector,
         stop("More or less than two groups are present. Please correct this.")
     }
     
-    
     if (is.matrix(xYData)) {
         xYData <- as.data.frame(xYData)
     }
     
     if (name == "default") {
-        name <- paste0(groupName1, "_vs_", 
-            groupName2)
+        name <- paste0(groupName1, "_vs_", groupName2)
     }
     
     # Here, the residuals are identified.  A
@@ -73,8 +93,7 @@ dResidualPlot <- function(xYData, groupVector,
     # each cluster for each group is created
     # in analogy with XXX pKMRun.
     
-    clusterTable <- table(clusterVector, 
-        groupVector)
+    clusterTable <- table(clusterVector, groupVector)
     
     countTable <- table(groupVector)
     
@@ -86,9 +105,8 @@ dResidualPlot <- function(xYData, groupVector,
     }
     
     # Now the residual matrix is constructed
-    residualVector <- as.vector(clusterPercentagesForGroups[, 
-        1] - clusterPercentagesForGroups[, 
-        2])
+    residualVector <- as.vector(clusterPercentagesForGroups[, 1] - 
+                                    clusterPercentagesForGroups[, 2])
     
     names(residualVector) <- as.numeric(row.names(clusterPercentagesForGroups))
     
@@ -104,8 +122,10 @@ dResidualPlot <- function(xYData, groupVector,
     # user are lower than the most extreme
     # values in the residual data. Then, the
     # data is truncated to fit the range.
-    residualVector[residualVector > maxAbsPlottingValues] <- maxAbsPlottingValues
-    residualVector[residualVector < -maxAbsPlottingValues] <- -maxAbsPlottingValues
+    residualVector[residualVector > maxAbsPlottingValues] <- 
+        maxAbsPlottingValues
+    residualVector[residualVector < -maxAbsPlottingValues] <- 
+        -maxAbsPlottingValues
     
     # Here, a vector with the same length as
     # the cluster vector is generated, but
@@ -127,14 +147,13 @@ dResidualPlot <- function(xYData, groupVector,
     
     # make a breaks vector to define each bin
     # for the colors
-    brks <- with(residual.df, seq(-maxAbsPlottingValues, 
-        maxAbsPlottingValues, length.out = 10))
+    brks <- with(residual.df, seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
+                                  length.out = 10))
     
     # assign each value to a bin
-    grps <- with(residual.df, cut(residual.df[, 
-        1], breaks = brks, include.lowest = TRUE))
-    colors <- colorRampPalette(c("#FF0000", 
-        "white", "#0000FF"))(9)
+    grps <- with(residual.df, cut(residual.df[, 1], breaks = brks, 
+                                  include.lowest = TRUE))
+    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
     # Create the density matrix for xYData.
@@ -161,57 +180,45 @@ dResidualPlot <- function(xYData, groupVector,
     
     if (createDirectory == TRUE) {
         png(file.path(directoryName, paste0(name, "_residuals.png")), 
-            width = 2500, height = 2500, units = "px", 
-            bg = "transparent")
+            width = 2500, height = 2500, units = "px", bg = "transparent")
     } else {
-        png(paste0(name, "_residuals.png"), 
-            width = 2500, height = 2500, units = "px", 
-            bg = "transparent")
+        png(paste0(name, "_residuals.png"), width = 2500, height = 2500, 
+            units = "px", bg = "transparent")
     }
 
     if (createPlot == TRUE) {
         if (title == TRUE) {
-            plot(V2 ~ V1, data = xYData, 
-                main = name, pch = 20, cex = dotSize, 
-                cex.main = 5, col = col, 
-                xlim = xlim, ylim = ylim, 
-                axes = FALSE, xaxs = "i", 
-                yaxs = "i")
+            plot(V2 ~ V1, data = xYData, main = name, pch = 20, cex = dotSize,
+                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
+                 axes = FALSE, xaxs = "i", yaxs = "i")
         }
         
         if (title == FALSE) {
-            plot(V2 ~ V1, data = xYData, 
-                main = "", pch = 20, cex = dotSize, 
-                cex.main = 5, col = col, 
-                xlim = xlim, ylim = ylim, 
-                axes = FALSE, xaxs = "i", 
-                yaxs = "i")
+            plot(V2 ~ V1, data = xYData, main = "", pch = 20, cex = dotSize, 
+                 cex.main = 5, col = col, xlim = xlim, ylim = ylim, 
+                 axes = FALSE, xaxs = "i", yaxs = "i")
         }
         if (length(densContour) > 1) {
-            par(fig = c(0, 1, 0, 1), mar = c(6, 
-                4.5, 4.5, 2.5), new = TRUE)
-            contour(x = densContour$x, y = densContour$y, 
-                z = densContour$z, xlim = xlim, 
-                ylim = ylim, nlevels = 10, 
-                col = bandColor, lwd = 8, 
-                drawlabels = FALSE, axes = FALSE, 
-                xaxs = "i", yaxs = "i")
+            par(fig = c(0, 1, 0, 1), mar = c(6, 4.5, 4.5, 2.5), new = TRUE)
+            contour(x = densContour$x, y = densContour$y, z = densContour$z, 
+                    xlim = xlim, ylim = ylim, nlevels = 10, col = bandColor, 
+                    lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
+                    yaxs = "i")
         }
     }
     dev.off()
     # Create a color legend with text
     
     yname <- "Residual values"
-    topText <- paste(groupName1, " is more abundant", 
-        sep = "")
-    bottomText <- paste(groupName2, " is more abundant", 
-        sep = "")
+    topText <- paste0(groupName1, " is more abundant")
+    bottomText <- paste0(groupName2, " is more abundant")
     if (createDirectory == TRUE) {
-        legendTitle <- file.path(directoryName, paste0("Color scale for ", 
-                              name, " residual analysis.pdf"))
+        legendTitle <- file.path(directoryName, 
+                                 paste0("Color scale for ", 
+                                        name, " residual analysis.pdf"))
     } else {
         legendTitle <- paste0("Color scale for ", 
-                             name, " residual analysis.pdf")
+                              name, " residual analysis.pdf")
     }
     
     if (createPlot == TRUE) {
@@ -219,15 +226,11 @@ dResidualPlot <- function(xYData, groupVector,
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
         z <- matrix(seq_len(9), nrow = 1)
         x <- 1
-        y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, 
-            len = 9)
-        image(x, y, z, col = colors, axes = FALSE, 
-            xlab = "", ylab = yname)
+        y <- seq(-maxAbsPlottingValues, maxAbsPlottingValues, len = 9)
+        image(x, y, z, col = colors, axes = FALSE, xlab = "", ylab = yname)
         axis(2)
-        text(1, maxAbsPlottingValues * 1.2, 
-            labels = topText, cex = 1.1)
-        text(1, -maxAbsPlottingValues * 1.2, 
-            labels = bottomText, cex = 1.1)
+        text(1, maxAbsPlottingValues * 1.2, labels = topText, cex = 1.1)
+        text(1, -maxAbsPlottingValues * 1.2, labels = bottomText, cex = 1.1)
         box()
         dev.off()
     }

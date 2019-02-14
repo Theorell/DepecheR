@@ -1,75 +1,62 @@
-dScaleCoFunction <- function(x, control, 
-    scale, robustVarScale, truncate, center, 
-    multiplicationFactor, returnCenter = FALSE) {
-    if (is.logical(scale) == TRUE && scale == 
-        FALSE) {
+dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, 
+                             center, multiplicationFactor, 
+                             returnCenter = FALSE) {
+    if (is.logical(scale) == TRUE && scale == FALSE) {
         if (is.logical(truncate) == TRUE) {
-            responseVector <- multiplicationFactor * 
-                x
+            responseVector <- multiplicationFactor * x
         }
         if (length(truncate) == 2) {
             xTruncReal <- truncateData(x, 
                 lowQuantile = truncate[1], 
                 highQuantile = truncate[2])
-            responseVector <- multiplicationFactor * 
-                xTruncReal
+            responseVector <- multiplicationFactor * xTruncReal
         }
     }
     
     if (length(scale) == 2) {
         # Define quantile
-        bottom <- quantile(control, probs = scale[1], 
-            se = FALSE, na.rm = TRUE)
-        top <- quantile(control, probs = scale[2], 
-            se = FALSE, na.rm = TRUE)
+        bottom <- quantile(control, probs = scale[1], se = FALSE, na.rm = TRUE)
+        top <- quantile(control, probs = scale[2], se = FALSE, na.rm = TRUE)
         
         if (robustVarScale == FALSE) {
             if (is.logical(truncate) == TRUE) {
                 responseVector <- multiplicationFactor * 
-                  ((x - bottom)/(top - bottom))
+                    ((x - bottom)/(top - bottom))
             }
             if (length(truncate) == 2) {
                 xTruncReal <- truncateData(x, 
-                  lowQuantile = truncate[1], 
-                  highQuantile = truncate[2])
+                                           lowQuantile = truncate[1], 
+                                           highQuantile = truncate[2])
                 responseVector <- multiplicationFactor * 
-                  ((xTruncReal - bottom)/(top - 
-                    bottom))
+                    ((xTruncReal - bottom)/(top - bottom))
             }
         }
         
         if (robustVarScale == TRUE) {
             # First truncate the data to the
             # quantiles defined by the quantiles
-            xTruncated <- truncateData(x, 
-                lowQuantile = scale[1], highQuantile = scale[2])
+            xTruncated <- truncateData(x, lowQuantile = scale[1], 
+                                       highQuantile = scale[2])
             
             sdxTruncated <- sd(xTruncated)
             
             # Now the data is scaled
             if (is.logical(truncate) == TRUE) {
-                responseVector <- multiplicationFactor * 
-                  x/sdxTruncated
+                responseVector <- multiplicationFactor * x/sdxTruncated
             }
             if (length(truncate) == 2) {
-                xTruncReal <- truncateData(x, 
-                  lowQuantile = truncate[1], 
-                  highQuantile = truncate[2])
-                responseVector <- multiplicationFactor * 
-                  xTruncReal/sdxTruncated
+                xTruncReal <- truncateData(x, lowQuantile = truncate[1], 
+                                           highQuantile = truncate[2])
+                responseVector <- multiplicationFactor * xTruncReal/sdxTruncated
             }
         }
     }
     
     if (center == "mean") {
         meanValue <- mean(responseVector)
-        responseVector <- responseVector - 
-            meanValue
+        responseVector <- responseVector - meanValue
         if (returnCenter == TRUE) {
-            options(digits = 14)
-            responseList <- list(responseVector, 
-                meanValue)
-            options(digits = 7)
+            responseList <- list(responseVector, meanValue)
         }
     }
     
@@ -90,10 +77,8 @@ dScaleCoFunction <- function(x, control,
         responseVector <- responseVector - 
             zeroPosition
         if (returnCenter == TRUE) {
-            options(digits = 14)
             responseList <- list(responseVector, 
                 zeroPosition)
-            options(digits = 7)
         }
     }
     

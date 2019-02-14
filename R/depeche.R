@@ -112,12 +112,9 @@
 #' 
 #' # Now, a dual depeche setup is used
 #' testDataDepecheResultDual <- depeche(testData[, 2:15],
-#'   dualDepecheSetup = data.frame(
-#'     rep(1:2, each = 7),
-#'     colnames(testData[, 2:15])
-#'   ), penalties = c(64, 128), sampleSize = 500, selectionSampleSize = 500,
-#'   maxIter = 20
-#' )
+#'     dualDepecheSetup = data.frame(rep(1:2, each = 7),
+#'     colnames(testData[, 2:15])), penalties = c(64, 128), sampleSize = 500, 
+#'     selectionSampleSize = 500, maxIter = 20)
 #' 
 #' # Look at the result
 #' str(testDataDepecheResultDual)
@@ -125,12 +122,12 @@
 #' 
 #' @export depeche
 depeche <- function(inDataFrame, dualDepecheSetup, 
-    penalties = c(2^0, 2^0.5, 2^1, 2^1.5, 
-        2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 
-        2^5), sampleSize = "default", selectionSampleSize = "default", 
-    k = 30, minARIImprovement = 0.01, optimARI = 0.95, 
-    maxIter = 100, log2Off = FALSE, center = "default", nCores="default",
-    createOutput = TRUE) {
+                    penalties = c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 
+                                  2^3.5, 2^4, 2^4.5, 2^5), 
+                    sampleSize = "default", selectionSampleSize = "default", 
+                    k = 30, minARIImprovement = 0.01, optimARI = 0.95, 
+                    maxIter = 100, log2Off = FALSE, center = "default", 
+                    nCores="default", createOutput = TRUE) {
     
     message("Files will be saved to ", getwd())
     
@@ -151,23 +148,21 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         # other cases, a slightly more
         # complicated formula is needed
         if (min(inDataFrame) >= 0) {
-            inDataFrame <- log2(inDataFrame + 
-                1)
+            inDataFrame <- log2(inDataFrame + 1)
             logCenterSd[[1]] <- TRUE
         } else {
             # First, the data needs to be reasonably
             # log transformed to not too extreme
             # values, but still without loosing
             # resolution.
-            inDataMatrixLog <- log2(apply(inDataFrame, 
-                2, function(x) x - min(x)) + 1)
+            inDataMatrixLog <- log2(apply(inDataFrame, 2, 
+                                          function(x) x - min(x)) + 1)
             # Then, the extreme negative values will
             # be replaced by 0, as they give rise to
             # artefacts.
             inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
             inDataFrame <- as.data.frame(inDataMatrixLog)
             logCenterSd[[1]] <- TRUE
-
         }
         
         kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
@@ -183,40 +178,30 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         if (center == "mean") {
             message("Mean centering is applied although the data has less than 
                   100 columns")
-            inDataFrameScaleList <- dScale(inDataFrame, 
-                scale = FALSE, center = "mean", 
-                returnCenter = TRUE)
+            inDataFrameScaleList <- dScale(inDataFrame, scale = FALSE, 
+                                           center = "mean", returnCenter = TRUE)
             inDataFramePreScaled <- inDataFrameScaleList[[1]]
             logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-        } else if (center == "default" || center == 
-            "peak") {
-            message("As the dataset has less than 100 columns, 
-                    peak centering is applied.")
-            inDataFrameScaleList <- dScale(inDataFrame, 
-                scale = FALSE, center = "peak", 
-                returnCenter = TRUE)
+        } else if (center == "default" || center == "peak") {
+            message("As the dataset has less than 100 columns, peak centering is
+                    applied.")
+            inDataFrameScaleList <- dScale(inDataFrame, scale = FALSE, 
+                                           center = "peak", returnCenter = TRUE)
             inDataFramePreScaled <- inDataFrameScaleList[[1]]
-            options(digits = 14)
             logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-            options(digits = 7)
         }
     } else if (center == "peak") {
         message("Peak centering is applied although the data has more than 100 
               columns")
-        inDataFrameScaleList <- dScale(inDataFrame, 
-            scale = FALSE, center = "peak", 
-            returnCenter = TRUE)
+        inDataFrameScaleList <- dScale(inDataFrame, scale = FALSE, 
+                                       center = "peak", returnCenter = TRUE)
         inDataFramePreScaled <- inDataFrameScaleList[[1]]
-        options(digits = 14)
         logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-        options(digits = 7)
-    } else if (center == "default" || center == 
-        "mean") {
+    } else if (center == "default" || center == "mean") {
         message("As the dataset has more than 100 columns, mean centering is 
               applied.")
-        inDataFrameScaleList <- dScale(inDataFrame, 
-            scale = FALSE, center = "mean", 
-            returnCenter = TRUE)
+        inDataFrameScaleList <- dScale(inDataFrame, scale = FALSE, 
+                                       center = "mean", returnCenter = TRUE)
         inDataFramePreScaled <- inDataFrameScaleList[[1]]
         logCenterSd[[2]] <- inDataFrameScaleList[[2]]
     } else if (center == FALSE) {
@@ -244,13 +229,11 @@ depeche <- function(inDataFrame, dualDepecheSetup,
     
     # Here, the dual cluster setup is created
     if (missing(dualDepecheSetup) == FALSE) {
-        inDataColumns <- as.character(dualDepecheSetup[, 
-            2])
+        inDataColumns <- as.character(dualDepecheSetup[, 2])
         inDataFrameFirst <- 
             inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1] == 1)]]
         if (is.list(penalties) == FALSE) {
-            penaltyList <- list(penalties, 
-                penalties)
+            penaltyList <- list(penalties, penalties)
         }
         dirName1 <- "Level_one_depeche"
         depecheResultFirst <- depecheCoFunction(inDataFrameFirst, 
@@ -278,9 +261,8 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         #        inDataFrameSecond[which(depecheResultFirst$clusterVector == i), ]
         #}
         allClusterN <- unique(depecheResultFirst$clusterVector)
-        inDataFrameSecondList <- 
-            lapply(seq_along(allClusterN), 
-        function(i) return(
+        inDataFrameSecondList <- lapply(seq_along(allClusterN), 
+                                        function(i) return(
             inDataFrameSecond[which(depecheResultFirst$clusterVector == i), ]
         ))
         
@@ -311,51 +293,45 @@ depeche <- function(inDataFrame, dualDepecheSetup,
                 createOutput = createOutput, logCenterSd = logCenterSd), 
             SIMPLIFY = FALSE)
         
-        # Now, all the clustering data is
-        # recompiled to one long cluster vector
         complexClusterVector <- inDataFrameScaled[,1]
+        clusterCentersList <- list()
+        colnamesList <- list()
         for (i in seq_along(depecheResultSecondList)) {
+            # Here, all the clustering data is
+            # recompiled to one long cluster vector
             complexClusterVector[which(depecheResultFirst$clusterVector == 
                 i)] <- depecheResultSecondList[[i]][[1]]
-        }
-        
-        # And the cluster centers are also compiled
-        clusterCentersList <- list()
-        for (i in seq_along(depecheResultSecondList)) {
+            # And the cluster centers are also compiled
             clusterCentersList[[i]] <- depecheResultSecondList[[i]][[2]]
-        }
-        
-        # Create a list of all unique colnames
-        colnamesList <- list()
-        for (i in seq_len(length(depecheResultSecondList))) {
+            # And a list of all unique colnames is created
             colnamesList[[i]] <- colnames(clusterCentersList[[i]])
         }
         uniqueColnamesVector <- sort(unique(unlist(colnamesList)))
         
         # Now, if a variable is missing in a
         # certain cluster center matrix, it is
-        # added with zeros.  ALso the variables
+        # added with zeros. Also the variables
         # are sorted.
-        for (i in seq_len(length(clusterCentersList))) {
-            if (length(clusterCentersList[[i]]) != 
-                length(uniqueColnamesVector)) {
+        for (i in seq_along(clusterCentersList)) {
+            if (length(clusterCentersList[[i]]) !=length(
+                uniqueColnamesVector)) {
                 missingColnames <- 
                     uniqueColnamesVector[!uniqueColnamesVector %in% 
-                    colnames(clusterCentersList[[i]])]
-                zeroDataFrame <- as.data.frame(matrix(0, 
-                  nrow = nrow(clusterCentersList[[i]]), 
-                  ncol = length(missingColnames)))
+                                             colnames(clusterCentersList[[i]])]
+                zeroDataFrame <- 
+                    as.data.frame(matrix(0, 
+                                         nrow = nrow(clusterCentersList[[i]]), 
+                                         ncol = length(missingColnames)))
                 colnames(zeroDataFrame) <- missingColnames
                 clusterCentersList[[i]] <- cbind(clusterCentersList[[i]], 
-                  zeroDataFrame)
+                                                 zeroDataFrame)
             }
             
-            clusterCentersList[[i]] <- clusterCentersList[[i]][, 
-                order(colnames(clusterCentersList[[i]]))]
+            clusterCentersList[[i]] <- 
+                clusterCentersList[[i]][,order(colnames(clusterCentersList[[i]]))]
         }
         
-        secondLevelClusterCenters <- do.call("rbind", 
-            clusterCentersList)
+        secondLevelClusterCenters <- do.call("rbind", clusterCentersList)
         
         # And after all these centers have been
         # compiled, the fist set of clusster
@@ -363,9 +339,8 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         firstClusterCenters <- depecheResultFirst$clusterCenters
         firstOnSecondClusterCentersList <- list()
         clusterClusters <- 
-            substr(as.character(row.names(secondLevelClusterCenters)), 
-            1, 1)
-        for (i in seq_len(length(clusterClusters))) {
+            substr(as.character(row.names(secondLevelClusterCenters)), 1, 1)
+        for (i in seq_along(clusterClusters)) {
             firstOnSecondClusterCentersList[[i]] <- 
                 firstClusterCenters[which(row.names(firstClusterCenters) == 
                 clusterClusters[i]), ]
@@ -397,10 +372,9 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         if (length(sampleSize) > 1) {
             funval <- depecheResultSecondList[[1]][[4]]
             sampleSizeOptList <- do.call("list", 
-                vapply(depecheResultSecondList, 
-                  FUN.VALUE = funval, "[[", 4))
-            nextClustResultPosition <- length(depecheResult) + 
-                1
+                vapply(depecheResultSecondList, FUN.VALUE = funval, "[[", 4))
+            
+            nextClustResultPosition <- length(depecheResult) + 1
             depecheResult[[nextClustResultPosition]] <- 
                 as.data.frame.matrix(sampleSizeOptList)
             names(depecheResult)[[length(depecheResult)]] <- 
