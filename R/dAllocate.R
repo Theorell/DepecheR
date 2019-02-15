@@ -96,23 +96,31 @@ dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE,
     
     # Here, all variables that do not
     # contribute to defining a single cluster
-    # is removed. A specific case, namely
-    # that only one variable contains
-    # meaningful information, is taken into
-    # account.
+    # is removed. 
     clusterCentersReduced <- 
-        clusterCenters[, which(colSums(clusterCenters) != 0)]
-    if (length(which(colSums(clusterCenters) != 0) == 1)) {
-        clusterCentersReduced <- as.matrix(clusterCentersReduced)
-    }
+        clusterCenters[which(rowSums(clusterCenters) != 0), 
+                       which(colSums(clusterCenters) != 0)]
     
+
     # If some variables have been excluded as
     # they did not contribute to construction
     # of any cluster, they are removed from
     # the inData here. The special case with only one variable is taken
     #into account. 
-    inDataMatrixReduced <- inDataMatrix[, colnames(clusterCenters)]
-    if (length(colnames(clusterCenters)) == 1) {
+    #There are two different methods here: one for external and one for 
+    #internal use. In the first case, there are no colnumn names, but the 
+    #properties of the cluster centers are also more raw and thus informative. 
+    if(length(colnames(clusterCenters))>0){
+        inDataMatrixReduced <- inDataMatrix[, colnames(clusterCenters)] 
+    } else {
+        inDataMatrixReduced <- 
+            inDataMatrix[, which(colSums(clusterCenters) != 0)]
+    }
+    
+    #Here, a specific case, namely that only one variable contains
+    # meaningful information, is taken into account.
+    if (is.vector(inDataMatrixReduced)) {
+        clusterCentersReduced <- as.matrix(clusterCentersReduced)
         inDataMatrixReduced <- as.matrix(inDataMatrixReduced)
     }
 

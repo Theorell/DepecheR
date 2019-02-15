@@ -10,8 +10,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
             responseVector <- multiplicationFactor * x
         }
         if (length(truncate) == 2) {
-            xTruncReal <- truncateData(x, 
-                lowQuantile = truncate[1], 
+            xTruncReal <- truncateData(x, control, lowQuantile = truncate[1], 
                 highQuantile = truncate[2])
             responseVector <- multiplicationFactor * xTruncReal
         }
@@ -28,7 +27,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
                     ((x - bottom)/(top - bottom))
             }
             if (length(truncate) == 2) {
-                xTruncReal <- truncateData(x, 
+                xTruncReal <- truncateData(x, control,
                                            lowQuantile = truncate[1], 
                                            highQuantile = truncate[2])
                 responseVector <- multiplicationFactor * 
@@ -39,7 +38,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
         if (robustVarScale == TRUE) {
             # First truncate the data to the
             # quantiles defined by the quantiles
-            xTruncated <- truncateData(x, lowQuantile = scale[1], 
+            xTruncated <- truncateData(x, control, lowQuantile = scale[1], 
                                        highQuantile = scale[2])
             
             sdxTruncated <- sd(xTruncated)
@@ -49,7 +48,8 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
                 responseVector <- multiplicationFactor * x/sdxTruncated
             }
             if (length(truncate) == 2) {
-                xTruncReal <- truncateData(x, lowQuantile = truncate[1], 
+                xTruncReal <- truncateData(x, control, 
+                                           lowQuantile = truncate[1], 
                                            highQuantile = truncate[2])
                 responseVector <- multiplicationFactor * xTruncReal/sdxTruncated
             }

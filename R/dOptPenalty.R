@@ -22,14 +22,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     penaltyConstant <- ((sampleSize * sqrt(ncol(inDataFrameScaled)))/1450)
     realPenalties <- penalties * penaltyConstant
     roundPenalties <- round(penalties, digits = 1)
-    
-    if( nCores=="default"){
-        nCores <- floor(detectCores()*0.875) 
-        if(nCores>10){
-            nCores <- 10
-        }
-    }
-    
+
     dataMat <- data.matrix(inDataFrameScaled, rownames.force = NA)
     
     # This command is reiterated the number

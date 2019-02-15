@@ -6,7 +6,7 @@
 \usage{
 dScale(x, control, scale = TRUE, robustVarScale = TRUE,
   center = "peak", truncate = FALSE, multiplicationFactor = 1,
-  multiCore = FALSE, returnCenter = FALSE, nCores = "default")
+  returnCenter = FALSE, nCores = "default")
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}
@@ -37,16 +37,17 @@ the low and high threshold quantiles for truncation.}
 Useful e.g. if the results preferrably should be returned as percent. 
 Defaults to FALSE.}
 
-\item{multiCore}{If the algorithm should be performed on multiple cores. This
-increases speed in situations when very large datasets (eg >1 000 000 rows) 
-are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
-
 \item{returnCenter}{Boolean. If center=TRUE, should the value at the center
 be returned?}
 
-\item{nCores}{If multiCore is TRUE, then this sets the number of parallel 
-processes. The default is currently 87.5 percent with a cap on 10 cores, as 
-no speed increase is generally seen above 10 cores for normal computers.}
+\item{nCores}{If the function is run in multicore mode, which it will if the
+dataset is large (nrow*ncol>10^6), this decides the number of cores. The 
+default is currently 87.5 percent with a cap on 10 cores, as no speed 
+increase is generally seen above 10 cores for normal computers to date.}
+
+\item{multiCore}{If the algorithm should be performed on multiple cores. This
+increases speed in situations when very large datasets (eg >1 000 000 rows) 
+are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 }
 \value{
 A vector or dataframe with the same size but where all values in the

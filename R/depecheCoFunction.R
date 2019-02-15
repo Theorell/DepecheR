@@ -16,14 +16,14 @@
 #' @importFrom dplyr sample_n
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
-#' @importFrom foreach foreach %do% %dopar%
+#' @importFrom foreach foreach %dopar%
 #' @useDynLib DepecheR
 depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1, 
                               directoryName, penalties, sampleSize, 
                               selectionSampleSize, k, minARIImprovement, 
                               optimARI, maxIter, newNumbers, 
-                              createDirectory = FALSE, nCores, 
-                              createOutput, logCenterSd) {
+                              createDirectory = FALSE, nCores, createOutput, 
+                              logCenterSd) {
     
     if (createDirectory == TRUE) { dir.create(directoryName) }
     
@@ -47,6 +47,13 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
             sampleSize <- nrow(inDataFrameScaled)
         } else {
             sampleSize <- 10000
+        }
+    }
+    
+    if( nCores=="default"){
+        nCores <- floor(detectCores()*0.875) 
+        if(nCores>10){
+            nCores <- 10
         }
     }
     
@@ -97,24 +104,15 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         
         # Now, all clusterCenters are used to
         # allocate the selectionDataSet.
-        allocationResultList <- list()
-        selectionDataSetMatrix <- data.matrix(selectionDataSet)
         allocationResultList <- 
-            foreach(i = seq_len(length(allSolutions))) %dopar% 
-            dAllocate(inDataMatrix = selectionDataSetMatrix, 
-                      clusterCenters = allSolutions[[i]], log2Off=TRUE, 
-                      noZeroNum==FALSE)
+            lapply(allSolutions, function(x) 
+                dAllocate(inDataMatrix = selectionDataSet, 
+                          clusterCenters = x, log2Off=TRUE, noZeroNum=FALSE))
         
         # Here, the corrected Rand index with
         # each allocationResult as the first
         # vector vector and all the others as
         # individual second vectors is identified
-        if( nCores=="default"){
-            nCores <- floor(detectCores()*0.875) 
-            if(nCores>10){
-                nCores <- 10
-            }
-        }
         cl <- makeCluster(nCores, type = "SOCK")
         registerDoSNOW(cl)
         meanARIList <- 
@@ -194,8 +192,10 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     # like they are situated in the middle,
     # when they are in fact pushed to the
     # center of the variable in question.
-    sparsityMatrix <- reducedClusterCenters
-    sparsityMatrix[sparsityMatrix != 0] <- 1
+    
+    essenceElementList <- apply(reducedClusterCenters, 1, 
+                             function(x) 
+                                 colnames(reducedClusterCenters)[x != 0])
     
     # Here, a heatmap over the cluster
     # centers is saved. Only true if the
@@ -222,7 +222,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                                                  truncate = TRUE)
         }
         
-        graphicClusterCenters[sparsityMatrix == 0] <- NA
+        graphicClusterCenters[reducedClusterCenters == 0] <- NA
         
         colorLadder <- dColorVector(seq_len(11), 
             colorScale = c("#0D0887FF", "#6A00A8FF", "#900DA4FF", "#B12A90FF", 
@@ -254,9 +254,9 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     # And now, the result that should be
     # returned is compiled
     depecheResult <- list(clusterVectorEquidistant, correctClusterCenters, 
-                          sparsityMatrix, optPenalty)
+                          essenceElementList, optPenalty)
     names(depecheResult) <- c("clusterVector", "clusterCenters", 
-                              "sparsityMatrix", "penaltyOptList")
+                              "essenceElementList", "penaltyOptList")
     if(logCenterSd[1] == TRUE){
         names(depecheResult)[2] <- "log2ClusterCenters"
         }

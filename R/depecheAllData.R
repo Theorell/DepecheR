@@ -53,11 +53,16 @@ depecheAllData <- function(inDataFrameScaled,
     # columns, etc.  Here, the numbers of the
     # removed clusters are removed as well,
     # and only the remaining clusters are
-    # retained. As the zero-cluster is not
-    # included, the first cluster gets the
-    # denomination 1.
-    clusterVectorEquidistant <- turnVectorEquidistant(clusterVector, 
-        startValue = firstClusterNumber)
+    # retained and numbered equidistantly.
+    originalNumbers <- sort(unique(clusterVector))
+    newNumbers <- seq(firstClusterNumber, (length(originalNumbers) + 
+                                               (firstClusterNumber - 1)))
+    clustVecEquidist <- clusterVector
+    for (i in seq_along(originalNumbers)) {
+        clustVecEquidist[clustVecEquidist == originalNumbers[i]] <- 
+            newNumbers[i]
+    }
+
     colnames(clusterCenters) <- colnames(inDataFrameScaled)
     
     # Remove all rows and columns that do not
@@ -79,14 +84,14 @@ depecheAllData <- function(inDataFrameScaled,
     
     # Make the row names the same as the
     # cluster names in the
-    # clusterVectorEquidistant
+    # clustVecEquidist
     rownames(reducedClusterCenters) <- 
         seq(firstClusterNumber, (firstClusterNumber + 
                                      (nrow(reducedClusterCenters)) - 1))
     
     
     # Here, the results are combined
-    dClustResult <- list(clusterVectorEquidistant, reducedClusterCenters)
+    dClustResult <- list(clustVecEquidist, reducedClusterCenters)
     names(dClustResult) <- c("clusterVector", "clusterCenters")
     return(dClustResult)
 }
