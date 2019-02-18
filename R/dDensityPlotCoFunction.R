@@ -61,7 +61,7 @@ dDensityPlotCoFunction <- function(xYData, multipleColors = FALSE, cols,
     # densest points are plotted on top
     newXyData <- df[order(df$dens), ]
     dPlotCoFunction(colorVariable = newXyData$col, name = name, 
-                    xYData = newXyData[,1:2], title = title, 
+                    xYData = newXyData[,seq_len(2)], title = title, 
                     densContour = densContour, bandColor = bandColor, 
                     dotSize = dotSize, 
                     createDirectory = createDirectory, 

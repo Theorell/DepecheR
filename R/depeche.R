@@ -26,7 +26,8 @@
 #' default values are empirically defined and might not be optimal for a 
 #' specific dataset, but the algorithm will warn if the most optimal values are 
 #' on the borders of the range. Note that when the penalty is 0, there is no 
-#' penalization, which means that the algorithm runs standard K-means clustering.
+#' penalization, which means that the algorithm runs standard K-means 
+#' clustering.
 #' @param sampleSize This controls what fraction of the dataset that will be 
 #' used to run the penalty optimization. 'default' results in the full file in 
 #' files up to 10000 events. In cases where the sampleSize argument is larger 
@@ -242,7 +243,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize, 
             k = k, minARIImprovement = minARIImprovement, 
             optimARI = optimARI, maxIter = maxIter, 
-            createDirectory = TRUE,  nCores=nCores, createOutput = createOutput, 
+            createDirectory = TRUE,  nCores=nCores, createOutput = createOutput,
             logCenterSd = logCenterSd)
         
         message("Done with level one clustering where ", 
@@ -255,11 +256,6 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         inDataFrameSecond <- 
             inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1] == 2)]]
         
-        #inDataFrameSecondList <- list()
-        #for (i in seq_along(unique(depecheResultFirst$clusterVector))) {
-        #    inDataFrameSecondList[[i]] <- 
-        #        inDataFrameSecond[which(depecheResultFirst$clusterVector == i), ]
-        #}
         allClusterN <- unique(depecheResultFirst$clusterVector)
         inDataFrameSecondList <- lapply(seq_along(allClusterN), 
                                         function(i) return(
@@ -327,7 +323,8 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             }
             
             clusterCentersList[[i]] <- 
-                clusterCentersList[[i]][,order(colnames(clusterCentersList[[i]]))]
+                clusterCentersList[[i]][,order(
+                    colnames(clusterCentersList[[i]]))]
         }
         
         secondLevelClusterCenters <- do.call("rbind", clusterCentersList)

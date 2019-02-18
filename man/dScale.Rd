@@ -44,10 +44,6 @@ be returned?}
 dataset is large (nrow*ncol>10^6), this decides the number of cores. The 
 default is currently 87.5 percent with a cap on 10 cores, as no speed 
 increase is generally seen above 10 cores for normal computers to date.}
-
-\item{multiCore}{If the algorithm should be performed on multiple cores. This
-increases speed in situations when very large datasets (eg >1 000 000 rows) 
-are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.}
 }
 \value{
 A vector or dataframe with the same size but where all values in the

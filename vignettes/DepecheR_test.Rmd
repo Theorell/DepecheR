@@ -103,16 +103,16 @@ cases of very few and very many clusters into consideration.
 ![Adjusted Rand Index as a function of penalty values. Each value is based on at least 7 clustering pairs (DepecheR standard in a 8 core machine).](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Distance_as_a_function_of_penalty_values.jpg){ width=90% }
 
 #### Cluster centers
-This graph shows in a heatmap format where the cluster center is located for each
-of the markers that are defined for the cluster in question. A light color 
-indicates a high expression, whereas a dark color indicates low or absent expression. 
-Grey color, on the other hand, indicates that the cluster in question did not 
-contribute to defining the cluster in question. In some cases, the results might 
-seem strange, as a cluster might have an expression very close to the center of
-the full dataset, but this expression still defined the cluster. This is due to
-an internal, and for stability reasons necessary, effect of the algotihm: a specific
-penalty will have a larger effect on a cluster with fewer observations, than on 
-a cluster with many observations.
+This graph shows in a heatmap format where the cluster center is located for 
+each of the markers that are defined for the cluster in question. A light color 
+indicates a high expression, whereas a dark color indicates low or absent 
+expression. Grey color, on the other hand, indicates that the cluster in 
+question did not contribute to defining the cluster in question. In some cases,
+the results might seem strange, as a cluster might have an expression very close
+to the center of the full dataset, but this expression still defined the 
+cluster. This is due to an internal, and for stability reasons necessary, effect
+of the algotihm: a specific penalty will have a larger effect on a cluster with
+fewer observations, than on a cluster with many observations.
 
 ![Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Cluster_centers.jpg){ width=90% }
 
@@ -120,11 +120,11 @@ a cluster with many observations.
 
 ## Step 2: tSNE generation
 
-To be able to visualize the results, we need to generate a stochastic neighbor embedding for the 
-same data as we used to generate the depeche clustering. Any tool that generates
-tSNE vector can be used for this purpose. Personally, I use the [multicore version
-of the Rtsne implementation](https://github.com/jkrijthe/Rtsne/tree/openmp), but 
-other versions, that do not require openMP, might be preferrable to some. If 
+To be able to visualize the results, we need to generate a stochastic neighbor 
+embedding for the same data as we used to generate the depeche clustering. Any 
+tool that generates tSNE vector can be used for this purpose. Personally, I use 
+the [multicore version of the Rtsne implementation](https://github.com/jkrijthe/Rtsne/tree/openmp), 
+but other versions, that do not require openMP, might be preferrable to some. If 
 you want to use the openMP version on a mac, check [this link](https://github.com/Theorell/DepecheR/wiki/Running-a-faster-version-of-Rtsne). 
 
 
@@ -165,9 +165,9 @@ The files will always be saved to the current directory.
 
 
 ## Step 4: visualization of markers on tSNE
-Here, we once again use the dColorPlot function, with different settings. Note that
-titles are included in this case. As they are then becoming embedded in the png
-picture, this is not the standard, for publication reasons. 
+Here, we once again use the dColorPlot function, with different settings. Note
+that titles are included in this case. As they are then becoming embedded in the
+png picture, this is not the standard, for publication reasons. 
 ```{r}
 dColorPlot(colorData = testData[2:15], xYData = testDataSNE$Y, title=TRUE)
 
@@ -218,16 +218,16 @@ similar input needs, but where the former performs a Wilcoxon rank-sum test
 (also called Mann-whitney U test) on a per-cluster basis and thus results in
 multiple comparisons, the latter (based on sparse projection to latent structures
 (aka partial least squares) discriminant analysis) instead identifies the angle 
-through the multi-dimensional datacloud created by the individual donor frequencies in each 
-cluster that most optimally separates the groups. It then internally checks how
-well the groups are separated along this vector, and plots the clusters that contribute
-to this separation with colors relative to how well the groups are separated. 
-As this method is a sparse version of the method, it, like depeche, only identifies
-clusters that contribute robustly to separating the clusters, and has its internal
-tuning algorithm to define how the penalty term should be set. 
-For both methods, there are paired alternatives. In this case, however, 
-the data is not paired, and thus, the normal methods will be used. The standard 
-use of the methods are: 
+through the multi-dimensional datacloud created by the individual donor 
+frequencies in each cluster that most optimally separates the groups. It then 
+internally checks how well the groups are separated along this vector, and plots
+the clusters that contribute to this separation with colors relative to how well
+the groups are separated. As this method is a sparse version of the method, it,
+like depeche, only identifies clusters that contribute robustly to separating
+the clusters, and has its internal tuning algorithm to define how the penalty 
+term should be set. For both methods, there are paired alternatives. In this 
+case, however, the data is not paired, and thus, the normal methods will be 
+used. The standard use of the methods are: 
 
 ```{r}
 dResidualPlot(
@@ -269,18 +269,20 @@ groups in this case.
 
 ## Step 6: visualization of all defining markers for each cluster.
 This function is especially useful to view the cluster distributions for 
-specific clusters of interest, such as the significant clusters from the previous
-step. dViolins serves as a compliment to the cluster center heatmap (see step 2). 
+specific clusters of interest, such as the significant clusters from the 
+previousstep. dViolins serves as a compliment to the cluster center heatmap 
+(see step 2). 
 In this function, the sparsityMatrix from the depeche run is used. The function 
 will in addition to producing all the graphs also produce a hierarchy of folders 
 where the graphs are placed. 
 
 ```{r eval}
-dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, inDataFrame = testData[, 2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$essenceElementList, 
+         inDataFrame = testData[, 2:15])
 
 ```
 
-![Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_7_DepecheR_markdown.jpg){ width=90% }
+![Example of the distribution of events in the four markers defining cluster 3, one of the significantly different clusters.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_7_DepecheR_markdown.png){ width=90% }
 
 ## Summary
 In this document, a typical analysis of a cytometry dataset is shown. There are

@@ -107,7 +107,7 @@
 #'    xYData = testDataSNE$Y, idsVector = testData$ids,
 #'    groupVector = testData$label, clusterVector = 
 #'    testDataDepeche$clusterVector, 
-#'    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
+#'    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
 #'    groupName2 = 'Stimulation 2')
 #' 
 #' # Here is an example of how the display vector can be used.
@@ -135,8 +135,8 @@
 #' testDataRows <- sample(1:nrow(testData), size = 48500)
 #' sPLSDAObject <- dSplsda(
 #'   xYData = testDataSNE$Y, idsVector = testData$ids,
-#'   groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
-#'   testSampleRows = testDataRows
+#'   groupVector = testData$label, clusterVector = 
+#'   testDataDepeche$clusterVector, testSampleRows = testDataRows
 #' )
 #' }
 #' @export dSplsda
@@ -185,7 +185,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
                                            unique(groupVector)[1]])) == 
                    length(unique(idsVector[groupVector == 
                                            unique(groupVector)[2]]))) {
-            pairingVector <- c(idsVector[groupVector == unique(groupVector)[1]], 
+            pairingVector <- c(idsVector[groupVector == unique(groupVector)[1]],
                                idsVector[groupVector == unique(groupVector)[1]])
         } else {
             stop("Pairing cannot be performed, as the first and second datasets
@@ -336,9 +336,9 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     # generate a similar visual output to the
     # dWilcox function.  Now the median for
     # each group and cluster is calculated
-    group1Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) == 
+    group1Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) ==
         groupName1)]
-    group2Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) == 
+    group2Data <- dSplsdaInData[[1]][, which(as.character(dSplsdaInData[[2]]) ==
         groupName2)]
     
     median1 <- rowMedians(group1Data)
@@ -438,14 +438,14 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         if (paired == FALSE) {
             dSplsdaInDataTest <- 
                 dSplsdaPreCalculations(clusterVectorTest, idsVectorTest, 
-                                       groupVectorTest, groupName1 = groupName1, 
+                                       groupVectorTest, groupName1 = groupName1,
                                        groupName2 = groupName2)
         } else {
             dSplsdaInDataTest <- dSplsdaPreCalculations(clusterVectorTest, 
                                                         idsVectorTest, 
                                                         groupVectorTest, 
-                                                        groupName1 = groupName1, 
-                                                        groupName2 = groupName2, 
+                                                        groupName1 = groupName1,
+                                                        groupName2 = groupName2,
                                                         pairingVector = 
                                                             pairingVectorTest)
         }

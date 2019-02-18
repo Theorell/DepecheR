@@ -32,8 +32,8 @@
 #' Defaults to TRUE.
 #' @param directoryName The name of the created directory, if it should be 
 #' created.
-#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots
-#' are generated.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no 
+#' plots are generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
 #' \code{\link{dWilcox}}
 #' @return A sne based plot showing which events that belong to a cluster 
@@ -66,7 +66,7 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
                           densContour = TRUE, 
                           groupName1 = unique(groupVector)[1], 
                           groupName2 = unique(groupVector)[2], 
-                          name = "default", title = FALSE, maxAbsPlottingValues, 
+                          name = "default", title = FALSE, maxAbsPlottingValues,
                           bandColor = "black", createDirectory = FALSE, 
                           directoryName = "dResidualPlot", 
                           dotSize = 400/sqrt(nrow(xYData)), 

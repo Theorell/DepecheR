@@ -26,9 +26,6 @@
 #' @param truncate If truncation of the most extreme values should be performed.
 #' Three possible values: TRUE, FALSE, and a vector with two values indicating 
 #' the low and high threshold quantiles for truncation.
-#' @param multiCore If the algorithm should be performed on multiple cores. This
-#' increases speed in situations when very large datasets (eg >1 000 000 rows) 
-#' are scaled. With smaller datasets, it works, but is slow. Defaults to FALSE.
 #' @param nCores If the function is run in multicore mode, which it will if the
 #' dataset is large (nrow*ncol>10^6), this decides the number of cores. The 
 #' default is currently 87.5 percent with a cap on 10 cores, as no speed 
@@ -131,6 +128,7 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
             }
             cl <- makeCluster(nCores, type = "SOCK")
             registerDoSNOW(cl)
+            i <- 1
             result <- foreach(i = seq_len(ncol(x)), .inorder = TRUE) %dopar%
                 dScaleCoFunction(x[, i], control = control[, i], 
                                  scale = scale, 

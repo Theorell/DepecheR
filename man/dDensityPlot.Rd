@@ -33,9 +33,9 @@ be the groups name, e.g. 'Malaria patients' or 'Clusters'. If only one plot
 is created, the name is still taken from here.}
 
 \item{plotEachIdSeparately}{Separates the xYData into subframes specified in
-the idsVector and plots all ids together but with separate colors. Especially
-useful when all clusters in a simultaneous analysis should be shown. Colors 
-are inherited from color. Defaults to FALSE.}
+the idsVector and plots all ids together but with separate colors. 
+Especially useful when all clusters in a simultaneous analysis should be 
+shown. Colors are inherited from color. Defaults to FALSE.}
 
 \item{idsVector}{Needed in two situations:
 \describe{
@@ -68,8 +68,8 @@ created.}
 \item{dotSize}{Simply the size of the dots. The default makes the dots 
 smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no output
-is generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+output is generated.}
 }
 \value{
 Plots showing the densities of the specific xYData (subset) displayed
@@ -117,7 +117,7 @@ dDensityPlot(
   idsVector = testDataSubset$ids, commonName = 'sampling'
 )
 
-# Now all four example donors are plotted together using the same predefined 
+# Now all four example donors are plotted together using the same predefined
 # colorscale
 dDensityPlot(
   xYData = testDataSNESubset, color = testColor, 

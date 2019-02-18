@@ -53,8 +53,8 @@ created.}
 \item{dotSize}{Simply the size of the dots. The default makes the dots 
 smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots
-are generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+plots are generated.}
 }
 \value{
 A sne based plot showing which events that belong to a cluster 

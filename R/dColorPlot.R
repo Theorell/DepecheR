@@ -59,8 +59,8 @@
 #' @param nCores If multiCore is TRUE, then this sets the number of parallel 
 #' processes. The default is currently 87.5 percent with a cap on 10 cores, as 
 #' no speed increase is generally seen above 10 cores for normal computers. 
-#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no plots
-#' are generated.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no 
+#' plots are generated.
 #' @seealso \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}, 
 #' \code{\link{dWilcox}}, \code{\link{dColorVector}}
 #' @return Plots showing the colorData displayed as color on the field created 
@@ -107,7 +107,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
     }
     
     if (is.numeric(colorData) == FALSE && is.integer(colorData) == 
-        FALSE && is.data.frame(colorData) == FALSE && is.character(colorData) == 
+        FALSE && is.data.frame(colorData) == FALSE && is.character(colorData) ==
         FALSE) {
         stop("ColorData needs to be either a numeric vector, a character vector
         of colors or a matrix or dataframe of numbers.")
@@ -195,6 +195,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
             }
             cl <- makeCluster(nCores, type = "SOCK")
             registerDoSNOW(cl)
+            i <- 1
             return_all <- 
                 foreach(i = seq_len(ncol(colorVectors)), 
                                     .packages = "DepecheR") %dopar% 
@@ -209,7 +210,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
 
         } else {
             mapply(dPlotCoFunction, 
-                   as.data.frame.matrix(colorVectors, stringsAsFactors = FALSE), 
+                   as.data.frame.matrix(colorVectors, stringsAsFactors = FALSE),
                    names, MoreArgs = list(xYData = xYData, 
                                           title = title, 
                                           densContour = densContour, 
@@ -246,7 +247,7 @@ dColorPlot <- function(colorData, controlData, xYData, names = "default",
         
         plot.new()
         legend("center", legend = colorIdsDataFrame[, 2], 
-               col = colorIdsDataFrame[, 1], cex = 15/length(unique(idsVector)), 
+               col = colorIdsDataFrame[, 1], cex = 15/length(unique(idsVector)),
                pch = 19)
         dev.off()
     }

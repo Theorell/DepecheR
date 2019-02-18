@@ -135,7 +135,7 @@ sPLSDAObject <- dSplsda(
    xYData = testDataSNE$Y, idsVector = testData$ids,
    groupVector = testData$label, clusterVector = 
    testDataDepeche$clusterVector, 
-   paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1', 
+   paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
    groupName2 = 'Stimulation 2')
 
 # Here is an example of how the display vector can be used.
@@ -163,8 +163,8 @@ sPLSDAObject <- dSplsda(
 testDataRows <- sample(1:nrow(testData), size = 48500)
 sPLSDAObject <- dSplsda(
   xYData = testDataSNE$Y, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector,
-  testSampleRows = testDataRows
+  groupVector = testData$label, clusterVector = 
+  testDataDepeche$clusterVector, testSampleRows = testDataRows
 )
 }
 }

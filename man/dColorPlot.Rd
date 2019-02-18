@@ -74,8 +74,8 @@ FALSE otherwise.}
 processes. The default is currently 87.5 percent with a cap on 10 cores, as 
 no speed increase is generally seen above 10 cores for normal computers.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots
-are generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+plots are generated.}
 }
 \value{
 Plots showing the colorData displayed as color on the field created 

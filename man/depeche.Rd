@@ -33,7 +33,8 @@ vectors, if dual clustering is performed can be given here. The suggested
 default values are empirically defined and might not be optimal for a 
 specific dataset, but the algorithm will warn if the most optimal values are 
 on the borders of the range. Note that when the penalty is 0, there is no 
-penalization, which means that the algorithm runs standard K-means clustering.}
+penalization, which means that the algorithm runs standard K-means 
+clustering.}
 
 \item{sampleSize}{This controls what fraction of the dataset that will be 
 used to run the penalty optimization. 'default' results in the full file in 

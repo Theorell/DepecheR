@@ -8,11 +8,9 @@
 #' @importFrom viridis inferno magma plasma viridis
 #' @importFrom gplots rich.colors
 #' @importFrom grDevices rainbow
-#' @param x A vector, in most cases of identities of individuals or clusters, 
-#' etc.
-#' @param colorOrder The order, folowing a rainbow distribution, that the colors 
-#' should be in in the output vector. Defaults to the order that the unique 
-#' values in x occurs.
+#' @param x Any vector.
+#' @param colorOrder The order that the colors should be in in the output 
+#' vector. Defaults to the order that the unique values in x occurs.
 #' @param colorScale The color scale. Inherited from the viridis, gplots and 
 #' grDevices packages (and the package-specific 'dark_rainbow'). Seven possible
 #' scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow 
@@ -29,7 +27,7 @@
 #' testColor <- dColorVector(testData$ids, colorScale = 'plasma')
 #'
 #' # In this case, each of the 97 individual donors in the dataset has gotten 
-#' their own color code:
+#' #their own color code:
 #' table(testColor)
 #' @export dColorVector
 dColorVector <- function(x, colorOrder = unique(x), colorScale = "viridis") {

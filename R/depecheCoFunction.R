@@ -107,7 +107,8 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         allocationResultList <- 
             lapply(allSolutions, function(x) 
                 dAllocate(inDataMatrix = selectionDataSet, 
-                          clusterCenters = x, log2Off=TRUE, noZeroNum=FALSE))
+                          clusterCenters = x, log2Off=TRUE, 
+                          noZeroNum=FALSE))
         
         # Here, the corrected Rand index with
         # each allocationResult as the first
@@ -153,7 +154,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # And here, the optimal solution is
         # created with the full dataset
         clusterVectorEquidistant <- dAllocate(inDataFrameScaled, 
-            reducedClusterCenters, log2Off=TRUE, noZeroNum==FALSE)
+            reducedClusterCenters, log2Off=TRUE, noZeroNum=FALSE)
     }
     
     # Here, the optPenalty information is

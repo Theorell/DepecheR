@@ -61,8 +61,8 @@
 #' title(ylab = 'Fraction')
 #' }
 #' @export dAllocate
-dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE, 
-                      noZeroNum=TRUE) {
+dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE,
+                        noZeroNum=TRUE) {
     if (is.data.frame(inDataMatrix)) {
         inDataMatrix <- as.matrix(inDataMatrix)
     }
@@ -81,7 +81,7 @@ dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE,
             # values, but still without loosing
             # resolution.
             inDataMatrixLog <- log2(apply(inDataMatrix, 2, 
-                                          function(x) x - min(x)) + 1)
+                                    function(x) x - min(x)) + 1)
             # Then, the extreme negative values will
             # be replaced by 0, as they give rise to
             # artefacts.

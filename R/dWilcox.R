@@ -192,8 +192,8 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
         clusterTable2big <- rbind(clusterTable2, zeroMat)
         
         # The rows of the table are re-sorted
-        clusterTable2bigResorted <- clusterTable2big[order(as.numeric(row.names(clusterTable2big))), 
-            ]
+        clusterTable2bigResorted <- 
+            clusterTable2big[order(as.numeric(row.names(clusterTable2big))), ]
         clusterTable2 <- clusterTable2bigResorted
     }
     
@@ -216,8 +216,8 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     # And here the statistical test is
     # performed for each cluster individually
     statisticList <- mapply(wilcox.test, 
-                            as.data.frame.matrix(t(clusterFractionsForAllIds1)), 
-                            as.data.frame.matrix(t(clusterFractionsForAllIds2)), 
+                            as.data.frame.matrix(t(clusterFractionsForAllIds1)),
+                            as.data.frame.matrix(t(clusterFractionsForAllIds2)),
                             MoreArgs = list(alternative = "two.sided", 
                                             paired = paired, exact = FALSE), 
                             SIMPLIFY = FALSE)

@@ -2,32 +2,45 @@
 % Please edit documentation in R/dViolins.R
 \name{dViolins}
 \alias{dViolins}
-\title{Create violin plots for all non-penalized variable for all clusters}
+\title{Create violin plots for any variables of choise}
 \usage{
-dViolins(clusterVector, sparsityMatrix, inDataFrame,
-  order = unique(clusterVector), colorScale = "viridis",
-  plotAll = FALSE, createOutput = TRUE)
+dViolins(clusterVector, plotElements = "all", inDataFrame,
+  colorOrder = unique(clusterVector), colorScale = "viridis",
+  directoryName = "dViolin_result", createOutput = TRUE)
 }
 \arguments{
-\item{clusterVector}{Vector with the same length as inDataFrame containing information about the cluster identity of each observation.}
+\item{clusterVector}{Vector with the same length as inDataFrame containing 
+information about the cluster identity of each observation.}
 
-\item{sparsityMatrix}{The sparsity matrix from the corresponding depeche run.}
+\item{plotElements}{This provides information on which features to plot. In 
+the typical case, this is the essenceElementList from a depeche run. Other
+input formats are however accepted: if a vector of column names is provided, 
+then these features will be plotted for all clusters. A custom list of 
+features specific for each cluster is also accepted. A final alternative is 
+to return "all" (default), in which case all markers will be plotted for all
+clusters.If more than a 100 markers are provided, however, this will return 
+an error.}
 
 \item{inDataFrame}{The data used to generate the depecheObject}
 
-\item{order}{The order that the unique features of the cluster vector should appear in. For harmonization with colorVector and all subsequent functions.}
+\item{colorOrder}{The order of the cluster colors. Defaults to the order 
+that the unique values in clusterVector occurs.}
 
-\item{colorScale}{The color scale. Inherited from the viridis, gplots and grDevices packages (and the package-specific 'dark_rainbow'). Seven possible scales are pre-made: inferno, magma, plasma, viridis, rich_colors, rainbow and dark_rainbow. User specified vectors of colors (e.g. c('#FF0033', '#03AF49')) are also accepted.}
+\item{colorScale}{The color scale. Options identical to dColorVector.}
 
-\item{plotAll}{If all parameters, including the non-contributing, should be plotted for each cluster. Defaults to FALSE.}
+\item{directoryName}{The name of the created directory.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no plots are generated.}
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+plots are generated.}
 }
 \value{
-One graph is created for each non-penalized variable in each non-penalized cluster, which often means that the function creates a vast number of graphs. The graphs are sorted into subfolders for each cluster.
+One graph is created for each cluster, containing a bean per 
+specified variable.
 }
 \description{
-Here, violin plots of a specific cluster and the total population are created for each variable that has not been penalized away in the penalized K-means analysis. As all such plots are generated for each cluster, this function creates a great number of plots in most instances.
+Here, assymetrical violin plots for each cluster vs all other clusters are
+plotted for variables either retrieved from a depeche analysis or 
+user-defined.
 }
 \examples{
 # Load some data
@@ -40,11 +53,12 @@ data(testData)
 data(testDataDepeche)
 
 # Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche$clusterVector, testDataDepeche$sparsityMatrix, 
-inDataFrame = testData[, 2:15])
+dViolins(testDataDepeche$clusterVector, testDataDepeche$essenceElementList, 
+inDataFrame=testData)
 }
 
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, \code{\link{dColorVector}}, \code{\link{depeche}}
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, 
+\code{\link{dColorVector}}, \code{\link{depeche}}
 }

@@ -7,12 +7,10 @@
 dColorVector(x, colorOrder = unique(x), colorScale = "viridis")
 }
 \arguments{
-\item{x}{A vector, in most cases of identities of individuals or clusters, 
-etc.}
+\item{x}{Any vector.}
 
-\item{colorOrder}{The order, folowing a rainbow distribution, that the colors 
-should be in in the output vector. Defaults to the order that the unique 
-values in x occurs.}
+\item{colorOrder}{The order that the colors should be in in the output 
+vector. Defaults to the order that the unique values in x occurs.}
 
 \item{colorScale}{The color scale. Inherited from the viridis, gplots and 
 grDevices packages (and the package-specific 'dark_rainbow'). Seven possible
@@ -37,7 +35,7 @@ data(testData)
 testColor <- dColorVector(testData$ids, colorScale = 'plasma')
 
 # In this case, each of the 97 individual donors in the dataset has gotten 
-their own color code:
+#their own color code:
 table(testColor)
 }
 \seealso{

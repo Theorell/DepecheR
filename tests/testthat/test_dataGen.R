@@ -25,7 +25,9 @@ test_that("generateBimodalData expected output default centers", {
 x <- DepecheR:::generateSparseData(modeN = 3, observations = 30)
 test_that("generateSparseData expected output default centers", {
     binSamples <- abs(x$samples) < 25
-    groundTruth <- t(cbind(replicate(10, x$centers[1, ] == 0), replicate(10, x$centers[2, ] == 0), replicate(10, 
-        x$centers[3, ] == 0)))
+    groundTruth <- 
+        t(cbind(replicate(10, x$centers[1, ] == 0), 
+                replicate(10, x$centers[2, ] == 0), 
+                replicate(10, x$centers[3, ] == 0)))
     expect_true(all(binSamples == groundTruth))
 })

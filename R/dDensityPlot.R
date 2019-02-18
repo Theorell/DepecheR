@@ -26,9 +26,9 @@
 #' be the groups name, e.g. 'Malaria patients' or 'Clusters'. If only one plot 
 #' is created, the name is still taken from here.
 #' @param plotEachIdSeparately Separates the xYData into subframes specified in
-#' the idsVector and plots all ids together but with separate colors. Especially
-#' useful when all clusters in a simultaneous analysis should be shown. Colors 
-#' are inherited from color. Defaults to FALSE.
+#' the idsVector and plots all ids together but with separate colors. 
+#' Especially useful when all clusters in a simultaneous analysis should be 
+#' shown. Colors are inherited from color. Defaults to FALSE.
 #' @param idsVector Needed in two situations:
 #' \describe{
 #'     \item{When 'plotEachIdSeparately'=TRUE}{Provides information about which
@@ -53,8 +53,8 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots 
 #' smaller the more observations that are included.
-#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no output
-#' is generated.
+#' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no 
+#' output is generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dResidualPlot}}, 
 #' \code{\link{dWilcox}}
 #' @return Plots showing the densities of the specific xYData (subset) displayed
@@ -92,7 +92,7 @@
 #'   idsVector = testDataSubset$ids, commonName = 'sampling'
 #' )
 #'
-#' # Now all four example donors are plotted together using the same predefined 
+#' # Now all four example donors are plotted together using the same predefined
 #' # colorscale
 #' dDensityPlot(
 #'   xYData = testDataSNESubset, color = testColor, 
