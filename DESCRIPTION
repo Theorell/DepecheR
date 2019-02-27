@@ -24,7 +24,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
 RoxygenNote: 6.1.1
-Depends: R (>= 3.6)
+Depends: R (>= 3.5)
 Imports:
     ggplot2 (>= 3.1.0), MASS (>= 7.3.51), Rcpp (>= 1.0.0), dplyr (>= 0.7.8), 
     gplots (>= 3.0.1), viridis (>= 0.5.1), foreach (>= 1.4.4), 
