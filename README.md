@@ -8,3 +8,5 @@ Right now, DepecheR is under review to hopefully be accepted at BioConductor. Du
 install.packages("devtools")
 
 #Now, install DepecheR
+library(devtools)
+install_github("Theorell/"DepecheR", ref = "Rversion3.5")
