@@ -4,13 +4,19 @@
 \alias{dViolins}
 \title{Create violin plots for any variables of choise}
 \usage{
-dViolins(clusterVector, plotElements = "all", inDataFrame,
-  colorOrder = unique(clusterVector), colorScale = "viridis",
-  directoryName = "dViolin_result", createOutput = TRUE)
+dViolins(clusterVector, inDataFrame,
+  plotClusters = unique(clusterVector), plotElements = "all",
+  colorOrder = plotClusters, colorScale = "viridis",
+  plotDir = "dViolin_result", createOutput = TRUE)
 }
 \arguments{
 \item{clusterVector}{Vector with the same length as inDataFrame containing 
 information about the cluster identity of each observation.}
+
+\item{inDataFrame}{The data used to generate the depecheObject}
+
+\item{plotClusters}{This vector of numbers define which cluster(s) to plot 
+the violins for. Defaults to all.}
 
 \item{plotElements}{This provides information on which features to plot. In 
 the typical case, this is the essenceElementList from a depeche run. Other
@@ -21,14 +27,12 @@ to return "all" (default), in which case all markers will be plotted for all
 clusters.If more than a 100 markers are provided, however, this will return 
 an error.}
 
-\item{inDataFrame}{The data used to generate the depecheObject}
-
 \item{colorOrder}{The order of the cluster colors. Defaults to the order 
 that the unique values in clusterVector occurs.}
 
 \item{colorScale}{The color scale. Options identical to dColorVector.}
 
-\item{directoryName}{The name of the created directory.}
+\item{plotDir}{The name of the created directory.}
 
 \item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
 plots are generated.}
@@ -46,16 +50,15 @@ user-defined.
 # Load some data
 data(testData)
 
-\dontrun{
 # Run the clustering function. For more rapid example execution,
 # a depeche clustering of the data is inluded
 # testDataDepeche <- depeche(testData[,2:15])
 data(testDataDepeche)
 
-# Create the plots of the variables that contribute to creating each cluster
-dViolins(testDataDepeche$clusterVector, testDataDepeche$essenceElementList, 
-inDataFrame=testData)
-}
+# Create the plots of the variables that contribute to creating cluster 3
+dViolins(testDataDepeche$clusterVector, inDataFrame = testData, 
+    plotClusters = 3, plotElements = testDataDepeche$essenceElementList)
+
 
 }
 \seealso{

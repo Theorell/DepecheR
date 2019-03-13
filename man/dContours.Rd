@@ -39,9 +39,7 @@ data(testDataSNE)
 
 
 # Run the function
-\dontrun{
 contour_result <- dContours(testDataSNE$Y)
-}
 }
 \seealso{
 \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 

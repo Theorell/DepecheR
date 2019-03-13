@@ -74,7 +74,7 @@
 #' @return A nested list with varying components depending on the setup above:
 #' \describe{
 #'    \item{clusterVector}{A vector with the same length as number of rows in 
-#'    the inDataFrameUsed, where the cluster identity of each observation is 
+#'    the inDataFrame, where the cluster identity of each observation is 
 #'    noted.}
 #'    \item{clusterCenters/log2ClusterCenters}{A matrix containing information 
 #'    about where the centers are in all the variables that contributed to 
@@ -129,9 +129,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
                     k = 30, minARIImprovement = 0.01, optimARI = 0.95, 
                     maxIter = 100, log2Off = FALSE, center = "default", 
                     nCores="default", createOutput = TRUE) {
-    
-    message("Files will be saved to ", getwd())
-    
+
     if (is.matrix(inDataFrame)) {
         inDataFrame <- as.data.frame.matrix(inDataFrame)
     }
@@ -217,19 +215,18 @@ depeche <- function(inDataFrame, dualDepecheSetup,
         as.data.frame(inDataFramePreScaled/sdInDataFramePreScaled)
     logCenterSd[[3]] <- sdInDataFramePreScaled
     
+    # Here, the algorithm forks, depending on if a dual depeche setup has been 
+    #chosen or not
     if (missing(dualDepecheSetup)) {
-        depecheResult <- depecheCoFunction(inDataFrameScaled, 
-            firstClusterNumber = 1, penalties = penalties, 
+        depecheResult <- depecheCoFunction(
+            inDataFrameScaled, plotDir = ".", penalties = penalties, 
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize, 
             k = k, minARIImprovement = minARIImprovement, 
-            optimARI = optimARI, maxIter = maxIter, nCores=nCores,
-            createOutput = createOutput, 
+            optimARI = optimARI, maxIter = maxIter, 
+            nCores = nCores, createOutput = createOutput, 
             logCenterSd = logCenterSd)
         return(depecheResult)
-    }
-    
-    # Here, the dual cluster setup is created
-    if (missing(dualDepecheSetup) == FALSE) {
+    } else {
         inDataColumns <- as.character(dualDepecheSetup[, 2])
         inDataFrameFirst <- 
             inDataFrameScaled[inDataColumns[which(dualDepecheSetup[,1] == 1)]]
@@ -237,13 +234,11 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             penaltyList <- list(penalties, penalties)
         }
         dirName1 <- "Level_one_depeche"
-        depecheResultFirst <- depecheCoFunction(inDataFrameFirst, 
-            directoryName = dirName1, 
-            penalties = penaltyList[[1]], 
+        depecheResultFirst <- depecheCoFunction(
+            inDataFrameFirst, plotDir = dirName1, penalties = penaltyList[[1]], 
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize, 
-            k = k, minARIImprovement = minARIImprovement, 
-            optimARI = optimARI, maxIter = maxIter, 
-            createDirectory = TRUE,  nCores=nCores, createOutput = createOutput,
+            k = k, minARIImprovement = minARIImprovement, optimARI = optimARI, 
+            maxIter = maxIter, nCores=nCores, createOutput = createOutput,
             logCenterSd = logCenterSd)
         
         message("Done with level one clustering where ", 
@@ -283,8 +278,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
                 sampleSize = sampleSize, 
                 selectionSampleSize = selectionSampleSize, 
                 k = k, minARIImprovement = minARIImprovement, 
-                optimARI = optimARI, maxIter = maxIter, 
-                createDirectory = TRUE, nCores=nCores, 
+                optimARI = optimARI, maxIter = maxIter, nCores=nCores, 
                 createOutput = createOutput, logCenterSd = logCenterSd), 
             SIMPLIFY = FALSE)
         
@@ -376,7 +370,6 @@ depeche <- function(inDataFrame, dualDepecheSetup,
             names(depecheResult)[[length(depecheResult)]] <- 
                 "levelTwoSampleSizeOptList"
         }
-        
         
         return(depecheResult)
     }

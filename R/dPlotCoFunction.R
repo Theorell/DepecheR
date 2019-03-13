@@ -2,17 +2,15 @@
 #dColorPlot, dDensityPlot, dResidualPlot, dSplsda, and dWilcox uses it. 
 #"Unique" parameters
 #colorVariable: the color associated with each point for plotting. 
-#name: The unique name of the plot. 
 #For information on the other parameters, see any of the plotting functions. 
-dPlotCoFunction <- function(colorVariable, name, xYData, title = FALSE, 
-                                 densContour, bandColor, dotSize, 
-                                 createDirectory, directoryName, 
+dPlotCoFunction <- function(colorVariable, plotName, xYData, title = FALSE, 
+                                 densContour, bandColor, dotSize, plotDir, 
                                  createOutput = TRUE) {
     colnames(xYData) <- c("V1", "V2")
     
     # Create the density matrix for xYData.
     if (is.logical(densContour)) {
-        if (densContour == TRUE) {
+        if (densContour) {
             densContour <- dContours(xYData)
         }
     }
@@ -30,15 +28,14 @@ dPlotCoFunction <- function(colorVariable, name, xYData, title = FALSE,
     }
     
     # Plot it
-    fileName <- paste0(name, ".png")
-    if(createDirectory==TRUE){
-        fileName <- file.path(directoryName, fileName)
-    } 
+    main <- ifelse(title, plotName, "")
     
-    main <- ifelse(title == TRUE, name, "")
-    png(fileName, width = 2500, height = 2500, units = "px", bg = "transparent")
 
-    if (createOutput == TRUE) {
+
+    if (createOutput) {
+        png(file.path(plotDir, paste0(plotName, ".png")), width = 2500, 
+            height = 2500, units = "px", bg = "transparent")
+        
             plot(V2 ~ V1, data = xYData, main = main, pch = 20, cex = dotSize, 
                  cex.main = 5, col = colorVariable, xlim = xlim, ylim = ylim, 
                  axes = FALSE, xaxs = "i", yaxs = "i")
@@ -50,6 +47,7 @@ dPlotCoFunction <- function(colorVariable, name, xYData, title = FALSE,
                     lwd = 8, drawlabels = FALSE, axes = FALSE, xaxs = "i", 
                     yaxs = "i")
         }
+            dev.off()
     }
-    dev.off()
+    
 }

@@ -10,9 +10,7 @@
 #' become extremely big. For this reason, the plots are saved as jpeg and no 
 #' axes or anything alike are added, to simplify usage in publications.
 #' @importFrom gplots rich.colors
-#' @importFrom parallel detectCores makeCluster stopCluster
-#' @importFrom doSNOW registerDoSNOW
-#' @importFrom foreach foreach %dopar%
+#' @importFrom BiocParallel bplapply SnowParam snowWorkers register
 #' @param colorData A numeric matrix or dataframe or a vector, be it numeric, 
 #' charater or factor, that should be used to define the colors on the plot. 
 #' @param controlData Optional. A numeric/integer vector or dataframe of values
@@ -85,8 +83,8 @@
 #' dColorPlot(colorData = testDataDepeche$clusterVector, 
 #'     xYData = testDataSNE$Y, plotName = 'clusters')
 #' }
-#' @export dColorPlot
-dColorPlot <- function(colorData, controlData, xYData, 
+#' @export dColorPlotBP
+dColorPlotBP <- function(colorData, controlData, xYData, 
                        colorScale = "rich_colors", plotName = "default",
                        densContour = TRUE, title = FALSE, plotDir = "default", 
                        truncate = TRUE, bandColor = "black", 
@@ -173,35 +171,22 @@ dColorPlot <- function(colorData, controlData, xYData,
             }
         }
         if (multiCore) {
-            if( nCores=="default"){
-                nCores <- floor(detectCores()*0.875) 
-                if(nCores>10){
-                    nCores <- 10
-                }
-            }
-            cl <- makeCluster(nCores, type = "SOCK")
-            registerDoSNOW(cl)
-            i <- 1
-            return_all <- 
-                foreach(i = seq_len(ncol(colorVectors)), 
-                                    .packages = "DepecheR") %dopar% 
-                dPlotCoFunction(
-                    colorVariable = colorVectors[,i],
-                    plotName = plotName[i], xYData = xYData,
-                    title = title, densContour = densContour,
-                    bandColor = bandColor, dotSize = dotSize, plotDir = plotDir,
-                    createOutput = createOutput)
-            stopCluster(cl)
-
+            
+            param <- SnowParam(workers = snowWorkers("SOCK"))
+            register(param)
+            
+            bplapply(seq_len(ncol(colorVectors)), function(i) dPlotCoFunction(
+                colorVariable = colorVectors[,i], plotName = plotName[i], 
+                xYData = xYData, title = title, densContour = densContour,
+                bandColor = bandColor, dotSize = dotSize, plotDir = plotDir,
+                createOutput = createOutput))
+ 
         } else {
-            mapply(dPlotCoFunction, 
-                   as.data.frame.matrix(colorVectors, stringsAsFactors = FALSE),
-                   plotName, MoreArgs = list(xYData = xYData, 
-                                          title = title, 
-                                          densContour = densContour, 
-                                          bandColor = bandColor, 
-                                          dotSize = dotSize, plotDir = plotDir,  
-                                          createOutput = createOutput))
+            lapply(seq_len(ncol(colorVectors)), function(i) dPlotCoFunction(
+                colorVariable = colorVectors[,i], plotName = plotName[i], 
+                xYData = xYData, title = title, densContour = densContour,
+                bandColor = bandColor, dotSize = dotSize, plotDir = plotDir,
+                createOutput = createOutput))
         }
     }
     #Create a suitable legend for the task

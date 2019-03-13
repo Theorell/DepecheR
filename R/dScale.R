@@ -98,15 +98,19 @@ dScale <- function(x, control, scale = TRUE, robustVarScale = TRUE,
         }
     }
     
-    if (is.logical(scale) == TRUE && scale == TRUE) {
-        scale <- c(0.001, 0.999)
+    if (is.logical(scale)) {
+        if(scale){
+            scale <- c(0.001, 0.999) 
+        }
     }
     
-    if (is.logical(truncate) == TRUE && truncate == TRUE) {
-        if (is.logical(scale) == TRUE) {
-            truncate <- c(0.001, 0.999)
-        } else {
-            truncate <- scale
+    if (is.logical(truncate)) {
+        if(truncate){
+            if (is.logical(scale)) {
+                truncate <- c(0.001, 0.999)
+            } else {
+                truncate <- scale
+            } 
         }
     }
     

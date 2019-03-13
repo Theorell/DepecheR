@@ -7,11 +7,10 @@ dClust result}
 \usage{
 dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
   paired = FALSE, multipleCorrMethod = "hochberg",
-  densContour = TRUE, name = "default",
+  densContour = TRUE, plotName = "default",
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], title = FALSE,
-  lowestPlottedP = 0.05, createDirectory = FALSE,
-  directoryName = "dWilcox", bandColor = "black",
+  lowestPlottedP = 0.05, plotDir = ".", bandColor = "black",
   dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE)
 }
 \arguments{
@@ -44,7 +43,7 @@ methods available in \code{\link{p.adjust}} can be used.}
 \item{densContour}{If density contours should be created for the plot(s) or
 not. Defaults to TRUE. a}
 
-\item{name}{The main name for the graph and the analysis.}
+\item{plotName}{The main name for the graph and the analysis.}
 
 \item{groupName1}{The name for the first group}
 
@@ -65,11 +64,9 @@ closely as possible to 0.05 will be identified with iterations of datasets
 with the same size as indicated by hte group vector. If one value is 
 lowerthan 0.05, the wilcoxon statistic from this comparison is used instead.}
 
-\item{createDirectory}{If a directory (i.e. folder) should be created. 
-Defaults to TRUE.}
-
-\item{directoryName}{The name of the created directory, if it should be 
-created.}
+\item{plotDir}{If different from the current directory. If specified and 
+non-existent, the function creates it. If "." is specified, the plots will be
+saved at the current directory.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 

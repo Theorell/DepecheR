@@ -7,10 +7,10 @@ another on a SNE plot}
 \usage{
 dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
   groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], name = "default",
+  groupName2 = unique(groupVector)[2], plotName = "default",
   title = FALSE, maxAbsPlottingValues, bandColor = "black",
-  createDirectory = FALSE, directoryName = "dResidualPlot",
-  dotSize = 400/sqrt(nrow(xYData)), createOutput = TRUE)
+  plotDir = ".", dotSize = 400/sqrt(nrow(xYData)),
+  createOutput = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 
@@ -29,7 +29,7 @@ not. Defaults to TRUE.}
 
 \item{groupName2}{The name for the second group}
 
-\item{name}{The main name for the graph and the analysis.}
+\item{plotName}{The main name for the graph and the analysis.}
 
 \item{title}{If there should be a title displayed on the plotting field. As
 the plotting field is saved as a png, this title cannot be removed as an 
@@ -44,11 +44,9 @@ defaults to the maximum Wilcoxon statistic that is generated in the analysis.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{createDirectory}{If a directory (i.e. folder) should be created. 
-Defaults to TRUE.}
-
-\item{directoryName}{The name of the created directory, if it should be 
-created.}
+\item{plotDir}{If different from the current directory. If specified and 
+non-existent, the function creates it. If "." is specified, the plots will be
+saved at the current directory.}
 
 \item{dotSize}{Simply the size of the dots. The default makes the dots 
 smaller the more observations that are included.}

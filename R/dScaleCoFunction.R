@@ -5,8 +5,8 @@
 dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate, 
                              center, multiplicationFactor, 
                              returnCenter = FALSE) {
-    if (is.logical(scale) == TRUE && scale == FALSE) {
-        if (is.logical(truncate) == TRUE) {
+    if (is.logical(scale) && scale == FALSE) {
+        if (is.logical(truncate)) {
             responseVector <- multiplicationFactor * x
         }
         if (length(truncate) == 2) {
@@ -22,7 +22,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
         top <- quantile(control, probs = scale[2], se = FALSE, na.rm = TRUE)
         
         if (robustVarScale == FALSE) {
-            if (is.logical(truncate) == TRUE) {
+            if (is.logical(truncate)) {
                 responseVector <- multiplicationFactor * 
                     ((x - bottom)/(top - bottom))
             }
@@ -35,7 +35,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
             }
         }
         
-        if (robustVarScale == TRUE) {
+        if (robustVarScale) {
             # First truncate the data to the
             # quantiles defined by the quantiles
             xTruncated <- truncateData(x, control, lowQuantile = scale[1], 
@@ -44,7 +44,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
             sdxTruncated <- sd(xTruncated)
             
             # Now the data is scaled
-            if (is.logical(truncate) == TRUE) {
+            if (is.logical(truncate)) {
                 responseVector <- multiplicationFactor * x/sdxTruncated
             }
             if (length(truncate) == 2) {
@@ -59,7 +59,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
     if (center == "mean") {
         meanValue <- mean(responseVector)
         responseVector <- responseVector - meanValue
-        if (returnCenter == TRUE) {
+        if (returnCenter) {
             responseList <- list(responseVector, meanValue)
         }
     }
@@ -80,7 +80,7 @@ dScaleCoFunction <- function(x, control, scale, robustVarScale, truncate,
         # subtracted from all points
         responseVector <- responseVector - 
             zeroPosition
-        if (returnCenter == TRUE) {
+        if (returnCenter) {
             responseList <- list(responseVector, 
                 zeroPosition)
         }

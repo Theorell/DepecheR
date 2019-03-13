@@ -7,7 +7,7 @@
 #depeche function for details. 
 #firstClusterNumber: this defines if the first number for the cluster 
 #definitions.
-#createDirectory: should a directory be created? In practice, FALSE for single
+#plotDir: should a directory be created? In practice, FALSE for single
 #depeche and TRUE for the second part of dual depeche. 
 #For information on the other parameters, see depeche. 
 #' @importFrom gplots heatmap.2
@@ -19,15 +19,16 @@
 #' @importFrom foreach foreach %dopar%
 #' @useDynLib DepecheR
 depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1, 
-                              directoryName, penalties, sampleSize, 
+                              plotDir, penalties, sampleSize, 
                               selectionSampleSize, k, minARIImprovement, 
-                              optimARI, maxIter, newNumbers, 
-                              createDirectory = FALSE, nCores, createOutput, 
-                              logCenterSd) {
+                              optimARI, maxIter, newNumbers, nCores, 
+                              createOutput, logCenterSd) {
     
-    if (createDirectory == TRUE) { dir.create(directoryName) }
+    if (plotDir != "."){ 
+        dir.create(plotDir) 
+        }
     
-    # First, if the dataset is very, very
+    # Here, if the dataset is very, very
     # big, a subset of it is used to subset
     # from. Otherwise the system memory
     # needed to just perform the boot
@@ -40,11 +41,12 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         inDataFrameUsed <- inDataFrameScaled
     }
     
+    
     # Here, the sampleSize is set in cases it
     # is 'default'.
     if (sampleSize == "default") {
         if (nrow(inDataFrameUsed) <= 10000) {
-            sampleSize <- nrow(inDataFrameScaled)
+            sampleSize <- nrow(inDataFrameUsed)
         } else {
             sampleSize <- 10000
         }
@@ -62,9 +64,8 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                                      penalties = penalties, 
                                      createOutput = createOutput, 
                                      minARIImprovement = minARIImprovement, 
-                                     optimARI = optimARI, nCores=nCores, 
-                                     createDirectory=createDirectory, 
-                                     directoryName=directoryName)
+                                     optimARI = optimARI, nCores=nCores,  
+                                     plotDir=plotDir)
     
     # Now over to creating the final solution
     # Here, the selectionDataSet is created
@@ -88,10 +89,9 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     if (nrow(inDataFrameUsed) < 10000) {
         penalty <- dOptPenaltyResult[[1]][1, 1]
         depecheAllDataResult <- 
-            depecheAllData(inDataFrameUsed, penalty = penalty, k = k, 
-                           firstClusterNumber = firstClusterNumber,
+            depecheAllData(inDataFrameUsed, penalty = penalty, k = k,
                            nCores=nCores)
-        clusterVectorEquidistant <- depecheAllDataResult[[1]]
+        clusterVector <- depecheAllDataResult[[1]]
         reducedClusterCenters <- depecheAllDataResult[[2]]
     } else {
         # Now, the best run amongst all the runs
@@ -106,9 +106,8 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         # allocate the selectionDataSet.
         allocationResultList <- 
             lapply(allSolutions, function(x) 
-                dAllocate(inDataMatrix = selectionDataSet, 
-                          clusterCenters = x, log2Off=TRUE, 
-                          noZeroNum=FALSE))
+                dAllocate(inDataMatrix = selectionDataSet, clusterCenters = x, 
+                          log2Off=TRUE, noZeroNum=FALSE))
         
         # Here, the corrected Rand index with
         # each allocationResult as the first
@@ -145,17 +144,31 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         } else if (length(which(colSums(optimalClusterCenters) != 0) == 1)) {
             reducedClusterCenters <- as.matrix(reducedClusterCenters)
         }
-        
-        # Make the row names nice
-        rownames(reducedClusterCenters) <- 
-            seq(firstClusterNumber,(firstClusterNumber + 
-                                        (nrow(reducedClusterCenters)) - 1))
-        
+
         # And here, the optimal solution is
         # created with the full dataset
-        clusterVectorEquidistant <- dAllocate(inDataFrameScaled, 
-            reducedClusterCenters, log2Off=TRUE, noZeroNum=FALSE)
+        clusterVector <- dAllocate(inDataFrameScaled, 
+            reducedClusterCenters, log2Off = TRUE, noZeroNum = FALSE)
     }
+    
+    #Now, the clusters are ordered according to their size, and re-numbered
+    clusterSizeNums <- as.numeric(names(sort(table(clusterVector), 
+                                             decreasing = TRUE)))
+    nClust <- length(clusterSizeNums)
+    newNums <- seq(firstClusterNumber, firstClusterNumber+(nClust-1))
+    clusterVectorNewNums <- clusterVector
+    sortedClustSizeNums <- sort(clusterSizeNums)
+    row.names(reducedClusterCenters) <- sortedClustSizeNums
+    for(i in seq_len(nClust)){
+        localNum <- clusterSizeNums[i]
+        clusterVectorNewNums[clusterVector==localNum] <- newNums[i]
+        row.names(reducedClusterCenters)[sortedClustSizeNums==localNum] <- 
+            newNums[i]
+    }
+    
+    #And here, the rows of the reducedClusterCenters are reordered
+    reducedClusterCenters <- reducedClusterCenters[ 
+        order(as.numeric(row.names(reducedClusterCenters))),]
     
     # Here, the optPenalty information is
     # retrieved from the optimal sample size
@@ -188,12 +201,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         colnames(correctClusterCenters) <- colnames(reducedClusterCenters)
     }
     
-    # Here, a sparsity matrix is generated,
-    # as the sparsed out variables will seem
-    # like they are situated in the middle,
-    # when they are in fact pushed to the
-    # center of the variable in question.
-    
+    # Here, a list of the essential elements for each cluster is generated.
     essenceElementList <- apply(reducedClusterCenters, 1, 
                              function(x) 
                                  colnames(reducedClusterCenters)[x != 0])
@@ -230,16 +238,13 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                            "#CC4678FF", "#E16462FF", "#F1844BFF", "#FCA636FF", 
                            "#FCCE25FF"))
         
-        if (createOutput == TRUE) {
+        if (createOutput) {
             #First, the name is defined, depending on two criteria: if the data
             #was log transformed, and if a directory should be created or not. 
-            logOrNoLogName <- ifelse (logCenterSd[1] == FALSE, "Cluster",
+            logOrNoLogName <- ifelse (logCenterSd[[1]] == FALSE, "Cluster",
                                           "Log2_transformed_cluster")
-            clusterCenterName <- ifelse (createDirectory == TRUE, 
-                                         file.path(directoryName, 
-                                                   paste0(logOrNoLogName,
-                                                   "_centers.pdf")), 
-                                         paste0(logOrNoLogName, "_centers.pdf"))
+            clusterCenterName <-  file.path(plotDir, paste0(logOrNoLogName, 
+                                            "_centers.pdf"))
             pdf(clusterCenterName)
             heatmap.2(as.matrix(graphicClusterCenters), Rowv = FALSE, 
                       Colv = FALSE, dendrogram = "none", scale = "none", 
@@ -254,11 +259,11 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
     
     # And now, the result that should be
     # returned is compiled
-    depecheResult <- list(clusterVectorEquidistant, correctClusterCenters, 
+    depecheResult <- list(clusterVectorNewNums, correctClusterCenters, 
                           essenceElementList, optPenalty)
     names(depecheResult) <- c("clusterVector", "clusterCenters", 
                               "essenceElementList", "penaltyOptList")
-    if(logCenterSd[1] == TRUE){
+    if(logCenterSd[[1]]){
         names(depecheResult)[2] <- "log2ClusterCenters"
         }
 

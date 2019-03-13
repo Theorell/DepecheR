@@ -40,7 +40,7 @@ data(testData)
 \dontrun{
 # Now arbitrarily (for the sake of the example) divide the data into a
 # training- and a test set.
-testDataSample <- sample(1:nrow(testData), size = 48500)
+testDataSample <- sample(1:nrow(testData), size = 10000)
 testDataTrain <- testData[testDataSample, ]
 testDataTest <- testData[-testDataSample, ]
 
@@ -55,10 +55,8 @@ x_depeche_test <- dAllocate(testDataTest[, 2:15],
 )
 
 # And finally plot the two groups to see how great the overlap was:
-trainTablePerId <- apply(as.matrix(table(
-  testDataTrain$ids,
-  x_depeche_train$clusterVector
-)), 1, function(x) x / sum(x))
+trainTablePerId <- apply(as.matrix(table(testDataTrain$ids,
+    x_depeche_train$clusterVector)), 1, function(x) x / sum(x))
 trainTableCollapsed <- apply(trainTablePerId, 1, sum)
 trainTableFraction <- trainTableCollapsed / sum(trainTableCollapsed)
 testTablePerId <- apply(as.matrix(table(testDataTest$ids, x_depeche_test)),

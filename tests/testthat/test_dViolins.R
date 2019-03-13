@@ -1,7 +1,8 @@
 ###################### dViolins
-context("dVviolins")
+context("dViolins")
 data("testData")
 data("testDataDepeche")
-dViolins(testDataDepeche$clusterVector, testDataDepeche$essenceElementList, 
-         inDataFrame=testData, createOutput = FALSE)
+dViolins(clusterVector=testDataDepeche$clusterVector, inDataFrame=testData,
+         plotClusters=1, plotElements=testDataDepeche$essenceElementList, 
+         createOutput = FALSE)
 

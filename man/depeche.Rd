@@ -87,7 +87,7 @@ plots are generated.}
 A nested list with varying components depending on the setup above:
 \describe{
    \item{clusterVector}{A vector with the same length as number of rows in 
-   the inDataFrameUsed, where the cluster identity of each observation is 
+   the inDataFrame, where the cluster identity of each observation is 
    noted.}
    \item{clusterCenters/log2ClusterCenters}{A matrix containing information 
    about where the centers are in all the variables that contributed to 

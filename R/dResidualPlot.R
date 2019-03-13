@@ -13,7 +13,7 @@
 #' information about the cluster identity of each observation.
 #' @param densContour If density contours should be created for the plot(s) or
 #' not. Defaults to TRUE.
-#' @param name The main name for the graph and the analysis.
+#' @param plotName The main name for the graph and the analysis.
 #' @param groupName1 The name for the first group
 #' @param groupName2 The name for the second group
 #' @param maxAbsPlottingValues If multiple plots should be compared, it might 
@@ -28,10 +28,9 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots 
 #' smaller the more observations that are included.
-#' @param createDirectory If a directory (i.e. folder) should be created. 
-#' Defaults to TRUE.
-#' @param directoryName The name of the created directory, if it should be 
-#' created.
+#' @param plotDir If different from the current directory. If specified and 
+#' non-existent, the function creates it. If "." is specified, the plots will be
+#' saved at the current directory.
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no 
 #' plots are generated.
 #' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
@@ -66,14 +65,13 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
                           densContour = TRUE, 
                           groupName1 = unique(groupVector)[1], 
                           groupName2 = unique(groupVector)[2], 
-                          name = "default", title = FALSE, maxAbsPlottingValues,
-                          bandColor = "black", createDirectory = FALSE, 
-                          directoryName = "dResidualPlot", 
+                          plotName = "default", title = FALSE, maxAbsPlottingValues,
+                          bandColor = "black", plotDir = ".", 
                           dotSize = 400/sqrt(nrow(xYData)), 
                           createOutput = TRUE) {
     
-    if (createDirectory == TRUE) {
-        dir.create(directoryName)
+    if (plotDir != ".") {
+        dir.create(plotDir)
     }
     
     if (length(unique(groupVector)) != 2) {
@@ -84,8 +82,8 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
         xYData <- as.data.frame(xYData)
     }
     
-    if (name == "default") {
-        name <- paste0(groupName1, "_vs_", groupName2)
+    if (plotName == "default") {
+        plotName <- paste0(groupName1, "_vs_", groupName2)
     }
     
     # Here, the residuals are identified.  A
@@ -156,13 +154,11 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
-    dPlotCoFunction(colorVariable = xYData$col, name = 
-                        paste0(name, "_residuals"), 
+    dPlotCoFunction(colorVariable = xYData$col, plotName = 
+                        paste0(plotName, "_residuals"), 
                     xYData = xYData, title = title, 
                     densContour = densContour, bandColor = bandColor, 
-                    dotSize = dotSize, 
-                    createDirectory = createDirectory, 
-                    directoryName = directoryName, 
+                    dotSize = dotSize, plotDir = plotDir, 
                     createOutput = createOutput)
     
     # Create a color legend with text
@@ -170,13 +166,9 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     yname <- "Residual values"
     topText <- paste0(groupName1, " is more abundant")
     bottomText <- paste0(groupName2, " is more abundant")
-    legendName <- paste0("Color_scale_for_", name, "_residuals.pdf")
-    if (createDirectory == TRUE) {
-        legendName <- file.path(directoryName, legendName)
-    } 
-    
-    if (createOutput == TRUE) {
-        pdf(legendName)
+
+    if (createOutput) {
+        pdf(file.path(plotDir, paste0(plotName, "_residual_scale.pdf")))
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
         z <- matrix(seq_len(9), nrow = 1)
         x <- 1
@@ -188,6 +180,4 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
         box()
         dev.off()
     }
-    
-    message("Files were saved at ", getwd())
 }
