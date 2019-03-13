@@ -1,3 +1,24 @@
+DepecheR v0.99.31 (Release date: 2019-03-13)
+Changes:
+* dColorPlot and dDensity plot simplified, in that it is now possible to add
+* just a vector of any kind, and it will be returned as colors. A colorScale
+* alternative, linking to dColorVector has been added to both functions as well. 
+* A new legend has been added to dColorPlot. 
+* The options createDirectory and directoryName have been removed from all 
+* visualization functions and have been replaced by plotDir. 
+* The different "name" arguments for plots have been streamlined to be called
+* plotName in all instances, to avoid using base function names for objects.
+* The testData dataset has been made smaller, to increase example execution time
+* and diminish pacakge size.
+
+==============
+
+Changes:
+* dViolins completely worked over. Now, assymetrical violin plots are generated, 
+* leading to a more succinct result. 
+* Responses to all issues raised by BioConductor reviewer.
+* Bug fix in dual depeche
+
 DepecheR v0.99.30 (Release date: 2019-02-18)
 ==============
 

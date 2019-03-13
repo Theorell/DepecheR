@@ -30,9 +30,7 @@
 #'
 #'
 #' # Run the function
-#' \dontrun{
 #' contour_result <- dContours(testDataSNE$Y)
-#' }
 #' @export dContours
 dContours <- function(xYData, control, n = 100) {
     if (missing(control) == FALSE) {

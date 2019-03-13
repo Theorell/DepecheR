@@ -14,7 +14,7 @@
 dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement, 
                         sampleSize, penalties, createOutput, 
                         disableWarnings = FALSE, optimARI, nCores, 
-                        createDirectory, directoryName) {
+                        plotDir) {
     
     # The constant 1450 was empirically
     # identified by running a large number of
@@ -262,13 +262,8 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     
     # Here, the optimization is plotted if
     # wanted.
-    if (createOutput == TRUE) {
-        plotName <- "Distance_as_a_function_of_penalties.pdf"
-        if(createDirectory == TRUE){
-            plotName <- file.path(directoryName, plotName)
-        } 
-        
-        pdf(plotName)
+    if (createOutput) {
+        pdf(file.path(plotDir, "Distance_as_a_function_of_penalties.pdf"))
         par(mar = c(5, 4, 4, 6) + 0.1)
         # Plot the data
         plot(log10(roundPenalties), meanOptimDf[, 1], pch = 16, axes = FALSE, 

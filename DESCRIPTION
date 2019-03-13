@@ -1,6 +1,6 @@
 Package: DepecheR
-Version: 0.99.30
-Date: 2019-02-12
+Version: 0.99.31
+Date: 2019-03-13
 Title: Determination of essential phenotypic elements of clusters in 
     high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,
@@ -31,7 +31,7 @@ Imports:
     doSNOW (>= 1.0.16), matrixStats (>= 0.54.0), mixOmics (>= 6.6.1), 
     moments (>= 0.14), grDevices (>= 3.5.2), graphics (>= 3.5.2), 
     stats (>= 3.5.2), utils (>= 3.5), methods (>= 3.5), parallel (>= 3.5.2), 
-    reshape2 (>= 1.4.3), beanplot (>= 1.2)
+    reshape2 (>= 1.4.3), beanplot (>= 1.2), BiocParallel (>= 1.16.6)
 LinkingTo: Rcpp, RcppEigen
 Suggests: Rtsne, testthat, knitr, rmarkdown, BiocStyle
 VignetteBuilder: knitr

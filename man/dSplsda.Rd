@@ -7,11 +7,10 @@ data}
 \usage{
 dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
   testSampleRows, paired = FALSE, densContour = TRUE,
-  name = "default", groupName1 = unique(groupVector)[1],
+  plotName = "default", groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
-  title = FALSE, createDirectory = FALSE, directoryName = "dSplsda",
-  bandColor = "black", dotSize = 500/sqrt(nrow(xYData)),
-  createOutput = TRUE)
+  title = FALSE, plotDir = ".", bandColor = "black",
+  dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 
@@ -46,7 +45,7 @@ and so forth, so make sure the order is correct!}
 \item{densContour}{If density contours should be created for the plot(s) or
 not. Defaults to TRUE. a}
 
-\item{name}{The main name for the graph and the analysis.}
+\item{plotName}{The main name for the graph and the analysis.}
 
 \item{groupName1}{The name for the first group}
 
@@ -65,11 +64,9 @@ object afterwards, as it is saved as coloured pixels. To simplify usage for
 publication, the default is FALSE, as the files are still named, eventhough
 no title appears on the plot.}
 
-\item{createDirectory}{If a directory (i.e. folder) should be created.
-Defaults to TRUE.}
-
-\item{directoryName}{The name of the created directory, if it should be 
-created.}
+\item{plotDir}{If different from the current directory. If specified and 
+non-existent, the function creates it. If "." is specified, the plots will be
+saved at the current directory.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
@@ -135,7 +132,7 @@ sPLSDAObject <- dSplsda(
    xYData = testDataSNE$Y, idsVector = testData$ids,
    groupVector = testData$label, clusterVector = 
    testDataDepeche$clusterVector, 
-   paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
+   paired = TRUE, plotName = 'sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
    groupName2 = 'Stimulation 2')
 
 # Here is an example of how the display vector can be used.
@@ -153,19 +150,16 @@ sPLSDAObject <- dSplsda(
   xYData = testDataSNESubset, idsVector = testData$ids,
   groupVector = testData$label, clusterVector = 
   testDataDepeche$clusterVector,
-  displayVector = subsetVector
-)
+  displayVector = subsetVector)
 
 # Finally, an example of a train-test set situation, where a random half the
 # dataset is used for training and the second half is used for testing. It 
 # is naturally more biologically interesting to use two independent datasets
 # for training and testing in the real world.
-testDataRows <- sample(1:nrow(testData), size = 48500)
 sPLSDAObject <- dSplsda(
   xYData = testDataSNE$Y, idsVector = testData$ids,
   groupVector = testData$label, clusterVector = 
-  testDataDepeche$clusterVector, testSampleRows = testDataRows
-)
+  testDataDepeche$clusterVector, testSampleRows = subsetVector)
 }
 }
 \seealso{

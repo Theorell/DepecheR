@@ -37,7 +37,7 @@
 #' Wilcoxon rank sum-test is performed. If true, the software will by default
 #' pair the first id in the first group with the firs id in the second group 
 #' and so forth, so make sure the order is correct!
-#' @param name The main name for the graph and the analysis.
+#' @param plotName The main name for the graph and the analysis.
 #' @param densContour If density contours should be created for the plot(s) or
 #' not. Defaults to TRUE. a
 #' @param groupName1 The name for the first group
@@ -53,10 +53,9 @@
 #' object afterwards, as it is saved as coloured pixels. To simplify usage for
 #' publication, the default is FALSE, as the files are still named, eventhough
 #' no title appears on the plot.
-#' @param createDirectory If a directory (i.e. folder) should be created.
-#' Defaults to TRUE.
-#' @param directoryName The name of the created directory, if it should be 
-#' created.
+#' @param plotDir If different from the current directory. If specified and 
+#' non-existent, the function creates it. If "." is specified, the plots will be
+#' saved at the current directory.
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots 
 #' smaller the more observations that are included.
@@ -107,7 +106,7 @@
 #'    xYData = testDataSNE$Y, idsVector = testData$ids,
 #'    groupVector = testData$label, clusterVector = 
 #'    testDataDepeche$clusterVector, 
-#'    paired = TRUE, name = 'd_sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
+#'    paired = TRUE, plotName = 'sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
 #'    groupName2 = 'Stimulation 2')
 #' 
 #' # Here is an example of how the display vector can be used.
@@ -125,34 +124,31 @@
 #'   xYData = testDataSNESubset, idsVector = testData$ids,
 #'   groupVector = testData$label, clusterVector = 
 #'   testDataDepeche$clusterVector,
-#'   displayVector = subsetVector
-#' )
+#'   displayVector = subsetVector)
 #' 
 #' # Finally, an example of a train-test set situation, where a random half the
 #' # dataset is used for training and the second half is used for testing. It 
 #' # is naturally more biologically interesting to use two independent datasets
 #' # for training and testing in the real world.
-#' testDataRows <- sample(1:nrow(testData), size = 48500)
 #' sPLSDAObject <- dSplsda(
 #'   xYData = testDataSNE$Y, idsVector = testData$ids,
 #'   groupVector = testData$label, clusterVector = 
-#'   testDataDepeche$clusterVector, testSampleRows = testDataRows
-#' )
+#'   testDataDepeche$clusterVector, testSampleRows = subsetVector)
 #' }
 #' @export dSplsda
 dSplsda <- function(xYData, idsVector, groupVector, clusterVector, 
                     displayVector, testSampleRows, paired = FALSE, 
-                    densContour = TRUE, name = "default", 
+                    densContour = TRUE, plotName = "default", 
                     groupName1 = unique(groupVector)[1], 
                     groupName2 = unique(groupVector)[2], 
-                    thresholdMisclassRate = 0.05, title = FALSE, 
-                    createDirectory = FALSE, directoryName = "dSplsda", 
+                    thresholdMisclassRate = 0.05, title = FALSE, plotDir = ".", 
                     bandColor = "black", dotSize = 500/sqrt(nrow(xYData)), 
                     createOutput = TRUE) {
     
-    if (createDirectory == TRUE) {
-        dir.create(directoryName)
+    if (plotDir != ".") {
+        dir.create(plotDir)
     }
+    
     
     if (length(unique(groupVector)) != 2) {
         stop("More or less than two groups are present. This is currently not 
@@ -165,11 +161,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
                 differences.")
     }
     
-    if (name == "default") {
-        name <- paste0(groupName1, "_vs_", groupName2)
+    if (plotName == "default") {
+        plotName <- paste0(groupName1, "_vs_", groupName2)
     }
     
-    if (paired == TRUE) {
+    if (paired) {
         # As the algorithm does not like repeated
         # ids, if the id vector contains the same
         # values for the first group and the
@@ -205,7 +201,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         idsVectorTest <- idsVector[testSampleRows]
         groupVectorTest <- groupVector[testSampleRows]
         
-        if (paired == TRUE) {
+        if (paired) {
             pairingVectorTrain <- pairingVector[-testSampleRows]
             pairingVectorTest <- pairingVector[testSampleRows]
         }
@@ -213,7 +209,7 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
         clusterVectorTrain <- clusterVector
         idsVectorTrain <- idsVector
         groupVectorTrain <- groupVector
-        if (paired == TRUE) {
+        if (paired) {
             pairingVectorTrain <- pairingVector
         }
     }
@@ -272,14 +268,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     theme(line = element_blank(), 
             panel.background = element_rect(fill = "white"))
     
-    if (createOutput == TRUE) {
-        fileName <- "Individuals_on_sPLS-DA_vector.pdf"
-        if (createDirectory == TRUE) {
-            fileName <- file.path(directoryName, fileName)
-        } 
-        ggsave(fileName, dpi = 300)
+    if (createOutput) {
+        ggsave(file.path(plotDir, paste0(plotName, "_sPLSDA_vector.pdf")), 
+               dpi = 300)
     }
-    
+
     # Retrieve the sparse loadings
     sPLSDALoadings <- sPLSDAObject$loadings$X
     
@@ -383,13 +376,11 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
     xYData$col <- colors[grps]
     
-    dPlotCoFunction(colorVariable = xYData$col, name = 
-                        paste0(name, "_sPLSDA_result"), 
+    dPlotCoFunction(colorVariable = xYData$col, plotName = 
+                        paste0(plotName, "_sPLSDA_result"), 
                     xYData = xYData, title = title, 
                     densContour = densContour, bandColor = bandColor, 
-                    dotSize = dotSize, 
-                    createDirectory = createDirectory, 
-                    directoryName = directoryName, 
+                    dotSize = dotSize, plotDir = plotDir,
                     createOutput = createOutput)
     
     # Create a color legend with text
@@ -398,14 +389,9 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
 
     topText <- paste0(groupName1, " is more abundant")
     bottomText <- paste0(groupName2, " is more abundant")
-    
-    legendName <- paste0("Color_scale_for_", name, "_sPLS-DA_analysis.pdf")
-    if (createDirectory == TRUE) {
-        legendName <- file.path(directoryName, legendName)
-        } 
-    
-    if (createOutput == TRUE) {
-        pdf(legendName)
+
+    if (createOutput) {
+        pdf(file.path(plotDir, paste0(plotName, "_sPLS-DA_scale.pdf")))
         par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
        z <- matrix(seq_len(9), nrow = 1)
         x <- 1
@@ -420,16 +406,12 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
     
     # Return data from the sPLS-DA that was
     # needed for the generation of the graphs
-    file1Name <- paste0(name, "_sPLSDALoadings.csv")
-    file2Name <- paste0(name, "_sPLSDA_vector.csv")
-    if (createDirectory == TRUE) {
-        file1Name <- file.path(directoryName, file1Name)
-        file2Name <- file.path(directoryName, file2Name)
-        } 
-    
-    if (createOutput == TRUE) {
-        write.csv(sPLSDALoadings, file1Name)
-        write.csv(sPLSDA_vector, file2Name)
+ 
+    if (createOutput) {
+        write.csv(sPLSDALoadings, 
+                  file.path(plotDir, paste0(plotName, "_sPLSDA_loadings.csv")))
+        write.csv(sPLSDA_vector, 
+                  file.path(plotDir, paste0(plotName, "_sPLSDA_vector.csv")))
         }
     
     # Now, prediction is performed, if the
@@ -476,17 +458,13 @@ dSplsda <- function(xYData, idsVector, groupVector, clusterVector,
                                                    panel.background 
                                                    = element_rect(fill 
                                                                   = "white"))
-        if (createOutput == TRUE) {
-            fileName <- "Predicted_individuals_on_sPLS-DA_vector.pdf"
-            if (createDirectory == TRUE) {
-                fileName <- file.path(directoryName, fileName)
-            } 
-            ggsave(fileName, dpi = 300)
+        if (createOutput) {
+            ggsave(file.path(plotDir, 
+                             paste0(plotName, "_sPLSDA_vector_predicted.pdf")), 
+                   dpi = 300)
         }
     }
-    
-    message("Files were saved at ", getwd())
-    
+
     if (missing(testSampleRows)) {
         return(sPLSDAObject)
     } else {

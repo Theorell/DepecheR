@@ -13,10 +13,8 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
-depecheAllData <- function(inDataFrameScaled, 
-    penalty, firstClusterNumber = 1, k, nCores) {
-    penaltyForRightSize <- 
-        penalty * ((nrow(inDataFrameScaled) * 
+depecheAllData <- function(inDataFrameScaled, penalty, k, nCores) {
+    penaltyForRightSize <- penalty * ((nrow(inDataFrameScaled) * 
                         sqrt(ncol(inDataFrameScaled)))/1450)
     
     dataMat <- data.matrix(inDataFrameScaled)
@@ -26,6 +24,7 @@ depecheAllData <- function(inDataFrameScaled,
         if(nCores>10){ nCores <- 10}
     }
     
+    i <- 1 
     cl <- makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)
     return_all <- foreach(i = seq_len(21), .packages = "DepecheR") %dopar% 
@@ -42,26 +41,13 @@ depecheAllData <- function(inDataFrameScaled,
     maxN <- max(logMaxLikNotOne)
     returnLowest <- return_all[[which(logMaxLik == maxN)[1]]]
     
-    # And here, the optimal results, given if
-    # an origo cluster should be included or
-    # not, are retrieved further
+    # And here, the optimal results are retrieved
     clusterVector <- returnLowest$i
     clusterCenters <- returnLowest$c
     
     # And here, the optimal results are made
     # more dense by removing empty rows and
-    # columns, etc.  Here, the numbers of the
-    # removed clusters are removed as well,
-    # and only the remaining clusters are
-    # retained and numbered equidistantly.
-    originalNumbers <- sort(unique(clusterVector))
-    newNumbers <- seq(firstClusterNumber, (length(originalNumbers) + 
-                                               (firstClusterNumber - 1)))
-    clustVecEquidist <- clusterVector
-    for (i in seq_along(originalNumbers)) {
-        clustVecEquidist[clustVecEquidist == originalNumbers[i]] <- 
-            newNumbers[i]
-    }
+    # columns, etc.  
 
     colnames(clusterCenters) <- colnames(inDataFrameScaled)
     
@@ -82,16 +68,8 @@ depecheAllData <- function(inDataFrameScaled,
         reducedClusterCenters <- as.matrix(reducedClusterCenters)
     }
     
-    # Make the row names the same as the
-    # cluster names in the
-    # clustVecEquidist
-    rownames(reducedClusterCenters) <- 
-        seq(firstClusterNumber, (firstClusterNumber + 
-                                     (nrow(reducedClusterCenters)) - 1))
-    
-    
     # Here, the results are combined
-    dClustResult <- list(clustVecEquidist, reducedClusterCenters)
+    dClustResult <- list(clusterVector, reducedClusterCenters)
     names(dClustResult) <- c("clusterVector", "clusterCenters")
     return(dClustResult)
 }

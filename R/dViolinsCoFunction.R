@@ -3,7 +3,7 @@
 #This function is called by dViolins. It provides the core functionality, 
 #and is called for each cluster separately. 
 dViolinsCoFunction <- function(clusterNum, plotElement, clusterVector, 
-                               inDataFrameTrunc, clusterCol, directoryName, 
+                               inDataFrameTrunc, clusterCol, plotDir, 
                                createOutput){
     #First, the plot elements of interest are selected
     inDataFrameRelevant <- inDataFrameTrunc[,plotElement]
@@ -51,10 +51,9 @@ dViolinsCoFunction <- function(clusterNum, plotElement, clusterVector,
     inDataFrameUnSplit <- do.call("rbind", inDataFrameMelt)
     
     #And so it is all plotted
-    if(createOutput == TRUE){
-        pdf(file.path(directoryName, 
-                      paste0("Cluster_", clusterNum, "_violins.pdf")))
-    }
+    if(createOutput){
+        pdf(file.path(plotDir, paste0("Cluster_", clusterNum, "_violins.pdf")))
+    
     par(las=3, mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
     beanplot(value ~ variable, data = inDataFrameUnSplit, what = c(0,1,0,0), 
              main = paste0("Feature distribution for cluster ", 
@@ -64,7 +63,7 @@ dViolinsCoFunction <- function(clusterNum, plotElement, clusterVector,
     legend("topright", inset=c(-0.33,0), legend=c(paste0("All - ", clusterNum),
                                                   clusterNum), 
            fill = c("grey", clusterCol), title="Cluster")
-    if(createOutput == TRUE){
+
         dev.off()
     }
     
