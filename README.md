@@ -13,5 +13,5 @@ install.packages("devtools")
 Now, install DepecheR
 ```
 library(devtools)
-install_github("Theorell/"DepecheR", ref = "Rversion3.5")
+install_github("Theorell/DepecheR", ref = "Rversion3.5")
 ```
