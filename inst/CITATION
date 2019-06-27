@@ -5,9 +5,9 @@ citEntry(entry="article",
          author = personList( as.person("Axel Theorell"),
                               as.person("Yenan Bryceson"),
                               as.person("Jakob Theorell")),
-         year = 2018,
-         journal = "BioRXiv",
-         url = "https://www.biorxiv.org/content/early/2018/08/20/396135",
-         textVersion = "Axel Theorell, Yenan Bryceson and Jakob Theorell. (2018): Determination of essential phenotypic elements of clusters in high-dimensional entities - DEPECHE, BioRXiv, URL: http://dx.doi.org/10.1038/nmeth.4236" )
+         year = 2019,
+         journal = "PLoS One",
+         url = "https://journals.plos.org/plosone/article/comments?id=10.1371/journal.pone.0203247",
+         textVersion = "Axel Theorell, Yenan Bryceson and Jakob Theorell. (2018): Determination of essential phenotypic elements of clusters in high-dimensional entities - DEPECHE, PLoS One, URL: https://journals.plos.org/plosone/article/comments?id=10.1371/journal.pone.0203247" )
 
 
