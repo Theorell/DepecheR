@@ -1,3 +1,9 @@
+DepecheR v1.0.3 (Release date: 2019-06-28)
+Changes:
+* dResidualPlot bug making colors sometimes represent the wrong
+* group fixed.
+
+==============
 DepecheR v1.0.2 (Release date: 2019-06-28)
 Changes:
 * Fixing the dColorPlot and the dDensityPlot functions, so that original names 
