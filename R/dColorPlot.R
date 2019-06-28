@@ -132,33 +132,45 @@ dColorPlot <- function(colorData, controlData, xYData,
         }
     }
     
-    if (is.vector(colorData)) {
-        if(is.character(colorData)){
-            colorData <- as.factor(colorData)
-        }
-        if(is.factor(colorData)){
-            colorData <- as.numeric(colorData)
-        }
-        if(length(unique(colorData))>50){
-            colorDataRound <- round(dScale(colorData, control = controlData,
-                                      scale = c(0, 1), robustVarScale = FALSE, 
-                                      center = FALSE, multiplicationFactor = 50, 
-                                      truncate = truncate))
+    if (is.vector(colorData) || is.factor(colorData)) {
+        wasFactor <- FALSE
+        if(is.numeric(colorData) && length(unique(colorData))>50){
+                colorDataRound <- round(dScale(colorData, 
+                                               control = controlData,
+                                               scale = c(0, 1), 
+                                               robustVarScale = FALSE, 
+                                               center = FALSE, 
+                                               multiplicationFactor = 50, 
+                                               truncate = truncate))
+                } else {
+                    if(is.character(colorData)){
+                        colorData <- as.factor(colorData)
+                        } 
+                    if(is.factor(colorData)){
+                        plotNames <- as.character(unique(colorData))
+                        colorData <- as.numeric(colorData)
+                        wasFactor <- TRUE
+                        }
+                    colorDataRound <- colorData
+                }
+        uniqueNumsRaw <- unique(colorDataRound)
+        uniqueNums <- uniqueNumsRaw[order(uniqueNumsRaw)]
+        if(wasFactor){
+            plotNames <- plotNames[order(uniqueNumsRaw)]
         } else {
-            colorDataRound <- colorData
+            plotNames <- uniqueNums
         }
         
-        uniqueIds <- sort(unique(colorDataRound))
-
-        colorVector <- dColorVector(colorDataRound, colorOrder = uniqueIds, 
+        colorVector <- dColorVector(colorDataRound, colorOrder = uniqueNums, 
                                     colorScale = colorScale)
         
         dPlotCoFunction(colorVariable = colorVector, plotName = plotName, 
-                            xYData = xYData, title = title, 
-                            densContour = densContour, bandColor = bandColor, 
-                            dotSize = dotSize, plotDir = plotDir, 
-                            createOutput = createOutput)
-    } else {
+                        xYData = xYData, title = title, 
+                        densContour = densContour, bandColor = bandColor, 
+                        dotSize = dotSize, plotDir = plotDir, 
+                        createOutput = createOutput)
+        
+     } else {
         colorDataRound <- round(dScale(x = colorData, control = controlData, 
                                    scale = c(0, 1), robustVarScale = FALSE, 
                                    center = FALSE, multiplicationFactor = 50, 
@@ -212,13 +224,13 @@ dColorPlot <- function(colorData, controlData, xYData,
             pdf(file.path(plotDir, "Color_legend.pdf")) 
         }
         
-        if(is.vector(colorData) && length(uniqueIds < 50)){
+        if(is.vector(colorData) && length(uniqueNums < 50)){
             colorIdsDataFrame <- data.frame(
-                dColorVector(uniqueIds, colorScale = colorScale), uniqueIds, 
+                dColorVector(uniqueNums, colorScale = colorScale), plotNames, 
                 stringsAsFactors = FALSE)
             plot.new()
             legend("center", legend = colorIdsDataFrame[,2], 
-                   col = colorIdsDataFrame[,1], cex = 15/length(uniqueIds), 
+                   col = colorIdsDataFrame[,1], cex = 7.5/length(uniqueNums), 
                    pch = 19)
         } else {
             yname <- "Expression level"

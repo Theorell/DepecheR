@@ -145,7 +145,7 @@ dDensityPlot <- function(xYData, colorScale = "default",
             plot.new()
             legend("center", legend = colorIdsDataFrame[,2], 
                    col = colorIdsDataFrame[,1], 
-                   cex = 15/length(uniqueIds), pch = 19)
+                   cex = 7.5/length(uniqueIds), pch = 19)
             dev.off()
         }
     }
