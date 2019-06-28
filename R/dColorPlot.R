@@ -133,6 +133,7 @@ dColorPlot <- function(colorData, controlData, xYData,
     }
     
     if (is.vector(colorData) || is.factor(colorData)) {
+        wasFactor <- FALSE
         if(is.numeric(colorData) && length(unique(colorData))>50){
                 colorDataRound <- round(dScale(colorData, 
                                                control = controlData,
@@ -148,15 +149,16 @@ dColorPlot <- function(colorData, controlData, xYData,
                     if(is.factor(colorData)){
                         plotNames <- as.character(unique(colorData))
                         colorData <- as.numeric(colorData)
+                        wasFactor <- TRUE
                         }
                     colorDataRound <- colorData
                 }
         uniqueNumsRaw <- unique(colorDataRound)
         uniqueNums <- uniqueNumsRaw[order(uniqueNumsRaw)]
-        if(missing(plotNames)){
-            plotNames <- uniqueNums
-        } else {
+        if(wasFactor){
             plotNames <- plotNames[order(uniqueNumsRaw)]
+        } else {
+            plotNames <- uniqueNums
         }
         
         colorVector <- dColorVector(colorDataRound, colorOrder = uniqueNums, 
