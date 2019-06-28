@@ -65,7 +65,8 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
                           densContour = TRUE, 
                           groupName1 = unique(groupVector)[1], 
                           groupName2 = unique(groupVector)[2], 
-                          plotName = "default", title = FALSE, maxAbsPlottingValues,
+                          plotName = "default", title = FALSE, 
+                          maxAbsPlottingValues,
                           bandColor = "black", plotDir = ".", 
                           dotSize = 400/sqrt(nrow(xYData)), 
                           createOutput = TRUE) {
@@ -88,10 +89,13 @@ dResidualPlot <- function(xYData, groupVector, clusterVector,
     
     # Here, the residuals are identified.  A
     # table with the percentage of cells in
-    # each cluster for each group is created
-    # in analogy with XXX pKMRun.
+    # each cluster for each group is created.
     
-    clusterTable <- table(clusterVector, groupVector)
+    clusterTableRaw <- table(clusterVector, groupVector)
+    
+    #In the case where the groups do not occur in order in the groupVector, 
+    #the order of the table is changed here
+    clusterTable <- clusterTableRaw[,as.character(unique(groupVector))]
     
     countTable <- table(groupVector)
     
