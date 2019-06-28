@@ -1,3 +1,9 @@
+DepecheR v1.1.2 (Release date: 2019-06-28)
+Changes:
+* Fixing the dColorPlot and the dDensityPlot functions, so that original names in character vectors and factors are correctly displayed.
+
+==============
+
 DepecheR v0.99.31 (Release date: 2019-03-13)
 Changes:
 * dColorPlot and dDensity plot simplified, in that it is now possible to add
