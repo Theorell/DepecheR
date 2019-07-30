@@ -52,15 +52,12 @@
 #' @return A graph showing the probability as a color scale from blue over white
 #' to red for each event to belong to one group or the other. 
 #' @examples 
-#' #' \dontrun{
-#' library(DepecheR)
-#' data(testData)
+#' #' data(testData)
 #' data(testDataSNE)
-#' dataTrans <- testData[,c("SYK", "CD16", "CD57", "EAT.2", "CD8",
+#' #' dataTrans <- testData[,c("SYK", "CD16", "CD57", "EAT.2", "CD8",
 #' "NKG2C", "CD2", "CD56")]
-#' 
+#' \dontrun{
 #' groupProbPlot(xYData = testDataSNE$Y, groupVector=testData$label, dataTrans)
-#' 
 #' }
 #' 
 #' @export groupProbPlot

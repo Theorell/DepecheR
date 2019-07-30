@@ -75,15 +75,12 @@ A or 80% for group B, depending on the point of view. This will also be
 accordingly reflected in the color scale on the resulting plot.
 }
 \examples{
-#' \dontrun{
-library(DepecheR)
-data(testData)
+#' data(testData)
 data(testDataSNE)
-dataTrans <- testData[,c("SYK", "CD16", "CD57", "EAT.2", "CD8",
+#' dataTrans <- testData[,c("SYK", "CD16", "CD57", "EAT.2", "CD8",
 "NKG2C", "CD2", "CD56")]
-
+\dontrun{
 groupProbPlot(xYData = testDataSNE$Y, groupVector=testData$label, dataTrans)
-
 }
 
 }
