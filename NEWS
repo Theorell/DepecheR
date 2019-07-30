@@ -1,3 +1,11 @@
+DepecheR v1.1.4 (Release date: 2019-07-30)
+Changes:
+* A brand new function is added! Here, the user can get single-cell resolution
+* on which group of two that a cell is more probable to belong to. See docs for 
+* further information. Highly recommended to test!
+* Internal c++ test corrected by external contribution by Zimoun, which we are 
+* most grateful for. 
+==============
 DepecheR v1.1.3 (Release date: 2019-06-28)
 Changes:
 * dResidualPlot bug making colors sometimes represent the wrong
