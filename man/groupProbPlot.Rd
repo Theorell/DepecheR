@@ -12,18 +12,18 @@ groupProbPlot(xYData, groupVector, dataTrans, kNeighK = max(100,
   dotSize = 400/sqrt(nrow(xYData)), createOutput = TRUE)
 }
 \arguments{
-\item{xYData}{A dataframe or matrix with two columns. Each row contains 
+\item{xYData}{A dataframe or matrix with two columns. Each row contains
 information about the x and y positition in the field for that observation.}
 
-\item{groupVector}{Vector with the same length as xYData containing 
+\item{groupVector}{Vector with the same length as xYData containing
 information about the group identity of each observation.}
 
-\item{dataTrans}{The data cloud in which the nearest neighbors for the 
+\item{dataTrans}{The data cloud in which the nearest neighbors for the
 events should be identified.}
 
 \item{kNeighK}{The number of nearest neighbors.}
 
-\item{kMeansK}{The number of clusters in the initial step of the algorithm. 
+\item{kMeansK}{The number of clusters in the initial step of the algorithm.
 A higher number leads to shorter runtime, but potentially lower accuracy.}
 
 \item{densContour}{If density contours should be created for the plot(s) or
@@ -43,14 +43,14 @@ no title appears on the plot.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{plotDir}{If different from the current directory. If specified and 
+\item{plotDir}{If different from the current directory. If specified and
 non-existent, the function creates it. If "." is specified, the plots will be
 saved at the current directory.}
 
-\item{dotSize}{Simply the size of the dots. The default makes the dots 
+\item{dotSize}{Simply the size of the dots. The default makes the dots
 smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 output is generated.}
 }
 \value{
@@ -58,29 +58,30 @@ A graph showing the probability as a color scale from blue over white
 to red for each event to belong to one group or the other.
 }
 \description{
-This function defines and plots the single-observation probability for 
+This function defines and plots the single-observation probability for
 belonging to either of two groups. It builds on the same idea as has been put
-forward in the Sconify package: 
+forward in the Sconify package:
 -Burns TJ (2019). Sconify: A toolkit for performing KNN-based statistics for
-flow and mass cytometry data. R package version 1.4.0 and 
--Hart GT, Tran TM, Theorell J, Schlums H, Arora G, Rajagopalan S, et al. 
+flow and mass cytometry data. R package version 1.4.0 and
+-Hart GT, Tran TM, Theorell J, Schlums H, Arora G, Rajagopalan S, et al.
 Adaptive NK cells in people exposed to Plasmodium falciparum correlate
-with protection from malaria. J Exp Med. 2019 Jun 3;216(6):1280–90. 
+with protection from malaria. J Exp Med. 2019 Jun 3;216(6):1280–90.
 First, the k nearest neighbors are defined for each individual cell, and the
 cell in question thereafter gets a group probability assigned to it, which
 is calculated by defining the percentage of neighbors belonging to each
 respective groups. In other words, if 20 out of 100 neighbors belong to group
 A and 80 belong to group B, and the value for the cell will be 20% for group
-A or 80% for group B, depending on the point of view. This will also be 
+A or 80% for group B, depending on the point of view. This will also be
 accordingly reflected in the color scale on the resulting plot.
 }
 \examples{
-#' data(testData)
+data(testData)
 data(testDataSNE)
-#' dataTrans <- testData[,c("SYK", "CD16", "CD57", "EAT.2", "CD8",
-"NKG2C", "CD2", "CD56")]
+dataTrans <-
+  testData[, c("SYK", "CD16", "CD57", "EAT.2", "CD8", "NKG2C", "CD2", "CD56")]
 \dontrun{
-groupProbPlot(xYData = testDataSNE$Y, groupVector=testData$label, dataTrans)
+groupProbPlot(xYData = testDataSNE$Y, groupVector = testData$label, 
+dataTrans)
 }
 
 }

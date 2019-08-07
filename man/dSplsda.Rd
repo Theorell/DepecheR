@@ -91,7 +91,9 @@ analysis to first identify which vector thourgh the multidimensional data
 cloud, created by the cluster-donor matrix, that optimally separates the 
 groups, and as it is a sparse algorithm, applies a penalty to exclude the 
 clusters that are orthogonal, or almost orthogonal to the discriminant 
-vector, i.e. that do not contribute to separating the groups.
+vector, i.e. that do not contribute to separating the groups. This is in 
+large a wrapper for the \code{\link[mixOmics]{splsda}} function from 
+the mixOmics package.
 }
 \examples{
 
@@ -163,6 +165,6 @@ sPLSDAObject <- dSplsda(
 }
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
-\code{\link{dResidualPlot}}
+\code{\link[mixOmics]{splsda}}, \code{\link{dColorPlot}}, 
+\code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 }

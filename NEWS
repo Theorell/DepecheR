@@ -1,3 +1,10 @@
+DepecheR v1.1.5 (Release date: 2019-08-07)
+Changes:
+* 4x speedup of the new groupProbPlot. 
+* Proper citations of the MixOmics package, that the dSplsda function uses 
+* heavily. 
+* Bug fixes of the groupProbPlot. 
+==============
 DepecheR v1.1.4 (Release date: 2019-07-30)
 Changes:
 * A brand new function is added! Here, the user can get single-cell resolution

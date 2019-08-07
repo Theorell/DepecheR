@@ -10,7 +10,9 @@
 #' cloud, created by the cluster-donor matrix, that optimally separates the 
 #' groups, and as it is a sparse algorithm, applies a penalty to exclude the 
 #' clusters that are orthogonal, or almost orthogonal to the discriminant 
-#' vector, i.e. that do not contribute to separating the groups.
+#' vector, i.e. that do not contribute to separating the groups. This is in 
+#' large a wrapper for the \code{\link[mixOmics]{splsda}} function from 
+#' the mixOmics package. 
 #' @importFrom matrixStats rowMedians
 #' @importFrom mixOmics splsda tune.splsda
 #' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual 
@@ -61,8 +63,8 @@
 #' smaller the more observations that are included.
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no 
 #' output is generated.
-#' @seealso \code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
-#' \code{\link{dResidualPlot}}
+#' @seealso \code{\link[mixOmics]{splsda}}, \code{\link{dColorPlot}}, 
+#' \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 #' @return This function returns the full result of the sPLS-DA. It also returns
 #' a SNE based plot showing which events that belong to a cluster dominated by
 #' the first or the second group defined by the sparse partial least squares 
