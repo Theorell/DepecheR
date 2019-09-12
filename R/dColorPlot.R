@@ -147,8 +147,8 @@ dColorPlot <- function(colorData, controlData, xYData,
                 } else {
                     if(is.character(colorData)){
                         #Here, we make an exception for pre-made color vectors
-                        if(nchar(probColVecDecid[1]) %in% c(7,9) && 
-                            substr(probColVecDecid[1], 1, 1) == "#"){
+                        if(nchar(colorData[1]) %in% c(7,9) && 
+                            substr(colorData[1], 1, 1) == "#"){
                             colorVector <- colorData
                             colorDataIsColVec <- TRUE
                         }
