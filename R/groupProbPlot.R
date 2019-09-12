@@ -42,6 +42,8 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots
 #' smaller the more observations that are included.
+#' @param returnProbColVec Should the color vector be returned as part of the
+#' output?
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no
 #' output is generated.
 #' @importFrom parallel detectCores makeCluster stopCluster
@@ -50,7 +52,8 @@
 #' @importFrom FNN knnx.index
 #' @importFrom stats kmeans
 #' @return A graph showing the probability as a color scale from blue over white
-#' to red for each event to belong to one group or the other.
+#' to red for each event to belong to one group or the other, with a separate 
+#' color scale. Optionally also the color vector, if returnProbColVec is TRUE.
 #' @examples
 #' data(testData)
 #' data(testDataSNE)
@@ -72,7 +75,7 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
                           plotName = "default", title = FALSE,
                           bandColor = "black", plotDir = ".",
                           dotSize = 400 / sqrt(nrow(xYData)),
-                          createOutput = TRUE) {
+                          returnProbColVec = FALSE, createOutput = TRUE) {
     if (plotDir != ".") {
         dir.create(plotDir)
     }
@@ -135,8 +138,12 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
 
     dataTransList <- split(dataTrans, kMeansClusters)
     rowNumbersList <- split(rowNumbers, kMeansClusters)
-
-    distCenters <- knnx.index(kMeansCenters, kMeansCenters, 11)
+    
+    if(kMeansK > 11){
+        distCenters <- knnx.index(kMeansCenters, kMeansCenters, 11)  
+    } else {
+        distCenters <- t(matrix(seq_len(kMeansK), ncol = kMeansK, nrow = kMeansK))
+    }
 
     print("Now the first bit is done, and the iterative part takes off")
     nCores <- detectCores() - 1
@@ -287,5 +294,8 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         text(1, -120, labels = bottomText, cex = 1.1)
         box()
         dev.off()
+    }
+    if (returnProbColVec){
+        return(xYData$col)
     }
 }

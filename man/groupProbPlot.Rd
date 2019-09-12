@@ -9,7 +9,8 @@ groupProbPlot(xYData, groupVector, dataTrans, kNeighK = max(100,
   densContour = TRUE, groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2], plotName = "default",
   title = FALSE, bandColor = "black", plotDir = ".",
-  dotSize = 400/sqrt(nrow(xYData)), createOutput = TRUE)
+  dotSize = 400/sqrt(nrow(xYData)), returnProbColVec = FALSE,
+  createOutput = TRUE)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains
@@ -50,12 +51,16 @@ saved at the current directory.}
 \item{dotSize}{Simply the size of the dots. The default makes the dots
 smaller the more observations that are included.}
 
+\item{returnProbColVec}{Should the color vector be returned as part of the
+output?}
+
 \item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 output is generated.}
 }
 \value{
 A graph showing the probability as a color scale from blue over white
-to red for each event to belong to one group or the other.
+to red for each event to belong to one group or the other, with a separate 
+color scale. Optionally also the color vector, if returnProbColVec is TRUE.
 }
 \description{
 This function defines and plots the single-observation probability for

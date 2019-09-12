@@ -1,3 +1,14 @@
+DepecheR v1.1.6 (Release date: 2019-09-12)
+Changes:
+* Adding export option for the vector created by groupProbPlot 
+* Correcting dColorPlot so that it can take a hex color vector as input, and
+*keep the colors. 
+* Adding a test for groupProbPlot.
+* Minor bug fixes for groupProbPlot.
+* Small edits to the vinjette, to clarify that umap is preferred over tSNE and
+*that dViolins currently does not fully support plotting of CyTOF data due to
+*its sparsity. 
+==============
 DepecheR v1.1.5 (Release date: 2019-08-07)
 Changes:
 * 4x speedup of the new groupProbPlot. 

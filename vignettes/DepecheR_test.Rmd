@@ -130,7 +130,10 @@ tool that generates tSNE vector can be used for this purpose. Personally, I use
 the [multicore version of the Rtsne implementation](https://github.com/jkrijthe/Rtsne/tree/openmp), 
 but other versions, that do not require openMP, might be preferrable to some. If 
 you want to use the openMP version on a mac, check [this link](https://github.com/Theorell/DepecheR/wiki/Running-a-faster-version-of-Rtsne). 
-
+EDIT 2019-09-12: I would now recommend to run umap instead of tSNE, as it is 
+superior in speed, separation of clusters and interpretability. I will change
+the vinjette to incorporate this soon, but it has no other effects than making
+the clusters better separated on the plots, so I will not make that change now. 
 
 ```{r eval=FALSE}
 library(Rtsne)
@@ -273,6 +276,10 @@ previousstep. dViolins serves as a compliment to the cluster center heatmap
 In this function, the sparsityMatrix from the depeche run is used. The function 
 will in addition to producing all the graphs also produce a hierarchy of folders 
 where the graphs are placed. 
+EDIT 2019-09-12: This function currently does not support most CyTOF data, as
+the zero-peak is so dominant, which would make the interpretation of the plots
+impossible. This will be fixed in the near future, by reducing the negative 
+population.  
 
 ```{r eval}
 dViolins(testDataDepeche$clusterVector, inDataFrame = testData, 

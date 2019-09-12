@@ -12,7 +12,8 @@ dColorPlot(colorData, controlData, xYData, colorScale = "rich_colors",
 }
 \arguments{
 \item{colorData}{A numeric matrix or dataframe or a vector, be it numeric, 
-charater or factor, that should be used to define the colors on the plot.}
+charater or factor, that should be used to define the colors on the plot. 
+A pre-made vector of colors is also accepted.}
 
 \item{controlData}{Optional. A numeric/integer vector or dataframe of values
 that could be used to define the range of the colorData. If no control data 

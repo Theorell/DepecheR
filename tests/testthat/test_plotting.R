@@ -48,3 +48,10 @@ data(testDataDepeche)
 dResidualPlot(xYData = testDataSNESubset, groupVector = testDataSubset$label, 
               clusterVector = testDataDepeche$clusterVector[allDataRows], 
     createOutput = FALSE)
+
+###################### dResidualPlot
+dataTrans <- 
+    testDataSubset[
+        , c("SYK", "CD16", "CD57", "EAT.2", "CD8", "NKG2C", "CD2", "CD56")]
+groupProbPlot(xYData = testDataSNESubset, groupVector = testDataSubset$label,
+              dataTrans, createOutput = FALSE)

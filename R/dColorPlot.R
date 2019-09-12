@@ -15,6 +15,7 @@
 #' @importFrom foreach foreach %dopar%
 #' @param colorData A numeric matrix or dataframe or a vector, be it numeric, 
 #' charater or factor, that should be used to define the colors on the plot. 
+#' A pre-made vector of colors is also accepted. 
 #' @param controlData Optional. A numeric/integer vector or dataframe of values
 #' that could be used to define the range of the colorData. If no control data 
 #' is present, the function defaults to using the colorData as control data.
@@ -134,6 +135,7 @@ dColorPlot <- function(colorData, controlData, xYData,
     
     if (is.vector(colorData) || is.factor(colorData)) {
         wasFactor <- FALSE
+        colorDataIsColVec <- FALSE
         if(is.numeric(colorData) && length(unique(colorData))>50){
                 colorDataRound <- round(dScale(colorData, 
                                                control = controlData,
@@ -144,6 +146,12 @@ dColorPlot <- function(colorData, controlData, xYData,
                                                truncate = truncate))
                 } else {
                     if(is.character(colorData)){
+                        #Here, we make an exception for pre-made color vectors
+                        if(nchar(probColVecDecid[1]) %in% c(7,9) && 
+                            substr(probColVecDecid[1], 1, 1) == "#"){
+                            colorVector <- colorData
+                            colorDataIsColVec <- TRUE
+                        }
                         colorData <- as.factor(colorData)
                         } 
                     if(is.factor(colorData)){
@@ -160,9 +168,10 @@ dColorPlot <- function(colorData, controlData, xYData,
         } else {
             plotNames <- uniqueNums
         }
-        
-        colorVector <- dColorVector(colorDataRound, colorOrder = uniqueNums, 
-                                    colorScale = colorScale)
+        if(colorDataIsColVec == FALSE){
+            colorVector <- dColorVector(colorDataRound, colorOrder = uniqueNums, 
+                                        colorScale = colorScale)
+        }        
         
         dPlotCoFunction(colorVariable = colorVector, plotName = plotName, 
                         xYData = xYData, title = title, 
@@ -225,9 +234,13 @@ dColorPlot <- function(colorData, controlData, xYData,
         }
         
         if(is.vector(colorData) && length(uniqueNums < 50)){
+            if(colorDataIsColVec){
+                colorIdsDataFrame <- data.frame(colorData)
+            }
             colorIdsDataFrame <- data.frame(
                 dColorVector(uniqueNums, colorScale = colorScale), plotNames, 
                 stringsAsFactors = FALSE)
+            
             plot.new()
             legend("center", legend = colorIdsDataFrame[,2], 
                    col = colorIdsDataFrame[,1], cex = 7.5/length(uniqueNums), 
