@@ -1,3 +1,7 @@
+DepecheR v1.1.8 (Release date: 2019-09-12)
+Changes:
+* Bug fixes. True also for last version.  
+==============
 DepecheR v1.1.6 (Release date: 2019-09-12)
 Changes:
 * Adding export option for the vector created by groupProbPlot 

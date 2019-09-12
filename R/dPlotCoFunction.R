@@ -19,12 +19,15 @@ dPlotCoFunction <- function(colorVariable, plotName, xYData, title = FALSE,
         xlim <- c(min(densContour[[1]]), max(densContour[[1]]))
         ylim <- c(min(densContour[[2]]), max(densContour[[2]]))
     } else {
-        minX <- min(xYData[, 1])
-        maxX <- max(xYData[, 1])
-        minY <- min(xYData[, 2])
-        maxY <- max(xYData[, 2])
-        xlim <- c(minX - abs(minX * 0.05), maxX + abs(maxX * 0.05))
-        ylim <- c(minY - abs(minY * 0.05), maxY + abs(maxY * 0.05))
+        range1 <- range(xYData[, 1])
+        sideDist1 <-  0.05 * (range1[2] - range1[1])
+        range2 <- range(xYData[, 2])
+        sideDist2 <-  0.05 * (range2[2] - range2[1])
+        
+        xlim <- c(range1[1] - sideDist1, 
+                  range1[2] + sideDist1) 
+        ylim <- c(range2[1] - sideDist2, 
+                  range2[2] + sideDist2)
     }
     
     # Plot it
