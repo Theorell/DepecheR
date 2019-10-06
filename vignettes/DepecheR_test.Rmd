@@ -32,6 +32,12 @@ in addition. In cases where bugs are identified, feedback is most welcome,
 primarily on the github site github.com/theorell/DepecheR. Now let us get 
 started. 
 
+# Installation
+This is how to install the package, if that has not already been done: 
+```{r, eval = FALSE}
+if(!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DepecheR")
 
 # Example data description
 
@@ -297,3 +303,7 @@ define each cluster. For further information on how to do this, the reader
 is currently encouraged to read the publication connected to this package: 
 https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0203247.
 
+# Session information
+```{r}
+sessionInfo()
+```
