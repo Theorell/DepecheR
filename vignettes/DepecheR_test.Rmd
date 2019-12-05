@@ -38,10 +38,11 @@ This is how to install the package, if that has not already been done:
 if(!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("DepecheR")
+```
 
 # Example data description
 
-The data used in this example is a semi-synthedic dataset, consisting of 1000
+The data used in this example is a semi-simulated dataset, consisting of 1000
 cytotoxic lymphocytes from each of 20 individuals. These have been categorized 
 into two groups, and after this, alterations have been added to the sizes of 
 some cell populations in both groups. This means that the groups can be 
