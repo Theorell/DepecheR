@@ -4,12 +4,21 @@
 \alias{depeche}
 \title{Perform optimization and penalized K-means clustering}
 \usage{
-depeche(inDataFrame, dualDepecheSetup, penalties = c(2^0, 2^0.5, 2^1,
-  2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5),
-  sampleSize = "default", selectionSampleSize = "default", k = 30,
-  minARIImprovement = 0.01, optimARI = 0.95, maxIter = 100,
-  log2Off = FALSE, center = "default", nCores = "default",
-  createOutput = TRUE)
+depeche(
+  inDataFrame,
+  dualDepecheSetup,
+  penalties = c(2^0, 2^0.5, 2^1, 2^1.5, 2^2, 2^2.5, 2^3, 2^3.5, 2^4, 2^4.5, 2^5),
+  sampleSize = "default",
+  selectionSampleSize = "default",
+  k = 30,
+  minARIImprovement = 0.01,
+  optimARI = 0.95,
+  maxIter = 100,
+  log2Off = FALSE,
+  center = "default",
+  nCores = "default",
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{inDataFrame}{A dataframe or matrix with the data that will be used to 

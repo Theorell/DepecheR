@@ -4,13 +4,24 @@
 \alias{groupProbPlot}
 \title{Define and plot group probabilities}
 \usage{
-groupProbPlot(xYData, groupVector, dataTrans, kNeighK = max(100,
-  round(nrow(dataTrans)/10000)), kMeansK = round(nrow(dataTrans)/1000),
-  densContour = TRUE, groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], plotName = "default",
-  title = FALSE, bandColor = "black", plotDir = ".",
-  dotSize = 400/sqrt(nrow(xYData)), returnProbColVec = FALSE,
-  createOutput = TRUE)
+groupProbPlot(
+  xYData,
+  groupVector,
+  dataTrans,
+  kNeighK = max(100, round(nrow(dataTrans)/10000)),
+  kMeansK = round(nrow(dataTrans)/1000),
+  densContour = TRUE,
+  groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2],
+  plotName = "default",
+  title = FALSE,
+  bandColor = "black",
+  plotDir = ".",
+  dotSize = 400/sqrt(nrow(xYData)),
+  returnProb = FALSE,
+  returnProbColVec = FALSE,
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains
@@ -51,8 +62,11 @@ saved at the current directory.}
 \item{dotSize}{Simply the size of the dots. The default makes the dots
 smaller the more observations that are included.}
 
+\item{returnProb}{Should a probability vector be returned? Mutually exclusive
+with returnProbColVec.}
+
 \item{returnProbColVec}{Should the color vector be returned as part of the
-output?}
+output? Mutually exclusive with returnProb.}
 
 \item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 output is generated.}

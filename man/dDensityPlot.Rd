@@ -4,10 +4,18 @@
 \alias{dDensityPlot}
 \title{Display density on 2D plot}
 \usage{
-dDensityPlot(xYData, colorScale = "default", plotName = "All_density",
-  idsVector, densContour = TRUE, title = FALSE, plotDir = "default",
-  bandColor = "black", dotSize = 500/sqrt(nrow(xYData)),
-  createOutput = TRUE)
+dDensityPlot(
+  xYData,
+  colorScale = "default",
+  plotName = "All_density",
+  idsVector,
+  densContour = TRUE,
+  title = FALSE,
+  plotDir = "default",
+  bandColor = "black",
+  dotSize = 500/sqrt(nrow(xYData)),
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 

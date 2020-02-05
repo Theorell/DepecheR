@@ -4,9 +4,17 @@
 \alias{dScale}
 \title{Scaling of a vector or a dataframe.}
 \usage{
-dScale(x, control, scale = TRUE, robustVarScale = TRUE,
-  center = "peak", truncate = FALSE, multiplicationFactor = 1,
-  returnCenter = FALSE, nCores = "default")
+dScale(
+  x,
+  control,
+  scale = TRUE,
+  robustVarScale = TRUE,
+  center = "peak",
+  truncate = FALSE,
+  multiplicationFactor = 1,
+  returnCenter = FALSE,
+  nCores = "default"
+)
 }
 \arguments{
 \item{x}{A numeric/integer vector or dataframe}

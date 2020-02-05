@@ -42,8 +42,10 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots
 #' smaller the more observations that are included.
+#' @param returnProb Should a probability vector be returned? Mutually exclusive
+#' with returnProbColVec. 
 #' @param returnProbColVec Should the color vector be returned as part of the
-#' output?
+#' output? Mutually exclusive with returnProb. 
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no
 #' output is generated.
 #' @importFrom parallel detectCores makeCluster stopCluster
@@ -74,7 +76,8 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
                           groupName2 = unique(groupVector)[2],
                           plotName = "default", title = FALSE,
                           bandColor = "black", plotDir = ".",
-                          dotSize = 400 / sqrt(nrow(xYData)),
+                          dotSize = 400 / sqrt(nrow(xYData)), 
+                          returnProb = FALSE,
                           returnProbColVec = FALSE, createOutput = TRUE) {
     if (plotDir != ".") {
         dir.create(plotDir)
@@ -170,29 +173,30 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
             # Now, the datasets are constructed from this cluster range
             dataTransListFocus <- dataTransList[clusterRange]
 
+            distCentClustRange <- distCenters[clusterRange, ]
             rowNumbersNeighListFocus <-
-                apply(distCenters[clusterRange, ], 1, function(x)
-                    unlist(rowNumbersList[allClusters %in% x]))
+                lapply(seq_len(nrow(distCentClustRange)), function(y)
+                    unlist(rowNumbersList[allClusters %in% distCentClustRange[y,]]))
             # This list is now focused on the group neighbors, which will only
             # have an effect in the cases where the number of events differ 
             #between groups.
             groupRowNumNeighListFocus <-
-                lapply(rowNumbersNeighListFocus, function(x)
-                    return(x[x %in% groupNeighRowVec]))
+                lapply(rowNumbersNeighListFocus, function(y)
+                    return(y[y %in% groupNeighRowVec]))
 
             dataTransNeighListFocus <- lapply(groupRowNumNeighListFocus, 
-                                              function(x)
-                                                return(dataTrans[x, ]))
+                                              function(y)
+                                                return(dataTrans[y, ]))
 
             dataReturnListFocus <- lapply(groupRowNumNeighListFocus, 
-                                          function(x)
-                                            return(groupValVec[x]))
+                                          function(y)
+                                            return(groupValVec[y]))
             i <- 1
             resultFocus <-
                 foreach(
                     i = seq_along(dataTransListFocus),
                     .packages = "DepecheR"
-                ) %dopar% microClust(
+                ) %dopar% DepecheR:::microClust(
                     dataCenter = dataTransListFocus[[i]],
                     dataNeigh = dataTransNeighListFocus[[i]],
                     dataReturn = dataReturnListFocus[[i]], method = "mean",
@@ -295,7 +299,9 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         box()
         dev.off()
     }
-    if (returnProbColVec){
+    if(returnProb){
+        return(fullResultOrdered)
+    } else if (returnProbColVec){
         return(xYData$col)
     }
 }

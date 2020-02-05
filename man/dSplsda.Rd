@@ -5,12 +5,25 @@
 \title{Sparse partial least squares discriminant analysis with paired and unpaired 
 data}
 \usage{
-dSplsda(xYData, idsVector, groupVector, clusterVector, displayVector,
-  testSampleRows, paired = FALSE, densContour = TRUE,
-  plotName = "default", groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], thresholdMisclassRate = 0.05,
-  title = FALSE, plotDir = ".", bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE)
+dSplsda(
+  xYData,
+  idsVector,
+  groupVector,
+  clusterVector,
+  displayVector,
+  testSampleRows,
+  paired = FALSE,
+  densContour = TRUE,
+  plotName = "default",
+  groupName1 = unique(groupVector)[1],
+  groupName2 = unique(groupVector)[2],
+  thresholdMisclassRate = 0.05,
+  title = FALSE,
+  plotDir = ".",
+  bandColor = "black",
+  dotSize = 500/sqrt(nrow(xYData)),
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 

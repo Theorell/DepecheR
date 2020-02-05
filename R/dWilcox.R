@@ -138,8 +138,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     
     # Now, a table with the percentage of
     # cells in each cluster for each
-    # individual is created for both groups,
-    # in analogy with XXX pKMRun.
+    # individual is created for both groups.
     
     clusterTable1 <- 
         as.matrix(as.data.frame.matrix(table(clusterVectorGroup1, 
@@ -246,27 +245,25 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     # Here, a vector with the same length as
     # the cluster vector is generated, but
     # where the cluster info has been
-    # substituted with the statistic.  If a
-    # displayVector has been included, it is
-    # used here, to subset the clusterVector
-    if (missing(displayVector) == FALSE) {
-        pVector <- clusterVector[displayVector]
-        clusterVectorUsed <- clusterVector[displayVector]
-    } else {
-        pVector <- clusterVector
-        clusterVectorUsed <- clusterVector
-    }
-    
+    # substituted with the statistic. 
     # Here, the p-values are transformed to
     # be useful for plotting
     medianClustDiff <- median1 - median2
     p_adjusted_log <- log10(p_adjusted)
     p_adjusted_log_inv <- p_adjusted_log
+    pVector <- clusterVector
     for (i in seq_len(length(p_adjusted_log))) {
         if (medianClustDiff[i] > 0) {
             p_adjusted_log_inv[i] <- -p_adjusted_log[i]
         }
-        pVector[clusterVectorUsed == result$Cluster[i]] <- p_adjusted_log_inv[i]
+        pVector[clusterVector == result$Cluster[i]] <- p_adjusted_log_inv[i]
+    }
+    
+    # If a
+    # displayVector has been included, it is
+    # used here, to subset the clusterVector
+    if (missing(displayVector) == FALSE) {
+        pVector <- pVector[displayVector]
     }
     
     # Here the data that will be used for
