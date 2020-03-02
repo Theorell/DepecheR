@@ -5,8 +5,14 @@
 \title{This function is the core of the groupProbPlot. See the documentation
 there for details.}
 \usage{
-microClust(dataCenter, dataNeigh, dataReturn, method = "median",
-  k = 11, trim = 0)
+microClust(
+  dataCenter,
+  dataNeigh,
+  dataReturn,
+  method = "median",
+  k = 11,
+  trim = 0
+)
 }
 \arguments{
 \item{dataCenter}{The original data.}

@@ -4,11 +4,22 @@
 \alias{dColorPlot}
 \title{Display third variable as color on a 2D plot}
 \usage{
-dColorPlot(colorData, controlData, xYData, colorScale = "rich_colors",
-  plotName = "default", densContour = TRUE, title = FALSE,
-  plotDir = "default", truncate = TRUE, bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)), multiCore = "default",
-  nCores = "default", createOutput = TRUE)
+dColorPlot(
+  colorData,
+  controlData,
+  xYData,
+  colorScale = "rich_colors",
+  plotName = "default",
+  densContour = TRUE,
+  title = FALSE,
+  plotDir = "default",
+  truncate = TRUE,
+  bandColor = "black",
+  dotSize = 500/sqrt(nrow(xYData)),
+  multiCore = "default",
+  nCores = "default",
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{colorData}{A numeric matrix or dataframe or a vector, be it numeric, 

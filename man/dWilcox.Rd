@@ -5,13 +5,25 @@
 \title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a 
 dClust result}
 \usage{
-dWilcox(xYData, idsVector, groupVector, clusterVector, displayVector,
-  paired = FALSE, multipleCorrMethod = "hochberg",
-  densContour = TRUE, plotName = "default",
+dWilcox(
+  xYData,
+  idsVector,
+  groupVector,
+  clusterVector,
+  displayVector,
+  paired = FALSE,
+  multipleCorrMethod = "hochberg",
+  densContour = TRUE,
+  plotName = "default",
   groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], title = FALSE,
-  lowestPlottedP = 0.05, plotDir = ".", bandColor = "black",
-  dotSize = 500/sqrt(nrow(xYData)), createOutput = TRUE)
+  groupName2 = unique(groupVector)[2],
+  title = FALSE,
+  lowestPlottedP = 0.05,
+  plotDir = ".",
+  bandColor = "black",
+  dotSize = 500/sqrt(nrow(xYData)),
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 

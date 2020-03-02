@@ -5,12 +5,21 @@
 \title{Showing the residuals when subtracting the values from one group from 
 another on a SNE plot}
 \usage{
-dResidualPlot(xYData, groupVector, clusterVector, densContour = TRUE,
+dResidualPlot(
+  xYData,
+  groupVector,
+  clusterVector,
+  densContour = TRUE,
   groupName1 = unique(groupVector)[1],
-  groupName2 = unique(groupVector)[2], plotName = "default",
-  title = FALSE, maxAbsPlottingValues, bandColor = "black",
-  plotDir = ".", dotSize = 400/sqrt(nrow(xYData)),
-  createOutput = TRUE)
+  groupName2 = unique(groupVector)[2],
+  plotName = "default",
+  title = FALSE,
+  maxAbsPlottingValues,
+  bandColor = "black",
+  plotDir = ".",
+  dotSize = 400/sqrt(nrow(xYData)),
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{xYData}{A dataframe or matrix with two columns. Each row contains 

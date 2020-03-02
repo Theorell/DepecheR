@@ -4,10 +4,16 @@
 \alias{dViolins}
 \title{Create violin plots for any variables of choise}
 \usage{
-dViolins(clusterVector, inDataFrame,
-  plotClusters = unique(clusterVector), plotElements = "all",
-  colorOrder = plotClusters, colorScale = "viridis",
-  plotDir = "dViolin_result", createOutput = TRUE)
+dViolins(
+  clusterVector,
+  inDataFrame,
+  plotClusters = unique(clusterVector),
+  plotElements = "all",
+  colorOrder = plotClusters,
+  colorScale = "viridis",
+  plotDir = "dViolin_result",
+  createOutput = TRUE
+)
 }
 \arguments{
 \item{clusterVector}{Vector with the same length as inDataFrame containing 

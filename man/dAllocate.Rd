@@ -4,8 +4,7 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataMatrix, clusterCenters, log2Off = FALSE,
-  noZeroNum = TRUE)
+dAllocate(inDataMatrix, clusterCenters, log2Off = FALSE, noZeroNum = TRUE)
 }
 \arguments{
 \item{inDataMatrix}{A dataframe or matrix with the data that that the cluster
