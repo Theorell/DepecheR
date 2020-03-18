@@ -17,6 +17,7 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
+#' @importFrom stats as.dendrogram hclust dist
 #' @useDynLib DepecheR
 depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1, 
                               plotDir, penalties, sampleSize, 
@@ -231,7 +232,15 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
                                                  truncate = TRUE)
         }
         
+        #Here, the order of the columns are changed, so that the
+        #most similar ones are the closest to each other
+        colOrder <- 
+            order.dendrogram(
+                as.dendrogram(hclust(dist(t(graphicClusterCenters)))))
+        
         graphicClusterCenters[reducedClusterCenters == 0] <- NA
+        
+        graphicClusterCenters <- graphicClusterCenters[,colOrder]
         
         colorLadder <- dColorVector(seq_len(11), 
             colorScale = c("#0D0887FF", "#6A00A8FF", "#900DA4FF", "#B12A90FF", 
@@ -241,7 +250,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         if (createOutput) {
             #First, the name is defined, depending on two criteria: if the data
             #was log transformed, and if a directory should be created or not. 
-            logOrNoLogName <- ifelse (logCenterSd[[1]] == FALSE, "Cluster",
+            logOrNoLogName <- ifelse(logCenterSd[[1]] == FALSE, "Cluster",
                                           "Log2_transformed_cluster")
             clusterCenterName <-  file.path(plotDir, paste0(logOrNoLogName, 
                                             "_centers.pdf"))

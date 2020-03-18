@@ -196,7 +196,7 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
                 foreach(
                     i = seq_along(dataTransListFocus),
                     .packages = "DepecheR"
-                ) %dopar% DepecheR:::microClust(
+                ) %dopar% microClust(
                     dataCenter = dataTransListFocus[[i]],
                     dataNeigh = dataTransNeighListFocus[[i]],
                     dataReturn = dataReturnListFocus[[i]], method = "mean",

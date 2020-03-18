@@ -4,7 +4,9 @@
 \name{testData}
 \alias{testData}
 \title{A 14 color flow cytometry dataset for example execution and playing around}
-\format{An object of class \code{'data.frame'};}
+\format{
+An object of class \code{'data.frame'};
+}
 \usage{
 data("testData")
 }

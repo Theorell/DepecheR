@@ -1,3 +1,8 @@
+Changes in version 1.3.3 (2020-03-18)
++ Hiearchical clustering and ordering of the columns in the Cluster_centers 
+  heatmap from depeche.
++ Note fixed regarding the use of ::: in GroupStatPlot
+
 Changes in version 1.3.2 (2020-02-05)
 + Bug fix in groupProbPlot solving issues when the cell number is low. 
 + Update of dWilcox. 
