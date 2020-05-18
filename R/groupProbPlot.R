@@ -2,17 +2,11 @@
 #'
 #'
 #' This function defines and plots the single-observation probability for
-#' belonging to either of two groups. It builds on the same idea as has been put
-#' forward in the Sconify package:
-#' -Burns TJ (2019). Sconify: A toolkit for performing KNN-based statistics for
-#' flow and mass cytometry data. R package version 1.4.0 and
-#' -Hart GT, Tran TM, Theorell J, Schlums H, Arora G, Rajagopalan S, et al.
-#' Adaptive NK cells in people exposed to Plasmodium falciparum correlate
-#' with protection from malaria. J Exp Med. 2019 Jun 3;216(6):1280–90.
-#' First, the k nearest neighbors are defined for each individual cell, and the
-#' cell in question thereafter gets a group probability assigned to it, which
-#' is calculated by defining the percentage of neighbors belonging to each
-#' respective groups. In other words, if 20 out of 100 neighbors belong to group
+#' belonging to either of two groups. It uses the \code{\link{neighSmooth}}
+#' function with the special case that the values are binary: For each set of
+#' k nearest neighbors, cell x is assigned a probability to belong to one group
+#' or the other based on the percentage of the neighbors belonging to each
+#' group. In other words, if 20 out of 100 neighbors belong to group
 #' A and 80 belong to group B, and the value for the cell will be 20% for group
 #' A or 80% for group B, depending on the point of view. This will also be
 #' accordingly reflected in the color scale on the resulting plot.
@@ -21,7 +15,7 @@
 #' information about the x and y positition in the field for that observation.
 #' @param groupVector Vector with the same length as xYData containing
 #' information about the group identity of each observation.
-#' @param dataTrans The data cloud in which the nearest neighbors for the
+#' @param euclidSpaceData The data cloud in which the nearest neighbors for the
 #' events should be identified.
 #' @param kNeighK The number of nearest neighbors.
 #' @param kMeansK The number of clusters in the initial step of the algorithm.
@@ -43,9 +37,9 @@
 #' @param dotSize Simply the size of the dots. The default makes the dots
 #' smaller the more observations that are included.
 #' @param returnProb Should a probability vector be returned? Mutually exclusive
-#' with returnProbColVec. 
+#' with returnProbColVec.
 #' @param returnProbColVec Should the color vector be returned as part of the
-#' output? Mutually exclusive with returnProb. 
+#' output? Mutually exclusive with returnProb.
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no
 #' output is generated.
 #' @importFrom parallel detectCores makeCluster stopCluster
@@ -54,29 +48,36 @@
 #' @importFrom FNN knnx.index
 #' @importFrom stats kmeans
 #' @return A graph showing the probability as a color scale from blue over white
-#' to red for each event to belong to one group or the other, with a separate 
+#' to red for each event to belong to one group or the other, with a separate
 #' color scale. Optionally also the color vector, if returnProbColVec is TRUE.
 #' @examples
 #' data(testData)
 #' data(testDataSNE)
-#' dataTrans <-
-#'   testData[, c("SYK", "CD16", "CD57", "EAT.2", "CD8", "NKG2C", "CD2", "CD56")]
+#' euclidSpaceData <-
+#'     testData[, c(
+#'         "SYK", "CD16", "CD57", "EAT.2",
+#'         "CD8", "NKG2C", "CD2", "CD56"
+#'     )]
 #' \dontrun{
-#' groupProbPlot(xYData = testDataSNE$Y, groupVector = testData$label, 
-#' dataTrans)
+#' groupProbPlot(
+#'     xYData = testDataSNE$Y, groupVector = testData$label,
+#'     euclidSpaceData
+#' )
 #' }
 #'
 #' @export groupProbPlot
 
-groupProbPlot <- function(xYData, groupVector, dataTrans,
-                          kNeighK = max(100, round(nrow(dataTrans) / 10000)),
-                          kMeansK = round(nrow(dataTrans) / 1000),
+groupProbPlot <- function(xYData, groupVector, euclidSpaceData,
+                          kNeighK = max(
+                              100, round(nrow(euclidSpaceData) / 10000)
+                          ),
+                          kMeansK = round(nrow(euclidSpaceData) / 1000),
                           densContour = TRUE,
                           groupName1 = unique(groupVector)[1],
                           groupName2 = unique(groupVector)[2],
                           plotName = "default", title = FALSE,
                           bandColor = "black", plotDir = ".",
-                          dotSize = 400 / sqrt(nrow(xYData)), 
+                          dotSize = 400 / sqrt(nrow(xYData)),
                           returnProb = FALSE,
                           returnProbColVec = FALSE, createOutput = TRUE) {
     if (plotDir != ".") {
@@ -95,10 +96,10 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         plotName <- paste0(groupName1, "_vs_", groupName2)
     }
 
-    rowNumbers <- seq_len(nrow(dataTrans))
+    rowNumbers <- seq_along(groupVector)
     rowsGroup1 <- rowNumbers[which(groupVector == unique(groupVector)[1])]
     rowsGroup2 <- rowNumbers[which(groupVector == unique(groupVector)[2])]
-    groupValVec <- rep(100, length.out = nrow(dataTrans))
+    groupValVec <- rep(100, length.out = nrow(euclidSpaceData))
     groupValVec[rowsGroup2] <- -100
 
     # Here, a new, balanced group neighbor vector is introduced
@@ -106,15 +107,19 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         groupLengths <- c(length(rowsGroup1), length(rowsGroup2))
         if (min(groupLengths) < 10000) {
             if (min(groupLengths) < 5000) {
-                stop(paste0("At least one of the groups has less than 5000",
-                            " events, which will lead to a too low resolution ",
-                            "for this analysis to be meaningful. Use ",
-                            "dResidualPlot instead."))
+                stop(paste0(
+                    "At least one of the groups has less than 5000",
+                    " events, which will lead to a too low resolution ",
+                    "for this analysis to be meaningful. Use ",
+                    "dResidualPlot instead."
+                ))
             }
-            message(paste0("The groups are not matched in size and the ",
-                           "smaller group has only ", min(groupLengths), 
-                           " rows, leading to a reduction in neighbor",
-                    " resolution to this level for both groups"))
+            message(paste0(
+                "The groups are not matched in size and the ",
+                "smaller group has only ", min(groupLengths),
+                " rows, leading to a reduction in neighbor",
+                " resolution to this level for both groups"
+            ))
         }
         rowsGroup1 <- rowsGroup1[sample(
             seq(1, length(rowsGroup1)),
@@ -126,124 +131,14 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         )]
     }
 
-    groupNeighRowVec <- c(rowsGroup1, rowsGroup2)
-
-
-    # Each of the raw channels are scaled using the standard
-    # robustVarScale method in the dScale function
-    dataScaled <- dScale(dataTrans, center = FALSE)
-
-    # Now, the cells are clustered according to this analysis
-    kMeansResult <- kmeans(dataScaled, kMeansK, iter.max = max(200, kMeansK))
-    kMeansCenters <- kMeansResult$centers
-    kMeansClusters <- kMeansResult$cluster
-    print("Done with k-means")
-
-    dataTransList <- split(dataTrans, kMeansClusters)
-    rowNumbersList <- split(rowNumbers, kMeansClusters)
-    
-    if(kMeansK > 11){
-        distCenters <- knnx.index(kMeansCenters, kMeansCenters, 11)  
-    } else {
-        distCenters <- t(matrix(seq_len(kMeansK), ncol = kMeansK, nrow = kMeansK))
-    }
-
-    print("Now the first bit is done, and the iterative part takes off")
-    nCores <- detectCores() - 1
-
-    cl <- parallel::makeCluster(nCores, type = "SOCK")
-    registerDoSNOW(cl)
-
-    allClusters <- unique(kMeansClusters)
-    firstCluster <- 1
-    resultList <- list()
-    x <- 1
-    while (firstCluster <= length(allClusters)) {
-        timeBefore <- Sys.time()
-        if (((firstCluster + nCores) - 1) < length(allClusters)) {
-            clusterRange <- seq(firstCluster, ((firstCluster + nCores) - 1))
-        } else {
-            clusterRange <- seq(firstCluster, length(allClusters))
-        }
-
-        # And here, all the clusters that are close to the nonIndata clusters 
-        #are selected
-        if (length(clusterRange) > 1) {
-
-            # Now, the datasets are constructed from this cluster range
-            dataTransListFocus <- dataTransList[clusterRange]
-
-            distCentClustRange <- distCenters[clusterRange, ]
-            rowNumbersNeighListFocus <-
-                lapply(seq_len(nrow(distCentClustRange)), function(y)
-                    unlist(rowNumbersList[allClusters %in% distCentClustRange[y,]]))
-            # This list is now focused on the group neighbors, which will only
-            # have an effect in the cases where the number of events differ 
-            #between groups.
-            groupRowNumNeighListFocus <-
-                lapply(rowNumbersNeighListFocus, function(y)
-                    return(y[y %in% groupNeighRowVec]))
-
-            dataTransNeighListFocus <- lapply(groupRowNumNeighListFocus, 
-                                              function(y)
-                                                return(dataTrans[y, ]))
-
-            dataReturnListFocus <- lapply(groupRowNumNeighListFocus, 
-                                          function(y)
-                                            return(groupValVec[y]))
-            i <- 1
-            resultFocus <-
-                foreach(
-                    i = seq_along(dataTransListFocus),
-                    .packages = "DepecheR"
-                ) %dopar% microClust(
-                    dataCenter = dataTransListFocus[[i]],
-                    dataNeigh = dataTransNeighListFocus[[i]],
-                    dataReturn = dataReturnListFocus[[i]], method = "mean",
-                    k = kNeighK, trim = 0
-                )
-
-            resultList[[x]] <- unlist(resultFocus)
-        } else {
-            dataTransFocus <- dataTransList[[clusterRange]]
-
-            rowNumbersNeighFocus <-
-                unlist(rowNumbersList[allClusters %in% 
-                                        distCenters[clusterRange, ]])
-            # This list is now focused on the group neighbors, which will only
-            # have an effect in the cases where the number of events differ
-            #between groups.
-            groupRowNumNeighFocus <-
-                rowNumbersNeighFocus[rowNumbersNeighFocus %in% groupNeighRowVec]
-
-            dataTransNeighFocus <- dataTrans[groupRowNumNeighFocus, ]
-
-            dataReturnFocus <- groupValVec[groupRowNumNeighFocus]
-
-            resultList[[x]] <- microClust(
-                dataCenter = dataTransFocus,
-                dataNeigh = dataTransNeighFocus,
-                dataReturn = dataReturnFocus,
-                method = "mean", k = kNeighK
-            )
-        }
-
-
-        timeAfter <- as.numeric(Sys.time() - timeBefore)
-        print(paste0("Clusters ", clusterRange[1], " to ", 
-                     clusterRange[length(clusterRange)], 
-                     " smoothed in ", timeAfter, " ", 
-                     attributes(timeAfter)$units, ". Now, ", 
-                     length(allClusters) - clusterRange[length(clusterRange)], 
-                     " clusters are left."))
-        firstCluster <- (clusterRange[length(clusterRange)] + 1)
-        x <- x + 1
-    }
-
-    parallel::stopCluster(cl)
-    fullResult <- unlist(resultList)
-    fullResultOrdered <- fullResult[order(unlist(rowNumbersList))]
-
+    # And here, we use the neighbor smoothing algorithm to identify the
+    # probabilities
+    fullResult <- neighSmooth(
+        focusData = groupValVec,
+        euclidSpaceData = euclidSpaceData,
+        neighRows = c(rowsGroup1, rowsGroup2),
+        kNeighK = kNeighK, kMeansK = kMeansK
+    )
 
     # Here the data that will be used for
     # plotting is scaled.
@@ -251,7 +146,7 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
 
     # Make a color vector with the same
     # length as the data
-    residual.df <- as.data.frame(fullResultOrdered)
+    residual.df <- as.data.frame(fullResult)
 
     # make a breaks vector to define each bin
     # for the colors
@@ -299,9 +194,9 @@ groupProbPlot <- function(xYData, groupVector, dataTrans,
         box()
         dev.off()
     }
-    if(returnProb){
-        return(fullResultOrdered)
-    } else if (returnProbColVec){
+    if (returnProb) {
+        return(fullResult)
+    } else if (returnProbColVec) {
         return(xYData$col)
     }
 }

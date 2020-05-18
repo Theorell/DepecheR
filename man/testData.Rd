@@ -11,9 +11,9 @@ An object of class \code{'data.frame'};
 data("testData")
 }
 \description{
-This dataset is a 14 color pre-compensated, transformed flow cytometry 
-dataset focusing on cytotoxic lymphocytes, where dead cells have been 
-removed. To make examples very obvious, differences have been artificially 
+This dataset is a 14 color pre-compensated, transformed flow cytometry
+dataset focusing on cytotoxic lymphocytes, where dead cells have been
+removed. To make examples very obvious, differences have been artificially
 exaggregated in the data. The dataset is produced by J. Theorell.
 }
 \keyword{datasets}

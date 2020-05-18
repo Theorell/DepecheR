@@ -2,7 +2,7 @@
 % Please edit documentation in R/microClust.R
 \name{microClust}
 \alias{microClust}
-\title{This function is the core of the groupProbPlot. See the documentation
+\title{This function is the core of the neighSmooth. See the documentation
 there for details.}
 \usage{
 microClust(
@@ -31,10 +31,11 @@ than the dataCenter cloud.}
 with trimming?}
 }
 \value{
-A dataset with the same shape as dataCenter, filled with 
+A dataset with the same shape as dataCenter, filled with
 aggregated information from the k nearest neighbors.
 }
 \description{
-This function is the core of the groupProbPlot. See the documentation
+This function is the core of the neighSmooth. See the documentation
 there for details.
 }
+\keyword{internal}

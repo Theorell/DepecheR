@@ -2,7 +2,7 @@
 % Please edit documentation in R/dSplsda.R
 \name{dSplsda}
 \alias{dSplsda}
-\title{Sparse partial least squares discriminant analysis with paired and unpaired 
+\title{Sparse partial least squares discriminant analysis with paired and unpaired
 data}
 \usage{
 dSplsda(
@@ -26,22 +26,22 @@ dSplsda(
 )
 }
 \arguments{
-\item{xYData}{A dataframe or matrix with two columns. Each row contains 
+\item{xYData}{A dataframe or matrix with two columns. Each row contains
 information about the x and y positition in the field for that observation.}
 
 \item{idsVector}{Vector with the same length as xYData containing information
 about the id of each observation.}
 
-\item{groupVector}{Vector with the same length as xYData containing 
+\item{groupVector}{Vector with the same length as xYData containing
 information about the group identity of each observation.}
 
-\item{clusterVector}{Vector with the same length as xYData containing 
+\item{clusterVector}{Vector with the same length as xYData containing
 information about the cluster identity of each observation.}
 
-\item{displayVector}{Optionally, if the dataset is very large 
-(>100 000 observations) and hence the SNE calculation becomes impossible to 
+\item{displayVector}{Optionally, if the dataset is very large
+(>100 000 observations) and hence the SNE calculation becomes impossible to
 perform for the full dataset, this vector can be included. It should contain
-the set of rows from the data used for statistics, that has been used to 
+the set of rows from the data used for statistics, that has been used to
 generate the xYData.}
 
 \item{testSampleRows}{Optionally, if a train-test setup is wanted, the rows
@@ -52,7 +52,7 @@ test rows are assumed to be train rows.}
 
 \item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and
 Wilcoxon rank sum-test is performed. If true, the software will by default
-pair the first id in the first group with the firs id in the second group 
+pair the first id in the first group with the firs id in the second group
 and so forth, so make sure the order is correct!}
 
 \item{densContour}{If density contours should be created for the plot(s) or
@@ -77,42 +77,41 @@ object afterwards, as it is saved as coloured pixels. To simplify usage for
 publication, the default is FALSE, as the files are still named, eventhough
 no title appears on the plot.}
 
-\item{plotDir}{If different from the current directory. If specified and 
+\item{plotDir}{If different from the current directory. If specified and
 non-existent, the function creates it. If "." is specified, the plots will be
 saved at the current directory.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{dotSize}{Simply the size of the dots. The default makes the dots 
+\item{dotSize}{Simply the size of the dots. The default makes the dots
 smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 output is generated.}
 }
 \value{
 This function returns the full result of the sPLS-DA. It also returns
 a SNE based plot showing which events that belong to a cluster dominated by
-the first or the second group defined by the sparse partial least squares 
+the first or the second group defined by the sparse partial least squares
 loadings of the clusters.
 }
 \description{
-This function is used to compare groups of individuals from whom comparable 
-cytometry or other complex data has been generated. It is superior to just 
-running a Wilcoxon analysis in that it does not consider each cluster 
-individually, but instead uses a sparse partial least squares discriminant 
-analysis to first identify which vector thourgh the multidimensional data 
-cloud, created by the cluster-donor matrix, that optimally separates the 
-groups, and as it is a sparse algorithm, applies a penalty to exclude the 
-clusters that are orthogonal, or almost orthogonal to the discriminant 
-vector, i.e. that do not contribute to separating the groups. This is in 
-large a wrapper for the \code{\link[mixOmics]{splsda}} function from 
+This function is used to compare groups of individuals from whom comparable
+cytometry or other complex data has been generated. It is superior to just
+running a Wilcoxon analysis in that it does not consider each cluster
+individually, but instead uses a sparse partial least squares discriminant
+analysis to first identify which vector thourgh the multidimensional data
+cloud, created by the cluster-donor matrix, that optimally separates the
+groups, and as it is a sparse algorithm, applies a penalty to exclude the
+clusters that are orthogonal, or almost orthogonal to the discriminant
+vector, i.e. that do not contribute to separating the groups. This is in
+large a wrapper for the \code{\link[mixOmics]{splsda}} function from
 the mixOmics package.
 }
 \examples{
 
 # Load some data
 data(testData)
-
 \dontrun{
 # Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
 # data is inluded
@@ -128,27 +127,30 @@ data(testDataDepeche)
 
 # Run the function. This time without pairing.
 sPLSDAObject <- dSplsda(
-  xYData = testDataSNE$Y, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
+    xYData = testDataSNE$Y, idsVector = testData$ids,
+    groupVector = testData$label, 
+    clusterVector = testDataDepeche$clusterVector
 )
 
-# Here, pairing is used. NB!! This artificial example is only present to 
-# show how to use the function. In reality, pairing should only be used in 
-# situations where true paired data is present! The only reason this works 
+# Here, pairing is used. NB!! This artificial example is only present to
+# show how to use the function. In reality, pairing should only be used in
+# situations where true paired data is present! The only reason this works
 # although this is non-paired data is that the number of donors is identical.
 # As it is, the algorithm internally converts the idsVector so that the first
-# individual in group1 is associated with the first individual in group2. 
+# individual in group1 is associated with the first individual in group2.
 # This can lead to erratic problems, so make sure that either a valid id
-# vector, with the same id occuring two times for each individual is 
+# vector, with the same id occuring two times for each individual is
 # provided, or that the individuals occur in the exact same order in both
-# groups. 
+# groups.
 
 sPLSDAObject <- dSplsda(
-   xYData = testDataSNE$Y, idsVector = testData$ids,
-   groupVector = testData$label, clusterVector = 
-   testDataDepeche$clusterVector, 
-   paired = TRUE, plotName = 'sPLSDAPlot_paired', groupName1 = 'Stimulation 1',
-   groupName2 = 'Stimulation 2')
+    xYData = testDataSNE$Y, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector =
+        testDataDepeche$clusterVector,
+    paired = TRUE, plotName = "sPLSDAPlot_paired", 
+    groupName1 = "Stimulation 1",
+    groupName2 = "Stimulation 2"
+)
 
 # Here is an example of how the display vector can be used.
 subsetVector <- sample(1:nrow(testData), size = 10000)
@@ -162,22 +164,24 @@ testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 # And now, this new SNE can be used for display, although all
 # the data is used for the sPLS-DA calculations
 sPLSDAObject <- dSplsda(
-  xYData = testDataSNESubset, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = 
-  testDataDepeche$clusterVector,
-  displayVector = subsetVector)
+    xYData = testDataSNESubset, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector =
+        testDataDepeche$clusterVector,
+    displayVector = subsetVector
+)
 
 # Finally, an example of a train-test set situation, where a random half the
-# dataset is used for training and the second half is used for testing. It 
+# dataset is used for training and the second half is used for testing. It
 # is naturally more biologically interesting to use two independent datasets
 # for training and testing in the real world.
 sPLSDAObject <- dSplsda(
-  xYData = testDataSNE$Y, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = 
-  testDataDepeche$clusterVector, testSampleRows = subsetVector)
+    xYData = testDataSNE$Y, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector =
+        testDataDepeche$clusterVector, testSampleRows = subsetVector
+)
 }
 }
 \seealso{
-\code{\link[mixOmics]{splsda}}, \code{\link{dColorPlot}}, 
+\code{\link[mixOmics]{splsda}}, \code{\link{dColorPlot}},
 \code{\link{dDensityPlot}}, \code{\link{dResidualPlot}}
 }

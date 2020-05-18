@@ -7,9 +7,9 @@
 groupProbPlot(
   xYData,
   groupVector,
-  dataTrans,
-  kNeighK = max(100, round(nrow(dataTrans)/10000)),
-  kMeansK = round(nrow(dataTrans)/1000),
+  euclidSpaceData,
+  kNeighK = max(100, round(nrow(euclidSpaceData)/10000)),
+  kMeansK = round(nrow(euclidSpaceData)/1000),
   densContour = TRUE,
   groupName1 = unique(groupVector)[1],
   groupName2 = unique(groupVector)[2],
@@ -30,7 +30,7 @@ information about the x and y positition in the field for that observation.}
 \item{groupVector}{Vector with the same length as xYData containing
 information about the group identity of each observation.}
 
-\item{dataTrans}{The data cloud in which the nearest neighbors for the
+\item{euclidSpaceData}{The data cloud in which the nearest neighbors for the
 events should be identified.}
 
 \item{kNeighK}{The number of nearest neighbors.}
@@ -73,22 +73,16 @@ output is generated.}
 }
 \value{
 A graph showing the probability as a color scale from blue over white
-to red for each event to belong to one group or the other, with a separate 
+to red for each event to belong to one group or the other, with a separate
 color scale. Optionally also the color vector, if returnProbColVec is TRUE.
 }
 \description{
 This function defines and plots the single-observation probability for
-belonging to either of two groups. It builds on the same idea as has been put
-forward in the Sconify package:
--Burns TJ (2019). Sconify: A toolkit for performing KNN-based statistics for
-flow and mass cytometry data. R package version 1.4.0 and
--Hart GT, Tran TM, Theorell J, Schlums H, Arora G, Rajagopalan S, et al.
-Adaptive NK cells in people exposed to Plasmodium falciparum correlate
-with protection from malaria. J Exp Med. 2019 Jun 3;216(6):1280–90.
-First, the k nearest neighbors are defined for each individual cell, and the
-cell in question thereafter gets a group probability assigned to it, which
-is calculated by defining the percentage of neighbors belonging to each
-respective groups. In other words, if 20 out of 100 neighbors belong to group
+belonging to either of two groups. It uses the \code{\link{neighSmooth}}
+function with the special case that the values are binary: For each set of
+k nearest neighbors, cell x is assigned a probability to belong to one group
+or the other based on the percentage of the neighbors belonging to each
+group. In other words, if 20 out of 100 neighbors belong to group
 A and 80 belong to group B, and the value for the cell will be 20% for group
 A or 80% for group B, depending on the point of view. This will also be
 accordingly reflected in the color scale on the resulting plot.
@@ -96,11 +90,16 @@ accordingly reflected in the color scale on the resulting plot.
 \examples{
 data(testData)
 data(testDataSNE)
-dataTrans <-
-  testData[, c("SYK", "CD16", "CD57", "EAT.2", "CD8", "NKG2C", "CD2", "CD56")]
+euclidSpaceData <-
+    testData[, c(
+        "SYK", "CD16", "CD57", "EAT.2",
+        "CD8", "NKG2C", "CD2", "CD56"
+    )]
 \dontrun{
-groupProbPlot(xYData = testDataSNE$Y, groupVector = testData$label, 
-dataTrans)
+groupProbPlot(
+    xYData = testDataSNE$Y, groupVector = testData$label,
+    euclidSpaceData
+)
 }
 
 }

@@ -17,7 +17,7 @@ The purpose of this package is to identify traits in a dataset that
     the complexity of data, to only emphasize the data that actually matters.
 }
 \details{
-The package is indirectly clearly dependent on Rtsne for generation of 
+The package is indirectly clearly dependent on Rtsne for generation of
 output. See comment on the github wiki for how to speed Rtsne up.
 }
 \author{

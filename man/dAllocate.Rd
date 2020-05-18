@@ -8,34 +8,33 @@ dAllocate(inDataMatrix, clusterCenters, log2Off = FALSE, noZeroNum = TRUE)
 }
 \arguments{
 \item{inDataMatrix}{A dataframe or matrix with the data that that the cluster
-centers will be allocated to. This data should be scaled in the same way as 
+centers will be allocated to. This data should be scaled in the same way as
 the data for the original depeche was scaled  when it entered the algorithm,
 i.e. in the normal case, not at all.}
 
 \item{clusterCenters}{A matrix that needs to be inherited from a depeche run.
 It contains the information about which clusters and variables that have been
-sparsed away and where the cluster centers are located for the remaining 
+sparsed away and where the cluster centers are located for the remaining
 clusters and variables.}
 
 \item{log2Off}{If the automatic detection for high kurtosis, and followingly,
 the log2 transformation, should be turned off.}
 
-\item{noZeroNum}{For internal use. Controls the that the internal 
+\item{noZeroNum}{For internal use. Controls the that the internal
 algorithm returns a cluster with number 0.}
 }
 \value{
-A vector with the same length as number of rows in the inDataFrame, 
+A vector with the same length as number of rows in the inDataFrame,
 where the cluster identity of each observation is noted.
 }
 \description{
-Here, observations of a dataset are allocated to a set of preestablished 
-cluster centers. This is intended to be used for the test set in train-test 
+Here, observations of a dataset are allocated to a set of preestablished
+cluster centers. This is intended to be used for the test set in train-test
 dataset situations.
 }
 \examples{
 # Retrieve some example data
 data(testData)
-
 \dontrun{
 # Now arbitrarily (for the sake of the example) divide the data into a
 # training- and a test set.
@@ -45,29 +44,35 @@ testDataTest <- testData[-testDataSample, ]
 
 # Run the depeche function for the train set
 
-x_depeche_train <- depeche(testDataTrain[, 2:15], maxIter = 20,
-sampleSize = 1000)
+x_depeche_train <- depeche(testDataTrain[, 2:15],
+    maxIter = 20,
+    sampleSize = 1000
+)
 
 # Allocate the test dataset to the centers of the train dataset
 x_depeche_test <- dAllocate(testDataTest[, 2:15],
-  clusterCenters = x_depeche_train$clusterCenters
+    clusterCenters = x_depeche_train$clusterCenters
 )
 
 # And finally plot the two groups to see how great the overlap was:
-trainTablePerId <- apply(as.matrix(table(testDataTrain$ids,
-    x_depeche_train$clusterVector)), 1, function(x) x / sum(x))
+trainTablePerId <- apply(as.matrix(table(
+    testDataTrain$ids,
+    x_depeche_train$clusterVector
+)), 1, function(x) x / sum(x))
 trainTableCollapsed <- apply(trainTablePerId, 1, sum)
 trainTableFraction <- trainTableCollapsed / sum(trainTableCollapsed)
-testTablePerId <- apply(as.matrix(table(testDataTest$ids, x_depeche_test)),
-1, function(x) x / sum(x))
+testTablePerId <- apply(
+    as.matrix(table(testDataTest$ids, x_depeche_test)),
+    1, function(x) x / sum(x)
+)
 testTableCollapsed <- apply(testTablePerId, 1, sum)
 testTableFraction <- testTableCollapsed / sum(testTableCollapsed)
 xmatrix <- t(cbind(trainTableFraction, testTableFraction))
 library(gplots)
 barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
-title(main = 'Difference between train and test set')
-title(xlab = 'Clusters')
-title(ylab = 'Fraction')
+title(main = "Difference between train and test set")
+title(xlab = "Clusters")
+title(ylab = "Fraction")
 }
 }
 \seealso{

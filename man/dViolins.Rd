@@ -16,40 +16,40 @@ dViolins(
 )
 }
 \arguments{
-\item{clusterVector}{Vector with the same length as inDataFrame containing 
+\item{clusterVector}{Vector with the same length as inDataFrame containing
 information about the cluster identity of each observation.}
 
 \item{inDataFrame}{The data used to generate the depecheObject}
 
-\item{plotClusters}{This vector of numbers define which cluster(s) to plot 
+\item{plotClusters}{This vector of numbers define which cluster(s) to plot
 the violins for. Defaults to all.}
 
-\item{plotElements}{This provides information on which features to plot. In 
+\item{plotElements}{This provides information on which features to plot. In
 the typical case, this is the essenceElementList from a depeche run. Other
-input formats are however accepted: if a vector of column names is provided, 
-then these features will be plotted for all clusters. A custom list of 
-features specific for each cluster is also accepted. A final alternative is 
+input formats are however accepted: if a vector of column names is provided,
+then these features will be plotted for all clusters. A custom list of
+features specific for each cluster is also accepted. A final alternative is
 to return "all" (default), in which case all markers will be plotted for all
-clusters.If more than a 100 markers are provided, however, this will return 
+clusters.If more than a 100 markers are provided, however, this will return
 an error.}
 
-\item{colorOrder}{The order of the cluster colors. Defaults to the order 
+\item{colorOrder}{The order of the cluster colors. Defaults to the order
 that the unique values in clusterVector occurs.}
 
 \item{colorScale}{The color scale. Options identical to dColorVector.}
 
 \item{plotDir}{The name of the created directory.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 plots are generated.}
 }
 \value{
-One graph is created for each cluster, containing a bean per 
+One graph is created for each cluster, containing a bean per
 specified variable.
 }
 \description{
 Here, assymetrical violin plots for each cluster vs all other clusters are
-plotted for variables either retrieved from a depeche analysis or 
+plotted for variables either retrieved from a depeche analysis or
 user-defined.
 }
 \examples{
@@ -62,12 +62,12 @@ data(testData)
 data(testDataDepeche)
 
 # Create the plots of the variables that contribute to creating cluster 3
-dViolins(testDataDepeche$clusterVector, inDataFrame = testData, 
-    plotClusters = 3, plotElements = testDataDepeche$essenceElementList)
-
-
+dViolins(testDataDepeche$clusterVector,
+    inDataFrame = testData,
+    plotClusters = 3, plotElements = testDataDepeche$essenceElementList
+)
 }
 \seealso{
-\code{\link{dDensityPlot}}, \code{\link{dColorPlot}}, 
+\code{\link{dDensityPlot}}, \code{\link{dColorPlot}},
 \code{\link{dColorVector}}, \code{\link{depeche}}
 }

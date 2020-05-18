@@ -1,3 +1,8 @@
+Changes in version 1.5.1 (2020-05-18)
++ Introduction of neighSmooth - a generalization of groupStatPlot. 
++ Bug fix and simplification of dOptPenalty termination criteria. 
++ Re-tidying of the code base. 
+
 Changes in version 1.3.3 (2020-03-18)
 + Hiearchical clustering and ordering of the columns in the Cluster_centers 
   heatmap from depeche.

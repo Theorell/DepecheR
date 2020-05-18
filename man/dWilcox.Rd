@@ -2,7 +2,7 @@
 % Please edit documentation in R/dWilcox.R
 \name{dWilcox}
 \alias{dWilcox}
-\title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a 
+\title{Wilcoxon rank-sum or signed rank test comparison of subject groups in a
 dClust result}
 \usage{
 dWilcox(
@@ -26,30 +26,30 @@ dWilcox(
 )
 }
 \arguments{
-\item{xYData}{A dataframe or matrix with two columns. Each row contains 
+\item{xYData}{A dataframe or matrix with two columns. Each row contains
 information about the x and y positition in the field for that observation.}
 
 \item{idsVector}{Vector with the same length as xYData containing information
 about the id of each observation.}
 
-\item{groupVector}{Vector with the same length as xYData containing 
+\item{groupVector}{Vector with the same length as xYData containing
 information about the group identity of each observation.}
 
-\item{clusterVector}{Vector with the same length as xYData containing 
+\item{clusterVector}{Vector with the same length as xYData containing
 information about the cluster identity of each observation.}
 
-\item{displayVector}{Optionally, if the dataset is very large and the SNE 
-calculation hence becomes impossible to perform for the full dataset, this 
+\item{displayVector}{Optionally, if the dataset is very large and the SNE
+calculation hence becomes impossible to perform for the full dataset, this
 vector can be included. It should contain the set of rows from the data used
 for statistics, that has been used to generate the xYData.}
 
-\item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and 
-Wilcoxon rank sum-test is performed. If true, the software will by default 
-pair the first id in the first group with the firs id in hte second group 
+\item{paired}{Defaults to FALSE, i.e. no assumption of pairing is made and
+Wilcoxon rank sum-test is performed. If true, the software will by default
+pair the first id in the first group with the firs id in hte second group
 and so forth.}
 
-\item{multipleCorrMethod}{Which method that should be used for adjustment 
-of multiple comparisons. Defaults to Benjamini-Hochberg, but all other 
+\item{multipleCorrMethod}{Which method that should be used for adjustment
+of multiple comparisons. Defaults to Benjamini-Hochberg, but all other
 methods available in \code{\link{p.adjust}} can be used.}
 
 \item{densContour}{If density contours should be created for the plot(s) or
@@ -61,49 +61,48 @@ not. Defaults to TRUE. a}
 
 \item{groupName2}{The name for the second group}
 
-\item{title}{If there should be a title displayed on the plotting field. 
-As the plotting field is saved as a png, this title cannot be removed as an 
-object afterwards, as it is saved as coloured pixels. To simplify usage for 
-publication, the default is FALSE, as the files are still named, eventhough 
+\item{title}{If there should be a title displayed on the plotting field.
+As the plotting field is saved as a png, this title cannot be removed as an
+object afterwards, as it is saved as coloured pixels. To simplify usage for
+publication, the default is FALSE, as the files are still named, eventhough
 no title appears on the plot.}
 
 \item{lowestPlottedP}{If multiple plots should be compared, it might be
 useful to define a similar color scale for all plots, so that the same color
 always means the same statistical value. A p-value that determines this can
-be added here. Default is a p-value of 0.05. In cases where no datapoints 
-have any lower p-values than this, a Wilcoxon-statistic corresponding as 
-closely as possible to 0.05 will be identified with iterations of datasets 
-with the same size as indicated by hte group vector. If one value is 
+be added here. Default is a p-value of 0.05. In cases where no datapoints
+have any lower p-values than this, a Wilcoxon-statistic corresponding as
+closely as possible to 0.05 will be identified with iterations of datasets
+with the same size as indicated by hte group vector. If one value is
 lowerthan 0.05, the wilcoxon statistic from this comparison is used instead.}
 
-\item{plotDir}{If different from the current directory. If specified and 
+\item{plotDir}{If different from the current directory. If specified and
 non-existent, the function creates it. If "." is specified, the plots will be
 saved at the current directory.}
 
 \item{bandColor}{The color of the contour bands. Defaults to black.}
 
-\item{dotSize}{Simply the size of the dots. The default makes the dots 
+\item{dotSize}{Simply the size of the dots. The default makes the dots
 smaller the more observations that are included.}
 
-\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no 
+\item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 plots are generated.}
 }
 \value{
-This function always returns a dataframe showing the Wilcoxon 
-statistic and the p-value for each cluster, with an included adjustment for 
-multiple comparisons (see above). It also returns a sne based plot showing 
-which events that belong to a cluster dominated by the first or the second 
+This function always returns a dataframe showing the Wilcoxon
+statistic and the p-value for each cluster, with an included adjustment for
+multiple comparisons (see above). It also returns a sne based plot showing
+which events that belong to a cluster dominated by the first or the second
 group.
 }
 \description{
-This function is used to compare groups of individuals from whom comparable 
+This function is used to compare groups of individuals from whom comparable
 cytometry or other complex data has been generated.
 }
 \examples{
 
 # Load some data
 data(testData)
-
 \dontrun{
 # Run Barnes Hut tSNE on this. For more rapid example execution, a SNE of the
 # data is inluded
@@ -118,8 +117,9 @@ data(testDataDepeche)
 
 # Run the function
 dWilcoxResult <- dWilcox(
-  xYData = testDataSNE$Y, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = testDataDepeche$clusterVector
+    xYData = testDataSNE$Y, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector = 
+    testDataDepeche$clusterVector
 )
 
 # Here is an example of how the display vector can be used.
@@ -134,12 +134,13 @@ testDataSNESubset <- testDataSNE$Y[subsetVector, ]
 # And now, this new SNE can be used for display, although all
 # the data is used for the Wilcoxon calculations
 dWilcoxResult <- dWilcox(
-  xYData = testDataSNESubset, idsVector = testData$ids,
-  groupVector = testData$label, clusterVector = 
-  testDataDepeche$clusterVector, displayVector = subsetVector)
+    xYData = testDataSNESubset, idsVector = testData$ids,
+    groupVector = testData$label, clusterVector =
+        testDataDepeche$clusterVector, displayVector = subsetVector
+)
 }
 }
 \seealso{
-\code{\link{dColorPlot}}, \code{\link{dDensityPlot}}, 
+\code{\link{dColorPlot}}, \code{\link{dDensityPlot}},
 \code{\link{dResidualPlot}}
 }

@@ -20,37 +20,37 @@ dScale(
 \item{x}{A numeric/integer vector or dataframe}
 
 \item{control}{A numeric/integer vector or dataframe of values that could be
-used to define the range. If no control data is present, the function 
+used to define the range. If no control data is present, the function
 defaults to using the indata as control data.}
 
 \item{scale}{If scaling should be performed. Three possible values: a vector
-with two values indicating the low and high threshold quantiles for the 
+with two values indicating the low and high threshold quantiles for the
 scaling, TRUE, which equals the vector 'c(0.001, 0.999)', and FALSE.}
 
-\item{robustVarScale}{If the data should be scaled to its standard deviation 
-within the quantiles defined by the scale values above. If TRUE 
-(the default), the data is unit variance scaled based on the standard 
+\item{robustVarScale}{If the data should be scaled to its standard deviation
+within the quantiles defined by the scale values above. If TRUE
+(the default), the data is unit variance scaled based on the standard
 deviation of the data within the range defined by scale.}
 
-\item{center}{If centering should be performed. Alternatives are mean', 
+\item{center}{If centering should be performed. Alternatives are mean',
 'peak' and FALSE. 'peak' results in centering around the highest peak in the
-data, which is useful in most cytometry situations. 'mean' results in mean 
+data, which is useful in most cytometry situations. 'mean' results in mean
 centering.}
 
 \item{truncate}{If truncation of the most extreme values should be performed.
-Three possible values: TRUE, FALSE, and a vector with two values indicating 
+Three possible values: TRUE, FALSE, and a vector with two values indicating
 the low and high threshold quantiles for truncation.}
 
 \item{multiplicationFactor}{A value that all values will be multiplied with.
-Useful e.g. if the results preferrably should be returned as percent. 
+Useful e.g. if the results preferrably should be returned as percent.
 Defaults to FALSE.}
 
 \item{returnCenter}{Boolean. If center=TRUE, should the value at the center
 be returned?}
 
 \item{nCores}{If the function is run in multicore mode, which it will if the
-dataset is large (nrow*ncol>10^6), this decides the number of cores. The 
-default is currently 87.5 percent with a cap on 10 cores, as no speed 
+dataset is large (nrow*ncol>10^6), this decides the number of cores. The
+default is currently 87.5 percent with a cap on 10 cores, as no speed
 increase is generally seen above 10 cores for normal computers to date.}
 }
 \value{
@@ -59,9 +59,9 @@ vector or column of the dataframe have been internally scaled. In addition,
 if returnCenter=TRUE, a value, or a vector if x is a matrix or a data frame.
 }
 \description{
-This is a scaling function with a number of alternatives. This method for 
-scaling takes the shape of the data into somewhat more of a consideration 
-than minMaxScale does, but still gives less influence of outliers than more 
+This is a scaling function with a number of alternatives. This method for
+scaling takes the shape of the data into somewhat more of a consideration
+than minMaxScale does, but still gives less influence of outliers than more
 conventional scalin alternatives, such as unit variance scaling.
 }
 \examples{
@@ -75,7 +75,7 @@ x <- testData[, 2]
 max(x)
 min(x)
 
-# Run the function without mean centering and with the quantiles set to 0 
+# Run the function without mean centering and with the quantiles set to 0
 # and 1.
 y <- dScale(x, scale = c(0, 1), robustVarScale = FALSE, center = FALSE)
 
@@ -88,12 +88,11 @@ summary(testData[, 2:15])
 
 y_df <- dScale(testData[, 2:15])
 
-# Here, the data has first been truncated to the default percentiles, then 
+# Here, the data has first been truncated to the default percentiles, then
 # scaled to the standard deviation in the remaining interval and finally the
-# center has been placed where the highest peak in the data is present. 
+# center has been placed where the highest peak in the data is present.
 # NB! Here, no truncation has been performed in the scaling, only to obtain
 # the scaling values.
 
 summary(y_df)
-
 }
