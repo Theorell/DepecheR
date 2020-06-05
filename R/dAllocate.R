@@ -5,7 +5,7 @@
 #' cluster centers. This is intended to be used for the test set in train-test
 #' dataset situations.
 #' @importFrom moments kurtosis
-#' @param inDataMatrix A dataframe or matrix with the data that that the cluster
+#' @param inDataFrame A dataframe or matrix with the data that that the cluster
 #' centers will be allocated to. This data should be scaled in the same way as
 #' the data for the original depeche was scaled  when it entered the algorithm,
 #' i.e. in the normal case, not at all.
@@ -64,37 +64,37 @@
 #' title(ylab = "Fraction")
 #' }
 #' @export dAllocate
-dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE,
+dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE,
                       noZeroNum = TRUE) {
-    if (is.data.frame(inDataMatrix)) {
-        inDataMatrix <- as.matrix(inDataMatrix)
+    if (is.data.frame(inDataFrame)) {
+        inDataFrame <- as.matrix(inDataFrame)
     }
 
-    if (log2Off == FALSE && kurtosis(as.vector(inDataMatrix)) > 100) {
-        kurtosisValue1 <- kurtosis(as.vector(inDataMatrix))
+    if (log2Off == FALSE && kurtosis(as.vector(inDataFrame)) > 100) {
+        kurtosisValue1 <- kurtosis(as.vector(inDataFrame))
         # Here, the log transformation is
         # performed. In cases where the lowest
         # value is 0, everything is simple. In
         # other cases, a slightly more
         # complicated formula is needed
-        if (min(inDataMatrix) >= 0) {
-            inDataMatrix <- log2(inDataMatrix + 1)
+        if (min(inDataFrame) >= 0) {
+            inDataFrame <- log2(inDataFrame + 1)
         } else {
             # First, the data needs to be reasonably
             # log transformed to not too extreme
             # values, but still without loosing
             # resolution.
-            inDataMatrixLog <- log2(apply(
-                inDataMatrix, 2,
+            inDataFrameLog <- log2(apply(
+                inDataFrame, 2,
                 function(x) x - min(x)
             ) + 1)
             # Then, the extreme negative values will
             # be replaced by 0, as they give rise to
             # artefacts.
-            inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
+            inDataFrameLog[which(is.nan(inDataFrameLog))] <- 0
         }
 
-        kurtosisValue2 <- kurtosis(as.vector(inDataMatrix))
+        kurtosisValue2 <- kurtosis(as.vector(inDataFrame))
         message(
             "The data was found to be heavily tailed (kurtosis ",
             kurtosisValue1, "). Therefore, it was log2-transformed, ",
@@ -121,21 +121,21 @@ dAllocate <- function(inDataMatrix, clusterCenters, log2Off = FALSE,
     # internal use. In the first case, there are no colnumn names, but the
     # properties of the cluster centers are also more raw and thus informative.
     if (length(colnames(clusterCenters)) > 0) {
-        inDataMatrixReduced <- inDataMatrix[, colnames(clusterCenters)]
+        inDataFrameReduced <- inDataFrame[, colnames(clusterCenters)]
     } else {
-        inDataMatrixReduced <-
-            inDataMatrix[, which(colSums(clusterCenters) != 0)]
+        inDataFrameReduced <-
+            inDataFrame[, which(colSums(clusterCenters) != 0)]
     }
 
     # Here, a specific case, namely that only one variable contains
     # meaningful information, is taken into account.
-    if (is.vector(inDataMatrixReduced)) {
+    if (is.vector(inDataFrameReduced)) {
         clusterCentersReduced <- as.matrix(clusterCentersReduced)
-        inDataMatrixReduced <- as.matrix(inDataMatrixReduced)
+        inDataFrameReduced <- as.matrix(inDataFrameReduced)
     }
 
     clusterReallocationResult <- allocate_points(
-        inDataMatrixReduced,
+        inDataFrameReduced,
         clusterCentersReduced, 1
     )[[1]]
 

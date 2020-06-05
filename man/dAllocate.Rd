@@ -4,10 +4,10 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataMatrix, clusterCenters, log2Off = FALSE, noZeroNum = TRUE)
+dAllocate(inDataFrame, clusterCenters, log2Off = FALSE, noZeroNum = TRUE)
 }
 \arguments{
-\item{inDataMatrix}{A dataframe or matrix with the data that that the cluster
+\item{inDataFrame}{A dataframe or matrix with the data that that the cluster
 centers will be allocated to. This data should be scaled in the same way as
 the data for the original depeche was scaled  when it entered the algorithm,
 i.e. in the normal case, not at all.}

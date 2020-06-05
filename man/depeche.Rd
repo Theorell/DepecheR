@@ -6,6 +6,7 @@
 \usage{
 depeche(
   inDataFrame,
+  samplingSubset = seq_len(nrow(inDataFrame)),
   dualDepecheSetup,
   penalties = 2^seq(0, 5, by = 0.5),
   sampleSize = "default",
@@ -27,6 +28,12 @@ biexponential, arcsinh transformation or similar, and day-to-day
 normalizations should to be performed for all data if not all data has been
 acquired on the same run. Scaling, etc, is on the other hand performed
 within the function.}
+
+\item{samplingSubset}{If the dataset is made up of an unequal number of cells
+from multiple individuals, it might be wise to pre-define a subset of the 
+rows, which includes equal or near-equal numbers of cells from each
+individual, to avoid a few outliers to dominate the analysis. This can be 
+done here. Should be a vector of row numbers in the inDataFrame.}
 
 \item{dualDepecheSetup}{Optionally, a dataframe with two columns: the first
 specifying which step (1 or 2) the variable should be included in, the second

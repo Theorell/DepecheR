@@ -1,7 +1,7 @@
 # This function is used by depecheCoFunction.
 # It is only used for datasets with less than 10 000 total observations.
 # "Unique" parameters
-# inDataFrameScaled: the scaled version of inDataFrame. See initial part of
+# inDataFrameUsed: the scaled version of inDataFrame. See initial part of
 # depeche function for details.
 # firstClusterNumber: this defines if the first number for the cluster
 # definitions.
@@ -13,11 +13,11 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom gplots heatmap.2
 #' @importFrom dplyr sample_n
-depecheAllData <- function(inDataFrameScaled, penalty, k, nCores) {
-    penaltyForRightSize <- penalty * ((nrow(inDataFrameScaled) *
-        sqrt(ncol(inDataFrameScaled))) / 1450)
+depecheAllData <- function(inDataFrameUsed, penalty, k, nCores) {
+    penaltyForRightSize <- penalty * ((nrow(inDataFrameUsed) *
+        sqrt(ncol(inDataFrameUsed))) / 1450)
 
-    dataMat <- data.matrix(inDataFrameScaled)
+    dataMat <- data.matrix(inDataFrameUsed)
 
     if (nCores == "default") {
         nCores <- floor(detectCores() * 0.875)
@@ -53,7 +53,7 @@ depecheAllData <- function(inDataFrameScaled, penalty, k, nCores) {
     # more dense by removing empty rows and
     # columns, etc.
 
-    colnames(clusterCenters) <- colnames(inDataFrameScaled)
+    colnames(clusterCenters) <- colnames(inDataFrameUsed)
 
     # Remove all rows and columns that do not
     # contain any information

@@ -1,6 +1,6 @@
 Package: DepecheR
-Version: 1.5.1
-Date: 2020-05-18
+Version: 1.5.2
+Date: 2020-06-05
 Title: Determination of essential phenotypic elements of clusters in 
     high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,
@@ -34,5 +34,5 @@ Imports:
     reshape2 (>= 1.4.3), beanplot (>= 1.2), FNN (>= 1.1.3), 
     robustbase (>= 0.93.5), gmodels (>= 2.18.1)
 LinkingTo: Rcpp, RcppEigen
-Suggests: umap, testthat, knitr, rmarkdown, BiocStyle
+Suggests: uwot, testthat, knitr, rmarkdown, BiocStyle
 VignetteBuilder: knitr

@@ -1,7 +1,7 @@
 ###################### depeche
 
 context("depeche")
-x <- DepecheR:::generateBimodalData(observations = 20, dataCols = 150)
+x <- DepecheR:::generateBimodalData(observations = 100, dataCols = 150)
 out <- depeche(x$samples, maxIter = 8, nCores = 2, createOutput = FALSE)
 test_that("depeche expected output", {
     expect_true(max(out$clusterVector) == 2)

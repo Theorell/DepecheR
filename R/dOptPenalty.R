@@ -1,7 +1,7 @@
 # This function is used by depecheCoFunction, and thus indirectly by depeche.
 # Here, the optimal penalty is defined.
 # "Unique" parameters
-# inDataFrameScaled: the scaled version of inDataFrame. See initial part of
+# inDataFrameUsed: the scaled version of inDataFrame. See initial part of
 # depeche function for details.
 # disableWarnings: Should warnings be disabled?
 # For information on the other parameters, see depeche.
@@ -11,7 +11,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom graphics box
 
-dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
+dOptPenalty <- function(inDataFrameUsed, k, maxIter, minARIImprovement,
                         sampleSize, penalties, createOutput,
                         disableWarnings = FALSE, optimARI, nCores,
                         plotDir) {
@@ -19,11 +19,11 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
     # The constant 1450 was empirically
     # identified by running a large number of
     # penalty values for a few test datasets.
-    penaltyConstant <- ((sampleSize * sqrt(ncol(inDataFrameScaled))) / 1450)
+    penaltyConstant <- ((sampleSize * sqrt(ncol(inDataFrameUsed))) / 1450)
     realPenalties <- penalties * penaltyConstant
     roundPenalties <- round(penalties, digits = 1)
 
-    dataMat <- data.matrix(inDataFrameScaled, rownames.force = NA)
+    dataMat <- data.matrix(inDataFrameUsed, rownames.force = NA)
 
     # This command is reiterated the number
     # of times that is needed to reach a
@@ -137,7 +137,7 @@ dOptPenalty <- function(inDataFrameScaled, k, maxIter, minARIImprovement,
         # optimiations, to reduce calculation
         # time.
         usedPenalties <- realPenalties[usedPositions]
-        usedRoundPenalties <- usedRoundPenalties[usedPositions]
+        usedRoundPenalties <- roundPenalties[usedPositions]
 
         # Finally, another criterion on the gain
         # of adding more iterations is included. Here, we also kill the

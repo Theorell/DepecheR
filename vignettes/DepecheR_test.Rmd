@@ -55,7 +55,7 @@ compensation/spectral unmixing of flow cytometry files. The clustering function
 does have an internal algorithm to detect data with extreme tails, but this does
 not circumvent the need to transform flow- or mass cytometry data. This can be 
 done using either commercially available software or with R packages, such as 
-Biocpkg("flowCore") or Biocpkg("flowVS").
+Biocpkg("flowSpecs"), Biocpkg("flowCore") or Biocpkg("flowVS"). 
 
 ```{r}
 library(DepecheR)
@@ -67,8 +67,9 @@ As can be noted here, the expected input format is either a
 dataframe or a matrix with cells as rows and markers/variables as columns. This 
 is in accordance with the .fcs file convention. In this case, however, the 
 different samples (coming from donors) should be added to the same dataframe, 
-and a donor column should specify which cells that belong to which donor. This 
-setup is chosen to make the software available to more different kinds of data. 
+and a donor column should specify which cells that belong to which donor.
+If you have .fcs files, you can do this conversion easily using the
+"flowSet2LongDf" function in Biocpkg("flowSpecs").
 
 # depeche clustering
 
@@ -96,9 +97,9 @@ data("testDataDepeche")
 str(testDataDepeche)
 ```
 
-As can be seen above, the output from the function is relatively complex. If the
-names of each list element is not suficiently self explanatory, see (?depeche) 
-for information about each slot. 
+As can be seen above, the output from the function is a relatively complex list.
+If the names of each list element is not suficiently self explanatory, see 
+(?depeche) for information about each slot. 
 
 ## depeche function output graphs
 Two graphs are part of the output from the depeche function. 
@@ -129,27 +130,24 @@ fewer observations, than on a cluster with many observations.
 
 ![Cluster center heatmap. Marker names on the x-axis, cluster numbers on the y-axis.](https://github.com/jtheorell/DepecheRVinjettePics/raw/master/Fig_2.png)
 
-# tSNE generation
+# tSNE/umap generation
 
-To be able to visualize the results, we need to generate a stochastic neighbor 
-embedding for the same data as we used to generate the depeche clustering. Any 
-tool that generates tSNE vector can be used for this purpose. Personally, I use 
-the [multicore version of the Rtsne implementation](https://github.com/jkrijthe/Rtsne/tree/openmp), 
-but other versions, that do not require openMP, might be preferrable to some. If 
-you want to use the openMP version on a mac, check [this link](https://github.com/Theorell/DepecheR/wiki/Running-a-faster-version-of-Rtsne). 
-EDIT 2019-09-12: I would now recommend to run umap instead of tSNE, as it is 
-superior in speed, separation of clusters and interpretability. I will change
-the vinjette to incorporate this soon, but it has no other effects than making
-the clusters better separated on the plots, so I will not make that change now. 
+To be able to visualize the results, we need to generate a two-dimensional 
+representation of the data used to generate the depeche clustering. Any 
+sutiable method, such as tSNE or UMAP can be used for this purpose. I would 
+today use uwot::umap, mainly as it in its R implementation is considerably 
+faster than tSNE, but we will keep the tSNE here, as it well represents the 
+data.
 
 ```{r eval=FALSE}
 library(Rtsne)
 testDataSNE <- Rtsne(testData[,2:15], pca=FALSE)
 ```
 
-# Visualization of depeche clusters on tSNE
+# Visualization of depeche clusters on 2D representation
 
-Now, we want to evaluate how the different clusters are distributed on the tSNE.
+Now, we want to evaluate how the different clusters are distributed on the 2D
+representation.
 To do this, we need to generate a color vector from the cluster vector in the 
 testDataDepeche. This cluster vector is then overlayed over the tSNE, 
 and to make things easier to interpret, a separate legend is included as well.
@@ -177,7 +175,7 @@ Here, we once again use the dColorPlot function, with different settings. Note
 that titles are included in this case. As they are then becoming embedded in the
 png picture, this is not the standard, for publication reasons. It is also worth
 noting, that nothing is printed to screen, but rather all graphics are saved as
-separate files. 
+separate files. This is done to save some computational time and effort.
 
 ```{r}
 dColorPlot(colorData = testData[2], xYData = testDataSNE$Y)
@@ -256,7 +254,8 @@ sPLSDAObject <- dSplsda(xYData = testDataSNE$Y, idsVector = testData$ids,
                         clusterVector = testDataDepeche$clusterVector)
 ## Saving 3 x 3 in image
 
-## [1] "The separation of the datasets was perfect, with no overlap between the groups"
+## [1] "The separation of the datasets was perfect, with no overlap between 
+## the groups"
 
 ## [1] "Files were saved at /Users/jakthe/Labbet/GitHub/DepecheR/vignettes"
 

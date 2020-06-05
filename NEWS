@@ -1,3 +1,8 @@
+Changes in version 1.5.2 (2020-06-05)
++ Introducing samplingSubset in the depeche function
++ Bug fixes in dOptPenalty
++ Small text updates to main vinjette and examples, without code implications.
+
 Changes in version 1.5.1 (2020-05-18)
 + Introduction of neighSmooth - a generalization of groupStatPlot. 
 + Bug fix and simplification of dOptPenalty termination criteria. 

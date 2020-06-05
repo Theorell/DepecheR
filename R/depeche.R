@@ -19,6 +19,11 @@
 #' normalizations should to be performed for all data if not all data has been
 #' acquired on the same run. Scaling, etc, is on the other hand performed
 #' within the function.
+#' @param samplingSubset If the dataset is made up of an unequal number of cells
+#' from multiple individuals, it might be wise to pre-define a subset of the 
+#' rows, which includes equal or near-equal numbers of cells from each
+#' individual, to avoid a few outliers to dominate the analysis. This can be 
+#' done here. Should be a vector of row numbers in the inDataFrame.
 #' @param penalties This argument decides whether a single penalty will be used
 #' for clustering, or if multiple penalties will be evaluated to identify the
 #' optimal one. A single value, a vector of values, or possibly a list of two
@@ -123,7 +128,8 @@
 #' }
 #'
 #' @export depeche
-depeche <- function(inDataFrame, dualDepecheSetup,
+depeche <- function(inDataFrame, samplingSubset = seq_len(nrow(inDataFrame)), 
+                    dualDepecheSetup,
                     penalties = 2^seq(0, 5, by = 0.5),
                     sampleSize = "default", selectionSampleSize = "default",
                     k = 30, minARIImprovement = 0.01, optimARI = 0.95,
@@ -230,7 +236,7 @@ depeche <- function(inDataFrame, dualDepecheSetup,
     # chosen or not
     if (missing(dualDepecheSetup)) {
         depecheResult <- depecheCoFunction(
-            inDataFrameScaled,
+            inDataFrameScaled, samplingSubset = samplingSubset,
             plotDir = ".", penalties = penalties,
             sampleSize = sampleSize, selectionSampleSize = selectionSampleSize,
             k = k, minARIImprovement = minARIImprovement,

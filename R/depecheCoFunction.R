@@ -19,7 +19,8 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom stats as.dendrogram order.dendrogram hclust dist
 #' @useDynLib DepecheR
-depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
+depecheCoFunction <- function(inDataFrameScaled, samplingSubset, 
+                              firstClusterNumber = 1,
                               plotDir, penalties, sampleSize,
                               selectionSampleSize, k, minARIImprovement,
                               optimARI, maxIter, newNumbers, nCores,
@@ -28,17 +29,15 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         dir.create(plotDir)
     }
 
-    # Here, if the dataset is very, very
-    # big, a subset of it is used to subset
-    # from. Otherwise the system memory
-    # needed to just perform the boot
-    # strapping becomes so consuming, that
-    # the process stalls.
-    if (nrow(inDataFrameScaled) > 1e+06) {
-        sampleRows <- sample(seq_len(nrow(inDataFrameScaled)), 1e+06)
-        inDataFrameUsed <- inDataFrameScaled[sampleRows, ]
-    } else {
-        inDataFrameUsed <- inDataFrameScaled
+    # Here, if the dataset is big, a subset of it is used to sample from. 
+    # Here we have also introduced
+    # the sampleSubset that makes it possible to balance a dataset so that each
+    # individual gets an equal number of cells as input. 
+    inDataFrameUsed <- inDataFrameScaled[samplingSubset,]
+    
+    if (nrow(inDataFrameUsed) > 1e+06) {
+        sampleRows <- sample(seq_len(nrow(inDataFrameUsed)), 1e+06)
+        inDataFrameUsed <- inDataFrameUsed[sampleRows, ]
     }
 
 
@@ -113,7 +112,7 @@ depecheCoFunction <- function(inDataFrameScaled, firstClusterNumber = 1,
         allocationResultList <-
             lapply(allSolutions, function(x) {
                   dAllocate(
-                      inDataMatrix = selectionDataSet, clusterCenters = x,
+                      inDataFrame = selectionDataSet, clusterCenters = x,
                       log2Off = TRUE, noZeroNum = FALSE
                   )
               })
