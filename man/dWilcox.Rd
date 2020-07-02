@@ -12,7 +12,7 @@ dWilcox(
   clusterVector,
   displayVector,
   paired = FALSE,
-  multipleCorrMethod = "hochberg",
+  multipleCorrMethod = "BH",
   densContour = TRUE,
   plotName = "default",
   groupName1 = unique(groupVector)[1],
@@ -49,8 +49,8 @@ pair the first id in the first group with the firs id in hte second group
 and so forth.}
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment
-of multiple comparisons. Defaults to Benjamini-Hochberg, but all other
-methods available in \code{\link{p.adjust}} can be used.}
+of multiple comparisons. Defaults to Benjamini-Hochberg, 
+but all other methods available in \code{\link{p.adjust}} can be used.}
 
 \item{densContour}{If density contours should be created for the plot(s) or
 not. Defaults to TRUE. a}

@@ -1,3 +1,7 @@
+Changes in version 1.5.3 (2020-07-02)
++ Correcting the p-adjustments, so that it in fact uses Benjamini-Hochberg, and
++ not the more conservative Hochberg, as default.
+
 Changes in version 1.5.2 (2020-06-05)
 + Introducing samplingSubset in the depeche function
 + Bug fixes in dOptPenalty

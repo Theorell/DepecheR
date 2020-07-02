@@ -22,8 +22,8 @@
 #' pair the first id in the first group with the firs id in hte second group
 #' and so forth.
 #' @param multipleCorrMethod Which method that should be used for adjustment
-#' of multiple comparisons. Defaults to Benjamini-Hochberg, but all other
-#' methods available in \code{\link{p.adjust}} can be used.
+#' of multiple comparisons. Defaults to Benjamini-Hochberg, 
+#' but all other methods available in \code{\link{p.adjust}} can be used.
 #' @param densContour If density contours should be created for the plot(s) or
 #' not. Defaults to TRUE. a
 #' @param plotName The main name for the graph and the analysis.
@@ -99,7 +99,7 @@
 #' @export dWilcox
 dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
                     displayVector, paired = FALSE,
-                    multipleCorrMethod = "hochberg", densContour = TRUE,
+                    multipleCorrMethod = "BH", densContour = TRUE,
                     plotName = "default", groupName1 = unique(groupVector)[1],
                     groupName2 = unique(groupVector)[2], title = FALSE,
                     lowestPlottedP = 0.05, plotDir = ".", bandColor = "black",
