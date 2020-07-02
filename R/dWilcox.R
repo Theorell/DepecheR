@@ -99,7 +99,7 @@
 #' @export dWilcox
 dWilcox <- function(xYData, idsVector, groupVector, clusterVector, 
                     displayVector, paired = FALSE, 
-                    multipleCorrMethod = "hochberg", densContour = TRUE, 
+                    multipleCorrMethod = "BH", densContour = TRUE, 
                     plotName= "default", groupName1 = unique(groupVector)[1], 
                     groupName2 = unique(groupVector)[2], title = FALSE, 
                     lowestPlottedP = 0.05, plotDir = ".", bandColor = "black", 

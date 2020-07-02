@@ -12,7 +12,7 @@ dWilcox(
   clusterVector,
   displayVector,
   paired = FALSE,
-  multipleCorrMethod = "hochberg",
+  multipleCorrMethod = "BH",
   densContour = TRUE,
   plotName = "default",
   groupName1 = unique(groupVector)[1],
