@@ -1,3 +1,6 @@
+Changes in version 1.5.4 (2020-09-17)
++ Correction of the information about the content of the output from depeche.
+
 Changes in version 1.5.3 (2020-07-02)
 + Correcting the p-adjustments, so that it in fact uses Benjamini-Hochberg, and
 + not the more conservative Hochberg, as default.

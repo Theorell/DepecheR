@@ -1,6 +1,6 @@
 Package: DepecheR
-Version: 1.5.3
-Date: 2020-07-02
+Version: 1.5.4
+Date: 2020-09-17
 Title: Determination of essential phenotypic elements of clusters in 
     high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,
@@ -23,7 +23,7 @@ Description: The purpose of this package is to identify traits in a dataset that
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Depends: R (>= 4.0)
 Imports:
     ggplot2 (>= 3.1.0), MASS (>= 7.3.51), Rcpp (>= 1.0.0), dplyr (>= 0.7.8), 

@@ -81,16 +81,15 @@
 #'    \item{clusterVector}{A vector with the same length as number of rows in
 #'    the inDataFrame, where the cluster identity of each observation is
 #'    noted.}
-#'    \item{clusterCenters/log2ClusterCenters}{A matrix containing information
+#'    \item{clusterCenters}{A matrix containing information
 #'    about where the centers are in all the variables that contributed to
-#'    creating the cluster with the given penalty term. Is used by dAllocate.
-#'    If a variable is penalized, its value will appear at the center of the
-#'    data with the centering scheme used in the depeche run, to make dAllocate
-#'    function runs possible. If the data was log2-transformed, the cluster
-#'    centers will reflect the log2 transformed positions and the cluter center
-#'    matrix wil be named accordingly, not to introduce any unnecessary 
-#'    variables that were sparsed out for each cluster. 1 means that the
-#'    variable was used, 0 that it was discarded.}
+#'    creating the cluster with the given penalty term. An exact zero here
+#'    indicates that the variable in question was sparsed out for that cluster.
+#'    If a variable did not contribute to the separation of any cluster, it will
+#'    not be present here.}
+#'    \item{essenceElementList}{A per-cluster list of the items that were 
+#'    used to separate that cluster from the rest, i.e. the items that survived
+#'    the penalty.}
 #'    \item{penaltyOptList}{A list of two dataframes:
 #'    \describe{
 #'              \item{penaltyOpt.df}{A one row dataframe with the settings for
