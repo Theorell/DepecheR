@@ -71,6 +71,9 @@
 #' mean centering. 'default' gives different results depending on the data:
 #' datasets with 100+ variables are mean centered, and otherwise, peak centering
 #' is used. FALSE results in no centering, mainly for testing purposes.
+#' @param scale If scaling should be performed. If TRUE, the dataset will be 
+#' divided by the combined standard deviation of the whole dataset. This scaling
+#' procedure makes the default penalties fit most datasets with some precision. 
 #' @param nCores If multiCore is TRUE, then this sets the number of parallel
 #' processes. The default is currently 87.5 percent with a cap on 10 cores, as
 #' no speed increase is generally seen above 10 cores for normal computers.
@@ -132,13 +135,13 @@ depeche <- function(inDataFrame, samplingSubset = seq_len(nrow(inDataFrame)),
                     penalties = 2^seq(0, 5, by = 0.5),
                     sampleSize = "default", selectionSampleSize = "default",
                     k = 30, minARIImprovement = 0.01, optimARI = 0.95,
-                    maxIter = 100, log2Off = FALSE, center = "default",
-                    nCores = "default", createOutput = TRUE) {
+                    maxIter = 100, log2Off = FALSE, center = "default", 
+                    scale = TRUE, nCores = "default", createOutput = TRUE) {
     if (is.matrix(inDataFrame)) {
         inDataFrame <- as.data.frame.matrix(inDataFrame)
     }
 
-    logCenterSd <- list(FALSE, FALSE, FALSE)
+    logCenterSd <- list(FALSE, FALSE, 1)
     # Here it is checked if the data has very
     # extreme tails, and if so, the data is
     # log2 transformed
@@ -180,45 +183,36 @@ depeche <- function(inDataFrame, samplingSubset = seq_len(nrow(inDataFrame)),
 
     # Centering and overall scaling is
     # performed
-
-    if (ncol(inDataFrame) < 100) {
-        if (center == "mean") {
-            message("Mean centering is applied although the data has less than",
-                  " 100 columns")
-            inDataFrameScaleList <- dScale(inDataFrame,
-                scale = FALSE,
-                center = "mean", returnCenter = TRUE
-            )
-            inDataFramePreScaled <- inDataFrameScaleList[[1]]
-            logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-        } else if (center == "default" || center == "peak") {
+    if (center == "peak" || 
+        (center == "default" && ncol(inDataFrame) <= 100)) {
+        inDataFrameScaleList <- dScale(inDataFrame,
+                                       scale = FALSE,
+                                       center = "peak", returnCenter = TRUE
+        )
+        inDataFramePreScaled <- inDataFrameScaleList[[1]]
+        logCenterSd[[2]] <- inDataFrameScaleList[[2]]
+        if(ncol(inDataFrame) <= 100){
             message("As the dataset has less than 100 columns, ",
                     "peak centering is applied.")
-            inDataFrameScaleList <- dScale(inDataFrame,
-                scale = FALSE,
-                center = "peak", returnCenter = TRUE
-            )
-            inDataFramePreScaled <- inDataFrameScaleList[[1]]
-            logCenterSd[[2]] <- inDataFrameScaleList[[2]]
+        } else {
+            message("Peak centering is applied although the data has ",
+                    "more than 100 columns") 
         }
-    } else if (center == "peak") {
-        message("Peak centering is applied although the data has more than ",
-                "100 columns")
+    } else if (center == "mean" || 
+               (center == "default" && ncol(inDataFrame) > 100)) {
         inDataFrameScaleList <- dScale(inDataFrame,
-            scale = FALSE,
-            center = "peak", returnCenter = TRUE
+                                       scale = FALSE,
+                                       center = "mean", returnCenter = TRUE
         )
         inDataFramePreScaled <- inDataFrameScaleList[[1]]
         logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-    } else if (center == "default" || center == "mean") {
-        message("As the dataset has more than 100 columns, mean centering is ",
-              "applied.")
-        inDataFrameScaleList <- dScale(inDataFrame,
-            scale = FALSE,
-            center = "mean", returnCenter = TRUE
-        )
-        inDataFramePreScaled <- inDataFrameScaleList[[1]]
-        logCenterSd[[2]] <- inDataFrameScaleList[[2]]
+        if(ncol(inDataFrame) <= 100){
+            message("Mean centering is applied although the data has ",
+                    "less than 100 columns")
+        } else {
+            message("As the dataset has more than 100 columns, ",
+                    "mean centering is applied.")
+        }
     } else if (center == FALSE) {
         message("No centering performed")
         inDataFramePreScaled <- inDataFrame
@@ -226,11 +220,13 @@ depeche <- function(inDataFrame, samplingSubset = seq_len(nrow(inDataFrame)),
 
     # Here, all the data is divided by the
     # standard deviation of the full dataset
-    sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
-    inDataFrameScaled <-
-        as.data.frame(inDataFramePreScaled / sdInDataFramePreScaled)
-    logCenterSd[[3]] <- sdInDataFramePreScaled
-
+    if(scale == TRUE){
+        sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
+        inDataFrameScaled <-
+            as.data.frame(inDataFramePreScaled / sdInDataFramePreScaled)
+        logCenterSd[[3]] <- sdInDataFramePreScaled
+    }
+    
     # Here, the algorithm forks, depending on if a dual depeche setup has been
     # chosen or not
     if (missing(dualDepecheSetup)) {

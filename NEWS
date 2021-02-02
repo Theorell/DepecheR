@@ -1,3 +1,7 @@
+Changes in version 1.5.5 (2021-02-02)
++ Adding the option of not scaling the data within the depeche function
++ Condensing the code for the depeche scaling procedure
+
 Changes in version 1.5.4 (2020-09-17)
 + Correction of the information about the content of the output from depeche.
 

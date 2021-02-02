@@ -17,6 +17,7 @@ depeche(
   maxIter = 100,
   log2Off = FALSE,
   center = "default",
+  scale = TRUE,
   nCores = "default",
   createOutput = TRUE
 )
@@ -92,6 +93,10 @@ mean centering. 'default' gives different results depending on the data:
 datasets with 100+ variables are mean centered, and otherwise, peak centering
 is used. FALSE results in no centering, mainly for testing purposes.}
 
+\item{scale}{If scaling should be performed. If TRUE, the dataset will be 
+divided by the combined standard deviation of the whole dataset. This scaling
+procedure makes the default penalties fit most datasets with some precision.}
+
 \item{nCores}{If multiCore is TRUE, then this sets the number of parallel
 processes. The default is currently 87.5 percent with a cap on 10 cores, as
 no speed increase is generally seen above 10 cores for normal computers.}
@@ -105,16 +110,15 @@ A nested list with varying components depending on the setup above:
    \item{clusterVector}{A vector with the same length as number of rows in
    the inDataFrame, where the cluster identity of each observation is
    noted.}
-   \item{clusterCenters/log2ClusterCenters}{A matrix containing information
+   \item{clusterCenters}{A matrix containing information
    about where the centers are in all the variables that contributed to
-   creating the cluster with the given penalty term. Is used by dAllocate.
-   If a variable is penalized, its value will appear at the center of the
-   data with the centering scheme used in the depeche run, to make dAllocate
-   function runs possible. If the data was log2-transformed, the cluster
-   centers will reflect the log2 transformed positions and the cluter center
-   matrix wil be named accordingly, not to introduce any unnecessary 
-   variables that were sparsed out for each cluster. 1 means that the
-   variable was used, 0 that it was discarded.}
+   creating the cluster with the given penalty term. An exact zero here
+   indicates that the variable in question was sparsed out for that cluster.
+   If a variable did not contribute to the separation of any cluster, it will
+   not be present here.}
+   \item{essenceElementList}{A per-cluster list of the items that were 
+   used to separate that cluster from the rest, i.e. the items that survived
+   the penalty.}
    \item{penaltyOptList}{A list of two dataframes:
    \describe{
              \item{penaltyOpt.df}{A one row dataframe with the settings for
