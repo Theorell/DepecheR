@@ -4,24 +4,15 @@
 \alias{dAllocate}
 \title{Allocation of observations to pre-established cluster centers.}
 \usage{
-dAllocate(inDataFrame, clusterCenters, log2Off = FALSE, noZeroNum = TRUE)
+dAllocate(inDataFrame, depModel)
 }
 \arguments{
-\item{inDataFrame}{A dataframe or matrix with the data that that the cluster
-centers will be allocated to. This data should be scaled in the same way as
-the data for the original depeche was scaled  when it entered the algorithm,
-i.e. in the normal case, not at all.}
+\item{inDataFrame}{A dataset that should be allocated to a set of cluster
+centers, for example a richer, but less representative dataset, with all
+datapoints from all donors, instead of only a set number of values from all.}
 
-\item{clusterCenters}{A matrix that needs to be inherited from a depeche run.
-It contains the information about which clusters and variables that have been
-sparsed away and where the cluster centers are located for the remaining
-clusters and variables.}
-
-\item{log2Off}{If the automatic detection for high kurtosis, and followingly,
-the log2 transformation, should be turned off.}
-
-\item{noZeroNum}{For internal use. Controls the that the internal
-algorithm returns a cluster with number 0.}
+\item{depModel}{This is the result of the original application of the 
+depeche function on the associated, more representative dataset.}
 }
 \value{
 A vector with the same length as number of rows in the inDataFrame,
@@ -44,36 +35,38 @@ testDataTest <- testData[-testDataSample, ]
 
 # Run the depeche function for the train set
 
-x_depeche_train <- depeche(testDataTrain[, 2:15],
+depeche_train <- depeche(testDataTrain[, 2:15],
     maxIter = 20,
     sampleSize = 1000
 )
 
 # Allocate the test dataset to the centers of the train dataset
-x_depeche_test <- dAllocate(testDataTest[, 2:15],
-    clusterCenters = x_depeche_train$clusterCenters
+depeche_test <- dAllocate(testDataTest[, 2:15], depeche_train
 )
 
 # And finally plot the two groups to see how great the overlap was:
-trainTablePerId <- apply(as.matrix(table(
-    testDataTrain$ids,
-    x_depeche_train$clusterVector
-)), 1, function(x) x / sum(x))
-trainTableCollapsed <- apply(trainTablePerId, 1, sum)
-trainTableFraction <- trainTableCollapsed / sum(trainTableCollapsed)
-testTablePerId <- apply(
-    as.matrix(table(testDataTest$ids, x_depeche_test)),
-    1, function(x) x / sum(x)
-)
-testTableCollapsed <- apply(testTablePerId, 1, sum)
-testTableFraction <- testTableCollapsed / sum(testTableCollapsed)
-xmatrix <- t(cbind(trainTableFraction, testTableFraction))
-library(gplots)
-barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
-title(main = "Difference between train and test set")
-title(xlab = "Clusters")
-title(ylab = "Fraction")
-}
+clustVecList <- list(list("Ids" =testDataTrain$ids, 
+                          "Clusters" = depeche_train$clusterVector),
+                     list("Ids" =testDataTest$ids, 
+                          "Clusters" = depeche_test))
+tablePerId <- do.call("rbind", lapply(seq_along(clustVecList), function(x){
+                                      locDat <- clustVecList[[x]]
+                                      locRes <- apply(as.matrix(table(
+                                      locDat$Ids, locDat$Clusters)),
+                                      1, function(y) y/sum(y))
+                                      locResLong <- reshape2::melt(locRes)
+                                      colnames(locResLong) <- 
+                                      c("Cluster", "Donor", "Fraction")
+                                      locResLong$Group <- x
+                                      locResLong
+                                      }))
+tablePerId$Cluster <- as.factor(tablePerId$Cluster)
+tablePerId$Group <- as.factor(tablePerId$Group)
+
+library(ggplot2)
+ggplot(data=tablePerId, aes(x=Cluster, y=Fraction, 
+        fill=Group)) + geom_boxplot() + theme_bw()
+}        
 }
 \seealso{
 \code{\link{depeche}}

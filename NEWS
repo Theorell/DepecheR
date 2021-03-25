@@ -1,3 +1,12 @@
+Changes in version 1.7.2 (2021-03-25)
++ Major internal changes to the depeche function, with two user consequences:
+    o The dualDepeche option is deprecated, as it made the function very heavy
+    to maintain and was not flexible enough to be of great use. 
+    o The interface to dAllocate is much improved, allowing for smooth 
+    allocation of new data to an established model, which makes large 
+    dualDepeche runs, constructed outside of the function, possible in a more
+    versatile way than previously.
+
 Changes in version 1.7.1 (2021-02-02)
 + Adding the option of not scaling the data within the depeche function
 + Condensing the code for the depeche scaling procedure

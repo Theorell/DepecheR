@@ -7,7 +7,6 @@
 depeche(
   inDataFrame,
   samplingSubset = seq_len(nrow(inDataFrame)),
-  dualDepecheSetup,
   penalties = 2^seq(0, 5, by = 0.5),
   sampleSize = "default",
   selectionSampleSize = "default",
@@ -19,6 +18,7 @@ depeche(
   center = "default",
   scale = TRUE,
   nCores = "default",
+  plotDir = ".",
   createOutput = TRUE
 )
 }
@@ -35,13 +35,6 @@ from multiple individuals, it might be wise to pre-define a subset of the
 rows, which includes equal or near-equal numbers of cells from each
 individual, to avoid a few outliers to dominate the analysis. This can be 
 done here. Should be a vector of row numbers in the inDataFrame.}
-
-\item{dualDepecheSetup}{Optionally, a dataframe with two columns: the first
-specifying which step (1 or 2) the variable should be included in, the second
-specifying the column name for the variable in question. It is used if a
-two-step clustering should be performed, e.g. in the case where phenotypic
-clustering should be performed, followed by clustering on functional
-variables.}
 
 \item{penalties}{This argument decides whether a single penalty will be used
 for clustering, or if multiple penalties will be evaluated to identify the
@@ -87,25 +80,33 @@ penalty optimization.}
 the log2 transformation, should be turned off.}
 
 \item{center}{If centering should be performed. Alternatives are 'default',
-'mean', 'peak' and FALSE. 'peak' results in centering around the highest peak
-in the data, which is useful in most cytometry situations. 'mean' results in
-mean centering. 'default' gives different results depending on the data:
-datasets with 100+ variables are mean centered, and otherwise, peak centering
-is used. FALSE results in no centering, mainly for testing purposes.}
+'mean', 'peak', FALSE and a vector of numbers with the same length as the 
+number of columns in the inDataFrame. 'peak' results in centering around the 
+highest peak in the data, which is useful in most cytometry situations. 
+'mean' results in  mean centering. 'default' gives different results 
+depending on the data: datasets with 100+ variables are mean centered, 
+and otherwise, peak centering is used. If a numeric vector is provided, it
+is used to center the values to the numbers. This is preferable to 
+pre-centering the data and using the FALSE command, as it will lead to better
+internal visualization procedures, etc. FALSE results in no centering, mainly
+for testing purposes.}
 
 \item{scale}{If scaling should be performed. If TRUE, the dataset will be 
-divided by the combined standard deviation of the whole dataset. This scaling
+divided by the combined standard deviation of the whole dataset. If a number 
+is provided, the dataset is divided by this number. This scaling
 procedure makes the default penalties fit most datasets with some precision.}
 
 \item{nCores}{If multiCore is TRUE, then this sets the number of parallel
 processes. The default is currently 87.5 percent with a cap on 10 cores, as
 no speed increase is generally seen above 10 cores for normal computers.}
 
+\item{plotDir}{Where should the diagnostic plots be printed?}
+
 \item{createOutput}{For testing purposes. Defaults to TRUE. If FALSE, no
 plots are generated.}
 }
 \value{
-A nested list with varying components depending on the setup above:
+A nested list:
 \describe{
    \item{clusterVector}{A vector with the same length as number of rows in
    the inDataFrame, where the cluster identity of each observation is
@@ -127,10 +128,10 @@ A nested list with varying components depending on the setup above:
              results with all tested penalty values.}
            }
     }
-} If a dual setup is used, the result will be a nested list, where the first
-sublist with the information above of the result of the primary clustering
-and the following list components are the result of all the secondary
-clusterings combined.
+    \item{logCenterScale}{The values used to center and scale the 
+    data and information on if the data was log transformed. This 
+    information is used internally in dAllocate.}
+}
 }
 \description{
 This is the central function of the package. As input, only a dataset is
@@ -141,24 +142,12 @@ based on the values identified in the optimization step.
 # Load some data
 data(testData)
 
-# First, just run with the standard settings
+# Here a run with the standard settings
 \dontrun{
 testDataDepecheResult <- depeche(testData[, 2:15])
 
 # Look at the result
 str(testDataDepecheResult)
-
-# Now, a dual depeche setup is used
-testDataDepecheResultDual <- depeche(testData[, 2:15],
-    dualDepecheSetup = data.frame(
-        rep(1:2, each = 7),
-        colnames(testData[, 2:15])
-    ), penalties = c(64, 128), sampleSize = 500,
-    selectionSampleSize = 500, maxIter = 20
-)
-
-# Look at the result
-str(testDataDepecheResultDual)
 }
 
 }

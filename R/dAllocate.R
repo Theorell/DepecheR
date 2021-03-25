@@ -5,18 +5,11 @@
 #' cluster centers. This is intended to be used for the test set in train-test
 #' dataset situations.
 #' @importFrom moments kurtosis
-#' @param inDataFrame A dataframe or matrix with the data that that the cluster
-#' centers will be allocated to. This data should be scaled in the same way as
-#' the data for the original depeche was scaled  when it entered the algorithm,
-#' i.e. in the normal case, not at all.
-#' @param clusterCenters A matrix that needs to be inherited from a depeche run.
-#' It contains the information about which clusters and variables that have been
-#' sparsed away and where the cluster centers are located for the remaining
-#' clusters and variables.
-#' @param log2Off If the automatic detection for high kurtosis, and followingly,
-#' the log2 transformation, should be turned off.
-#' @param noZeroNum For internal use. Controls the that the internal
-#' algorithm returns a cluster with number 0.
+#' @param inDataFrame A dataset that should be allocated to a set of cluster
+#' centers, for example a richer, but less representative dataset, with all
+#' datapoints from all donors, instead of only a set number of values from all.
+#' @param depModel This is the result of the original application of the 
+#' depeche function on the associated, more representative dataset. 
 #' @seealso \code{\link{depeche}}
 #' @return A vector with the same length as number of rows in the inDataFrame,
 #' where the cluster identity of each observation is noted.
@@ -33,85 +26,81 @@
 #'
 #' # Run the depeche function for the train set
 #'
-#' x_depeche_train <- depeche(testDataTrain[, 2:15],
+#' depeche_train <- depeche(testDataTrain[, 2:15],
 #'     maxIter = 20,
 #'     sampleSize = 1000
 #' )
 #'
 #' # Allocate the test dataset to the centers of the train dataset
-#' x_depeche_test <- dAllocate(testDataTest[, 2:15],
-#'     clusterCenters = x_depeche_train$clusterCenters
+#' depeche_test <- dAllocate(testDataTest[, 2:15], depeche_train
 #' )
 #'
 #' # And finally plot the two groups to see how great the overlap was:
-#' trainTablePerId <- apply(as.matrix(table(
-#'     testDataTrain$ids,
-#'     x_depeche_train$clusterVector
-#' )), 1, function(x) x / sum(x))
-#' trainTableCollapsed <- apply(trainTablePerId, 1, sum)
-#' trainTableFraction <- trainTableCollapsed / sum(trainTableCollapsed)
-#' testTablePerId <- apply(
-#'     as.matrix(table(testDataTest$ids, x_depeche_test)),
-#'     1, function(x) x / sum(x)
-#' )
-#' testTableCollapsed <- apply(testTablePerId, 1, sum)
-#' testTableFraction <- testTableCollapsed / sum(testTableCollapsed)
-#' xmatrix <- t(cbind(trainTableFraction, testTableFraction))
-#' library(gplots)
-#' barplot2(xmatrix, beside = TRUE, legend = rownames(xmatrix))
-#' title(main = "Difference between train and test set")
-#' title(xlab = "Clusters")
-#' title(ylab = "Fraction")
-#' }
+#' clustVecList <- list(list("Ids" =testDataTrain$ids, 
+#'                           "Clusters" = depeche_train$clusterVector),
+#'                      list("Ids" =testDataTest$ids, 
+#'                           "Clusters" = depeche_test))
+#' tablePerId <- do.call("rbind", lapply(seq_along(clustVecList), function(x){
+#'                                       locDat <- clustVecList[[x]]
+#'                                       locRes <- apply(as.matrix(table(
+#'                                       locDat$Ids, locDat$Clusters)),
+#'                                       1, function(y) y/sum(y))
+#'                                       locResLong <- reshape2::melt(locRes)
+#'                                       colnames(locResLong) <- 
+#'                                       c("Cluster", "Donor", "Fraction")
+#'                                       locResLong$Group <- x
+#'                                       locResLong
+#'                                       }))
+#' tablePerId$Cluster <- as.factor(tablePerId$Cluster)
+#' tablePerId$Group <- as.factor(tablePerId$Group)
+#' 
+#' library(ggplot2)
+#' ggplot(data=tablePerId, aes(x=Cluster, y=Fraction, 
+#'         fill=Group)) + geom_boxplot() + theme_bw()
+#' }        
 #' @export dAllocate
-dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE,
-                      noZeroNum = TRUE) {
-    if (is.data.frame(inDataFrame)) {
-        inDataFrame <- as.matrix(inDataFrame)
+dAllocate <- function(inDataFrame, depModel) {
+    if (is.matrix(inDataFrame)) {
+        inDataFrame <- as.data.frame(inDataFrame)
     }
-
-    if (log2Off == FALSE && kurtosis(as.vector(inDataFrame)) > 100) {
-        kurtosisValue1 <- kurtosis(as.vector(inDataFrame))
-        # Here, the log transformation is
-        # performed. In cases where the lowest
-        # value is 0, everything is simple. In
-        # other cases, a slightly more
-        # complicated formula is needed
-        if (min(inDataFrame) >= 0) {
-            inDataFrame <- log2(inDataFrame + 1)
-        } else {
-            # First, the data needs to be reasonably
-            # log transformed to not too extreme
-            # values, but still without loosing
-            # resolution.
-            inDataFrameLog <- log2(apply(
-                inDataFrame, 2,
-                function(x) x - min(x)
-            ) + 1)
-            # Then, the extreme negative values will
-            # be replaced by 0, as they give rise to
-            # artefacts.
-            inDataFrameLog[which(is.nan(inDataFrameLog))] <- 0
-        }
-
-        kurtosisValue2 <- kurtosis(as.vector(inDataFrame))
-        message(
-            "The data was found to be heavily tailed (kurtosis ",
-            kurtosisValue1, "). Therefore, it was log2-transformed, ",
-            "leading to a new kurtosis value of ", kurtosisValue2, "."
-        )
+    clusterCenters <- depModel$clusterCenters
+    logCenterSd <- depModel$logCenterSd
+    #The very first step is that the need for log transformation is ruled out,
+    #as this procedure should preferably be done with the whole dataset, before
+    #even entering depeche.
+    if(logCenterSd[[1]]){
+        stop("dAllocate does not work well with data that has been internally",
+             "log-transformed, due to large effects of small differences in ",
+             "the extreme negative tail of the data.",
+             "It is instead recommended to transform the ", 
+             "full dataset before entering depeche, which makes the log-", 
+             "transformation internally superflous.")
     }
-
+    #Step one here is to scale and normalize the data in the best possible way.
+    #This is preferably done with pre-defined values.
+    if(is.list(logCenterSd)){
+        inDataFrameScaled <- depecheLogCenterSd(inDataFrame, log2Off = TRUE,
+                                                logCenterSd[[2]], 
+                                                logCenterSd[[3]])[[1]]
+        clusterCentersScaled <- 
+            as.matrix(depecheLogCenterSd(as.data.frame(clusterCenters), 
+                                         log2Off = TRUE,
+                                         logCenterSd[[2]], 
+                                         logCenterSd[[3]])[[1]])
+        clusterCentersScaled[which(clusterCenters == 0)] <- 0
+    } else {
+        inDataFrameScaled <- inDataFrame
+        clusterCentersScaled <- clusterCenters
+    }
+    
     # Here, all variables that do not
     # contribute to defining a single cluster
-    # is removed.
+    # are removed.
     clusterCentersReduced <-
-        clusterCenters[
-            which(rowSums(clusterCenters) != 0),
-            which(colSums(clusterCenters) != 0)
+        clusterCentersScaled[
+            which(rowSums(clusterCentersScaled) != 0),
+            which(colSums(clusterCentersScaled) != 0)
         ]
-
-
     # If some variables have been excluded as
     # they did not contribute to construction
     # of any cluster, they are removed from
@@ -120,11 +109,12 @@ dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE,
     # There are two different methods here: one for external and one for
     # internal use. In the first case, there are no colnumn names, but the
     # properties of the cluster centers are also more raw and thus informative.
-    if (length(colnames(clusterCenters)) > 0) {
-        inDataFrameReduced <- inDataFrame[, colnames(clusterCenters)]
+    if (length(colnames(clusterCentersScaled)) > 0) {
+        inDataFrameReduced <- 
+            inDataFrameScaled[, colnames(clusterCentersScaled)]
     } else {
         inDataFrameReduced <-
-            inDataFrame[, which(colSums(clusterCenters) != 0)]
+            inDataFrameScaled[, which(colSums(clusterCentersScaled) != 0)]
     }
 
     # Here, a specific case, namely that only one variable contains
@@ -135,15 +125,13 @@ dAllocate <- function(inDataFrame, clusterCenters, log2Off = FALSE,
     }
 
     clusterReallocationResult <- allocate_points(
-        inDataFrameReduced,
+        as.matrix(inDataFrameReduced),
         clusterCentersReduced, 1
     )[[1]]
 
     # As allocate_points spontaneously likes to throw out a cluster called 0,
     # this behaviour is controlled here
-    if (noZeroNum) {
-        clusterReallocationResult <- clusterReallocationResult + 1
-    }
+    clusterReallocationResult <- clusterReallocationResult + 1
 
     return(clusterReallocationResult)
 }

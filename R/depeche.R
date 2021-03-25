@@ -4,15 +4,19 @@
 #' This is the central function of the package. As input, only a dataset is
 #' required. It starts by performing optimizations and then performs clustering
 #' based on the values identified in the optimization step.
-#' @importFrom moments kurtosis
 #' @importFrom grDevices col2rgb colorRampPalette densCols dev.off palette pdf
 #' png
 #' @importFrom graphics axis contour hist image legend mtext par plot plot.new
-#' text
+#' text box
 #' @importFrom stats median p.adjust predict quantile rnorm sd var wilcox.test
 #' runif
 #' @importFrom utils write.csv tail
 #' @importFrom methods is
+#' @importFrom ggplot2 ggplot aes geom_line ggtitle xlab ylab ylim ggsave
+#' @importFrom dplyr sample_n
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW
+#' @importFrom foreach foreach %dopar%
 #' @param inDataFrame A dataframe or matrix with the data that will be used to
 #' create the clustering. Cytometry data should be transformed using
 #' biexponential, arcsinh transformation or similar, and day-to-day
@@ -45,12 +49,6 @@
 #' cases where the sampleSize argument is larger than 10000, default leads to
 #' the generation of a random subset to the same size also for the
 #' selectionSampleSize. A user specified number is also accepted.
-#' @param dualDepecheSetup Optionally, a dataframe with two columns: the first
-#' specifying which step (1 or 2) the variable should be included in, the second
-#' specifying the column name for the variable in question. It is used if a
-#' two-step clustering should be performed, e.g. in the case where phenotypic
-#' clustering should be performed, followed by clustering on functional
-#' variables.
 #' @param k Number of initial cluster centers. The higher the number, the
 #' greater the precision of the clustering, but the computing time also
 #' increases linearly with the number of starting points. Default is 30. If
@@ -66,20 +64,27 @@
 #' @param optimARI Above this level of ARI, all solutions are considered equally
 #' valid, and the median solution is selected among them.
 #' @param center If centering should be performed. Alternatives are 'default',
-#' 'mean', 'peak' and FALSE. 'peak' results in centering around the highest peak
-#' in the data, which is useful in most cytometry situations. 'mean' results in
-#' mean centering. 'default' gives different results depending on the data:
-#' datasets with 100+ variables are mean centered, and otherwise, peak centering
-#' is used. FALSE results in no centering, mainly for testing purposes.
+#' 'mean', 'peak', FALSE and a vector of numbers with the same length as the 
+#' number of columns in the inDataFrame. 'peak' results in centering around the 
+#' highest peak in the data, which is useful in most cytometry situations. 
+#' 'mean' results in  mean centering. 'default' gives different results 
+#' depending on the data: datasets with 100+ variables are mean centered, 
+#' and otherwise, peak centering is used. If a numeric vector is provided, it
+#' is used to center the values to the numbers. This is preferable to 
+#' pre-centering the data and using the FALSE command, as it will lead to better
+#' internal visualization procedures, etc. FALSE results in no centering, mainly
+#' for testing purposes.
 #' @param scale If scaling should be performed. If TRUE, the dataset will be 
-#' divided by the combined standard deviation of the whole dataset. This scaling
-#' procedure makes the default penalties fit most datasets with some precision. 
+#' divided by the combined standard deviation of the whole dataset. If a number 
+#' is provided, the dataset is divided by this number. This scaling
+#' procedure makes the default penalties fit most datasets with some precision.
 #' @param nCores If multiCore is TRUE, then this sets the number of parallel
 #' processes. The default is currently 87.5 percent with a cap on 10 cores, as
 #' no speed increase is generally seen above 10 cores for normal computers.
+#' @param plotDir Where should the diagnostic plots be printed?
 #' @param createOutput For testing purposes. Defaults to TRUE. If FALSE, no
 #' plots are generated.
-#' @return A nested list with varying components depending on the setup above:
+#' @return A nested list:
 #' \describe{
 #'    \item{clusterVector}{A vector with the same length as number of rows in
 #'    the inDataFrame, where the cluster identity of each observation is
@@ -101,323 +106,189 @@
 #'              results with all tested penalty values.}
 #'            }
 #'     }
-#' } If a dual setup is used, the result will be a nested list, where the first
-#' sublist with the information above of the result of the primary clustering
-#' and the following list components are the result of all the secondary
-#' clusterings combined.
+#'     \item{logCenterScale}{The values used to center and scale the 
+#'     data and information on if the data was log transformed. This 
+#'     information is used internally in dAllocate.}
+#' }
+#' 
 #' @examples
 #' # Load some data
 #' data(testData)
 #'
-#' # First, just run with the standard settings
+#' # Here a run with the standard settings
 #' \dontrun{
 #' testDataDepecheResult <- depeche(testData[, 2:15])
 #'
 #' # Look at the result
 #' str(testDataDepecheResult)
-#'
-#' # Now, a dual depeche setup is used
-#' testDataDepecheResultDual <- depeche(testData[, 2:15],
-#'     dualDepecheSetup = data.frame(
-#'         rep(1:2, each = 7),
-#'         colnames(testData[, 2:15])
-#'     ), penalties = c(64, 128), sampleSize = 500,
-#'     selectionSampleSize = 500, maxIter = 20
-#' )
-#'
-#' # Look at the result
-#' str(testDataDepecheResultDual)
 #' }
 #'
 #' @export depeche
 depeche <- function(inDataFrame, samplingSubset = seq_len(nrow(inDataFrame)), 
-                    dualDepecheSetup,
                     penalties = 2^seq(0, 5, by = 0.5),
                     sampleSize = "default", selectionSampleSize = "default",
                     k = 30, minARIImprovement = 0.01, optimARI = 0.95,
                     maxIter = 100, log2Off = FALSE, center = "default", 
-                    scale = TRUE, nCores = "default", createOutput = TRUE) {
+                    scale = TRUE, nCores = "default", plotDir = ".",
+                    createOutput = TRUE) {
     if (is.matrix(inDataFrame)) {
         inDataFrame <- as.data.frame.matrix(inDataFrame)
     }
-
-    logCenterSd <- list(FALSE, FALSE, 1)
-    # Here it is checked if the data has very
-    # extreme tails, and if so, the data is
-    # log2 transformed
-    if (log2Off == FALSE && kurtosis(as.vector(as.matrix(inDataFrame))) >
-        100) {
-        kurtosisValue1 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-        # Here, the log transformation is
-        # performed. In cases where the lowest
-        # value is 0, everything is simple. In
-        # other cases, a slightly more
-        # complicated formula is needed
-        if (min(inDataFrame) >= 0) {
-            inDataFrame <- log2(inDataFrame + 1)
-            logCenterSd[[1]] <- TRUE
-        } else {
-            # First, the data needs to be reasonably
-            # log transformed to not too extreme
-            # values, but still without loosing
-            # resolution.
-            inDataMatrixLog <- log2(apply(
-                inDataFrame, 2,
-                function(x) x - min(x)
-            ) + 1)
-            # Then, the extreme negative values will
-            # be replaced by 0, as they give rise to
-            # artefacts.
-            inDataMatrixLog[which(is.nan(inDataMatrixLog))] <- 0
-            inDataFrame <- as.data.frame(inDataMatrixLog)
-            logCenterSd[[1]] <- TRUE
-        }
-
-        kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
-        message(
-            "The data was found to be heavily tailed (kurtosis ",
-            kurtosisValue1, "). Therefore, it was log2-transformed, leading to 
-            a new kurtosis value of ", kurtosisValue2, "."
-        )
-    }
-
-    # Centering and overall scaling is
-    # performed
-    if (center == "peak" || 
-        (center == "default" && ncol(inDataFrame) <= 100)) {
-        inDataFrameScaleList <- dScale(inDataFrame,
-                                       scale = FALSE,
-                                       center = "peak", returnCenter = TRUE
-        )
-        inDataFramePreScaled <- inDataFrameScaleList[[1]]
-        logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-        if(ncol(inDataFrame) <= 100){
-            message("As the dataset has less than 100 columns, ",
-                    "peak centering is applied.")
-        } else {
-            message("Peak centering is applied although the data has ",
-                    "more than 100 columns") 
-        }
-    } else if (center == "mean" || 
-               (center == "default" && ncol(inDataFrame) > 100)) {
-        inDataFrameScaleList <- dScale(inDataFrame,
-                                       scale = FALSE,
-                                       center = "mean", returnCenter = TRUE
-        )
-        inDataFramePreScaled <- inDataFrameScaleList[[1]]
-        logCenterSd[[2]] <- inDataFrameScaleList[[2]]
-        if(ncol(inDataFrame) <= 100){
-            message("Mean centering is applied although the data has ",
-                    "less than 100 columns")
-        } else {
-            message("As the dataset has more than 100 columns, ",
-                    "mean centering is applied.")
-        }
-    } else if (center == FALSE) {
-        message("No centering performed")
-        inDataFramePreScaled <- inDataFrame
-    }
-
-    # Here, all the data is divided by the
-    # standard deviation of the full dataset
-    if(scale == TRUE){
-        sdInDataFramePreScaled <- sd(as.matrix(inDataFramePreScaled))
-        inDataFrameScaled <-
-            as.data.frame(inDataFramePreScaled / sdInDataFramePreScaled)
-        logCenterSd[[3]] <- sdInDataFramePreScaled
+    if (plotDir != ".") {
+        dir.create(plotDir)
     }
     
-    # Here, the algorithm forks, depending on if a dual depeche setup has been
-    # chosen or not
-    if (missing(dualDepecheSetup)) {
-        depecheResult <- depecheCoFunction(
-            inDataFrameScaled, samplingSubset = samplingSubset,
-            plotDir = ".", penalties = penalties,
-            sampleSize = sampleSize, selectionSampleSize = selectionSampleSize,
-            k = k, minARIImprovement = minARIImprovement,
-            optimARI = optimARI, maxIter = maxIter,
-            nCores = nCores, createOutput = createOutput,
-            logCenterSd = logCenterSd
-        )
-        return(depecheResult)
-    } else {
-        inDataColumns <- as.character(dualDepecheSetup[, 2])
-        inDataFrameFirst <-
-            inDataFrameScaled[inDataColumns[which(dualDepecheSetup[, 1] == 1)]]
-        if (is.list(penalties) == FALSE) {
-            penaltyList <- list(penalties, penalties)
-        }
-        dirName1 <- "Level_one_depeche"
-        depecheResultFirst <- depecheCoFunction(
-            inDataFrameFirst,
-            plotDir = dirName1, penalties = penaltyList[[1]],
-            sampleSize = sampleSize, selectionSampleSize = selectionSampleSize,
-            k = k, minARIImprovement = minARIImprovement, optimARI = optimARI,
-            maxIter = maxIter, nCores = nCores, createOutput = createOutput,
-            logCenterSd = logCenterSd
-        )
-
-        message(
-            "Done with level one clustering where ",
-            length(unique(depecheResultFirst$clusterVector)),
-            " clusters were created. Now initiating level two."
-        )
-
-        # After this first step, clustering is
-        # performed within each of the clusters
-        # produced by the depecheResultFirst
-        inDataFrameSecond <-
-            inDataFrameScaled[inDataColumns[which(dualDepecheSetup[, 1] == 2)]]
-
-        allClusterN <- unique(depecheResultFirst$clusterVector)
-        inDataFrameSecondList <- lapply(
-            seq_along(allClusterN),
-            function(i) {
-                return(
-                    inDataFrameSecond[
-                        which(depecheResultFirst$clusterVector == i), ]
-                )
-            }
-        )
-
-        # Now create the list of cluster numbers
-        firstClusterNumberList <- lapply(seq_along(allClusterN), function(i) {
-              (100 * i) + 1
-          })
-
-        # Here, a list of cluster names are
-        # created, so that the results are sorted
-        # in a correct manner
-        directoryNames <-
-            file.path(
-                dirName1,
-                paste0(
-                    "Cluster_", seq_along(allClusterN),
-                    "_level_two_depeche"
-                )
-            )
-
-        # Here, the secondary clusters are
-        # generated for each subframe created by
-        # the primary clusters
-        depecheResultSecondList <- mapply(depecheCoFunction,
-            inDataFrameSecondList, firstClusterNumberList,
-            directoryNames,
-            MoreArgs = list(
-                penalties = penaltyList[[2]],
-                sampleSize = sampleSize,
-                selectionSampleSize = selectionSampleSize,
-                k = k, minARIImprovement = minARIImprovement,
-                optimARI = optimARI, maxIter = maxIter, nCores = nCores,
-                createOutput = createOutput, logCenterSd = logCenterSd
-            ),
-            SIMPLIFY = FALSE
-        )
-
-        complexClusterVector <- inDataFrameScaled[, 1]
-        clusterCentersList <- list()
-        colnamesList <- list()
-        for (i in seq_along(depecheResultSecondList)) {
-            # Here, all the clustering data is
-            # recompiled to one long cluster vector
-            complexClusterVector[which(depecheResultFirst$clusterVector ==
-                i)] <- depecheResultSecondList[[i]][[1]]
-            # And the cluster centers are also compiled
-            clusterCentersList[[i]] <- depecheResultSecondList[[i]][[2]]
-            # And a list of all unique colnames is created
-            colnamesList[[i]] <- colnames(clusterCentersList[[i]])
-        }
-        uniqueColnamesVector <- sort(unique(unlist(colnamesList)))
-
-        # Now, if a variable is missing in a
-        # certain cluster center matrix, it is
-        # added with zeros. Also the variables
-        # are sorted.
-        for (i in seq_along(clusterCentersList)) {
-            if (length(clusterCentersList[[i]]) != length(
-                uniqueColnamesVector
-            )) {
-                missingColnames <-
-                    uniqueColnamesVector[!uniqueColnamesVector %in%
-                        colnames(clusterCentersList[[i]])]
-                zeroDataFrame <-
-                    as.data.frame(matrix(0,
-                        nrow = nrow(clusterCentersList[[i]]),
-                        ncol = length(missingColnames)
-                    ))
-                colnames(zeroDataFrame) <- missingColnames
-                clusterCentersList[[i]] <- cbind(
-                    clusterCentersList[[i]],
-                    zeroDataFrame
-                )
-            }
-
-            clusterCentersList[[i]] <-
-                clusterCentersList[[i]][, order(
-                    colnames(clusterCentersList[[i]])
-                )]
-        }
-
-        secondLevelClusterCenters <- do.call("rbind", clusterCentersList)
-
-        # And after all these centers have been
-        # compiled, the fist set of clusster
-        # centers are also included
-        firstClusterCenters <- depecheResultFirst$clusterCenters
-        firstOnSecondClusterCentersList <- list()
-        clusterClusters <-
-            substr(as.character(row.names(secondLevelClusterCenters)), 1, 1)
-        for (i in seq_along(clusterClusters)) {
-            firstOnSecondClusterCentersList[[i]] <-
-                firstClusterCenters[which(row.names(firstClusterCenters) ==
-                    clusterClusters[i]), ]
-        }
-
-        firstOnSecondClusterCenters <- do.call(
-            "rbind",
-            firstOnSecondClusterCentersList
-        )
-        colnames(firstOnSecondClusterCenters) <- colnames(firstClusterCenters)
-        row.names(firstOnSecondClusterCenters) <-
-            row.names(secondLevelClusterCenters)
-
-        # And finally, these new columns are
-        # added to the complexClusterCenters
-        complexClusterCenters <- data.frame(
-            firstOnSecondClusterCenters,
-            secondLevelClusterCenters
-        )
-
-        # And now, all the penalty optimization
-        # and possible sample size optimizations
-        # are saved
-
-        penaltyOptListList <- do.call(
-            "list",
-            lapply(depecheResultSecondList, "[[", 3)
-        )
-
-        depecheResult <- list(
-            levelOneCLusterResult = depecheResultFirst,
-            levelTwoClusterVector = complexClusterVector,
-            levelTwoClusterCenters = complexClusterCenters,
-            levelTwoPenaltyOptList = penaltyOptListList
-        )
-
-        if (length(sampleSize) > 1) {
-            funval <- depecheResultSecondList[[1]][[4]]
-            sampleSizeOptList <- do.call(
-                "list",
-                vapply(depecheResultSecondList, FUN.VALUE = funval, "[[", 4)
-            )
-
-            nextClustResultPosition <- length(depecheResult) + 1
-            depecheResult[[nextClustResultPosition]] <-
-                as.data.frame.matrix(sampleSizeOptList)
-            names(depecheResult)[[length(depecheResult)]] <-
-                "levelTwoSampleSizeOptList"
-        }
-
-        return(depecheResult)
+    logCenterSdResult <- depecheLogCenterSd(inDataFrame, log2Off, 
+                                               center, scale)
+    inDataFrameScaled <- logCenterSdResult[[1]]
+    logCenterSd <- logCenterSdResult[[2]]
+    
+    # Here, if the dataset is big, a subset of it is used to sample from. 
+    # Here we have also introduced
+    # the samplingSubset that makes it possible to balance a dataset so that each
+    # individual gets an equal number of cells as input. 
+    if (length(samplingSubset) > 1e+06) {
+        warning("This dataset is very large, and it is predicted to run for ",
+                "a considerable time, without clear benefits in terms of the ",
+                "result. A preferred option is to generate the model with a ", 
+                "sampling subset and then allocate the remaining data points ", 
+                "using dAllocate.")
     }
+    inDataFrameUsed <- inDataFrameScaled[samplingSubset,]
+
+    # Here, the sampleSize is set in cases it
+    # is 'default'.
+    if (sampleSize == "default") {
+        if (nrow(inDataFrameUsed) <= 10000) {
+            sampleSize <- nrow(inDataFrameUsed)
+        } else {
+            sampleSize <- 10000
+        }
+    }
+    
+    if (nCores == "default") {
+        nCores <- floor(detectCores() * 0.875)
+        if (nCores > 10) {
+            nCores <- 10
+        }
+    }
+    
+    penaltyOptResult <- depechePenaltyOpt(inDataFrameUsed,
+                                     k = k, maxIter = maxIter,
+                                     sampleSize = sampleSize,
+                                     penalties = penalties,
+                                     createOutput = createOutput,
+                                     minARIImprovement = minARIImprovement,
+                                     optimARI = optimARI, nCores = nCores,
+                                     plotDir = plotDir
+    )
+
+    # Now over to creating the final solution
+    # Here, the selectionDataSet is created
+    if (selectionSampleSize == "default") {
+        selectionSampleSize <- sampleSize
+    }
+    if (nrow(inDataFrameUsed) <= selectionSampleSize) {
+        selectionDataSet <- inDataFrameUsed
+    } else {
+        selectionDataSet <-
+            inDataFrameUsed[sample(seq_len(nrow(inDataFrameUsed)),
+                                   selectionSampleSize,
+                                   replace = TRUE
+            ), ]
+    }
+    
+    # If the dataset is small, a new set of
+    # seven clusterings are performed (on all
+    # the data or on a subsample, depending
+    # on the sample size), and the maximum
+    # likelihood solution is returned as the
+    # result
+    if (nrow(inDataFrameUsed) < 10000) {
+        penalty <- penaltyOptResult$bestPenalty
+        depecheAllDataResult <-
+            depecheAllData(inDataFrameUsed,
+                           penalty = penalty, k = k,
+                           nCores = nCores
+            )
+        clusterVector <- depecheAllDataResult[[1]]
+        reducedClusterCenters <- depecheAllDataResult[[2]]
+    } else {
+        # Now, the best run amongst all the runs
+        # with the largest sample size is
+        # defined, by identifying the solution
+        # that gives the highest mean f-measure
+        # for all the others. 
+        reducedClusterCenters <- 
+            depecheClusterCenterSelection(allSolutions = penaltyOptResult[[3]],
+                                          selectionDataSet = selectionDataSet, 
+                                          k = k, nCores = nCores)
+        
+        # And here, the optimal solution is created with the full dataset
+        clusterVector <- 
+            dAllocate(inDataFrameScaled, depModel = 
+                                   list("clusterCenters" = 
+                                            reducedClusterCenters, 
+                                        "logCenterSd" = FALSE))
+
+    }
+    
+    # Now, the clusters are ordered according to their size, and re-numbered
+    clusterSizeNums <- as.numeric(names(sort(table(clusterVector),
+                                             decreasing = TRUE)))
+    nClust <- length(clusterSizeNums)
+    newNums <- seq(1, nClust)
+    clusterVectorNewNums <- clusterVector
+    sortedClustSizeNums <- sort(clusterSizeNums)
+    row.names(reducedClusterCenters) <- sortedClustSizeNums
+    for (i in seq_len(nClust)) {
+        localNum <- clusterSizeNums[i]
+        clusterVectorNewNums[clusterVector == localNum] <- newNums[i]
+        row.names(reducedClusterCenters)[sortedClustSizeNums == localNum] <-
+            newNums[i]
+    }
+
+    # And here, the rows of the reducedClusterCenters are reordered
+    reducedClusterCenters <- reducedClusterCenters[
+        order(as.numeric(row.names(reducedClusterCenters))),]
+    
+    # Here, the optPenalty information is
+    # retrieved from the optimal sample size
+    # run.
+    optPenalty <- list("bestPenalty" = penaltyOptResult[[1]], 
+                       "allPenalties" = penaltyOptResult[[2]])
+    
+    #Here, we generate a matrix shoing the ground truth of where the cluster
+    #centres lie in the data, before all the normalisation procedures.
+    groundClusterCenters <- 
+        depecheGroundCenters(reducedClusterCenters, logCenterSd)
+    
+    # Here, a list of the essential elements for each cluster is generated.
+    essenceElementList <- 
+        lapply(seq_len(nrow(reducedClusterCenters)), 
+               function(x) {
+                   return(colnames(reducedClusterCenters)
+                          [which(reducedClusterCenters[x, ] != 0)])
+                   })
+    
+    #Now, in applicable cases, we produce a heatmap of the cluster centres
+    depecheHeatMap(inDataFrameUsed, reducedClusterCenters, 
+                   plotDir, logCenterSd, createOutput)
+    
+    
+    # And now, the result that should be
+    # returned is compiled
+    depecheResult <- list(
+        "clusterVector" = clusterVectorNewNums, 
+        "clusterCenters" = groundClusterCenters,
+        "essenceElementList" = essenceElementList, 
+        "penaltyOptList" = optPenalty, 
+        "logCenterSd" = logCenterSd
+    )
+
+    if (logCenterSd[[1]]) {
+        names(depecheResult)[2] <- "log2ClusterCenters"
+    }
+    
+    depecheResult
 }
