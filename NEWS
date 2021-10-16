@@ -1,3 +1,6 @@
+Changes in version 1.9.1 (2021-10-16)
++ depecheCoFunction updated to remove traces of the old dAllocate functionality
+
 Changes in version 1.7.2 (2021-03-25)
 + Major internal changes to the depeche function, with two user consequences:
     o The dualDepeche option is deprecated, as it made the function very heavy

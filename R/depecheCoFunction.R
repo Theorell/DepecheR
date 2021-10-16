@@ -112,8 +112,7 @@ depecheCoFunction <- function(inDataFrameScaled, samplingSubset,
         allocationResultList <-
             lapply(allSolutions, function(x) {
                   dAllocate(
-                      inDataFrame = selectionDataSet, clusterCenters = x,
-                      log2Off = TRUE, noZeroNum = FALSE
+                      inDataFrame = selectionDataSet, depModel = x
                   )
               })
 
@@ -160,9 +159,7 @@ depecheCoFunction <- function(inDataFrameScaled, samplingSubset,
         # And here, the optimal solution is
         # created with the full dataset
         clusterVector <- dAllocate(inDataFrameScaled,
-            reducedClusterCenters,
-            log2Off = TRUE, noZeroNum = FALSE
-        )
+            reducedClusterCenters)
     }
 
     # Now, the clusters are ordered according to their size, and re-numbered

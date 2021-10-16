@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // sparse_k_means
 List sparse_k_means(NumericMatrix X, const unsigned int k, const double reg, const bool no_zero, const unsigned long seed_off_set);
 RcppExport SEXP _DepecheR_sparse_k_means(SEXP XSEXP, SEXP kSEXP, SEXP regSEXP, SEXP no_zeroSEXP, SEXP seed_off_setSEXP) {
