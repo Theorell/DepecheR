@@ -1,12 +1,21 @@
+Changes in version 1.11.1 (2022-03-05)
++ Bug fix in dColorPlot, solving problems with individual continuous vectors
++ microClust, an internal function, has been updated to include the counting of
+    donors in addition to median and mean calculations among the neighbors.
++ The addition of nUniqueNeihgDons, in conjunction to the aforementioned change
+    to the microClust function.
++ Minor updates to dSplsda function testing, to hopefully remove the problem of
+    intermittent problems in the testing on the Linux plaform.
+
 Changes in version 1.9.1 (2021-10-16)
 + depecheCoFunction updated to remove traces of the old dAllocate functionality
 
 Changes in version 1.7.2 (2021-03-25)
 + Major internal changes to the depeche function, with two user consequences:
     o The dualDepeche option is deprecated, as it made the function very heavy
-    to maintain and was not flexible enough to be of great use. 
-    o The interface to dAllocate is much improved, allowing for smooth 
-    allocation of new data to an established model, which makes large 
+    to maintain and was not flexible enough to be of great use.
+    o The interface to dAllocate is much improved, allowing for smooth
+    allocation of new data to an established model, which makes large
     dualDepeche runs, constructed outside of the function, possible in a more
     versatile way than previously.
 
@@ -27,89 +36,89 @@ Changes in version 1.5.2 (2020-06-05)
 + Small text updates to main vinjette and examples, without code implications.
 
 Changes in version 1.5.1 (2020-05-18)
-+ Introduction of neighSmooth - a generalization of groupStatPlot. 
-+ Bug fix and simplification of dOptPenalty termination criteria. 
-+ Re-tidying of the code base. 
++ Introduction of neighSmooth - a generalization of groupStatPlot.
++ Bug fix and simplification of dOptPenalty termination criteria.
++ Re-tidying of the code base.
 
 Changes in version 1.3.3 (2020-03-18)
-+ Hiearchical clustering and ordering of the columns in the Cluster_centers 
++ Hiearchical clustering and ordering of the columns in the Cluster_centers
   heatmap from depeche.
 + Note fixed regarding the use of ::: in GroupStatPlot
 
 Changes in version 1.3.2 (2020-02-05)
-+ Bug fix in groupProbPlot solving issues when the cell number is low. 
-+ Update of dWilcox. 
-    
++ Bug fix in groupProbPlot solving issues when the cell number is low.
++ Update of dWilcox.
+
 Changes in version 1.3.1 (2019-12-05)
 + Vinjette changes
     o Introduction of a vinjette for the groupProbPlot function.
-    o Fixing a minor bug in the general vinjette. 
-    
+    o Fixing a minor bug in the general vinjette.
+
 Changes in version 1.1.9 (2019-10-06)
-+ Two changes making package more BioConductor compliant: 
++ Two changes making package more BioConductor compliant:
     o Introduction of a "Installation" and a "Session info" slot in the vinjette
-    o Formatting change of this NEWS file. 
+    o Formatting change of this NEWS file.
 
 Changes in version 1.1.8 (2019-09-12)
-+ Bug fixes. True also for last version.  
++ Bug fixes. True also for last version.
 
 Changes in version 1.1.6 (2019-09-12)
-+ Adding export option for the vector created by groupProbPlot 
++ Adding export option for the vector created by groupProbPlot
 + Correcting dColorPlot so that it can take a hex color vector as input, and
-+ keep the colors. 
++ keep the colors.
 + Adding a test for groupProbPlot.
 + Minor bug fixes for groupProbPlot.
 + Small edits to the vinjette, to clarify that umap is preferred over tSNE and
 + that dViolins currently does not fully support plotting of CyTOF data due to
-+ its sparsity. 
++ its sparsity.
 
 Changes in version 1.1.5 (2019-08-07)
-+ 4x speedup of the new groupProbPlot. 
-+ Proper citations of the MixOmics package, that the dSplsda function uses 
-+ heavily. 
-+ Bug fixes of the groupProbPlot. 
++ 4x speedup of the new groupProbPlot.
++ Proper citations of the MixOmics package, that the dSplsda function uses
++ heavily.
++ Bug fixes of the groupProbPlot.
 
 Changes in version 1.1.4 (2019-07-30)
 + A brand new function is added! Here, the user can get single-cell resolution
-+ on which group of two that a cell is more probable to belong to. See docs for 
++ on which group of two that a cell is more probable to belong to. See docs for
 + further information. Highly recommended to test!
-+ Internal c++ test corrected by external contribution by Zimoun, which we are 
-+ most grateful for. 
++ Internal c++ test corrected by external contribution by Zimoun, which we are
++ most grateful for.
 
 Changes in version 1.1.3 (2019-06-28)
 + dResidualPlot bug making colors sometimes represent the wrong group fixed.
 
 Changes in version 1.1.2 (2019-06-28)
-+ Fixing the dColorPlot and the dDensityPlot functions, so that original names 
++ Fixing the dColorPlot and the dDensityPlot functions, so that original names
 + in character vectors and factors are correctly displayed.
 
 
 Changes in version 0.99.31 (2019-03-13)
 + dColorPlot and dDensity plot simplified, in that it is now possible to add
-+ just a vector of any kind, and it will be returned as colors. 
++ just a vector of any kind, and it will be returned as colors.
 + A colorScale alternative, linking to dColorVector has been added to the above.
-+ A new legend has been added to dColorPlot. 
-+ The options createDirectory and directoryName have been removed from all 
-+ visualization functions and have been replaced by plotDir. 
++ A new legend has been added to dColorPlot.
++ The options createDirectory and directoryName have been removed from all
++ visualization functions and have been replaced by plotDir.
 + The different "name" arguments for plots have been streamlined to be called
 + plotName in all instances, to avoid using base function names for objects.
 + The testData dataset has been made smaller, to increase example execution time
 + and diminish pacakge size.
-+ dViolins completely worked over. Now, assymetrical violin plots are generated, 
-+ leading to a more succinct result. 
++ dViolins completely worked over. Now, assymetrical violin plots are generated,
++ leading to a more succinct result.
 + Responses to all issues raised by BioConductor reviewer.
 + Bug fix in dual depeche
 
 Changes in version 0.99.30 (2019-02-18)
-+ dViolins completely worked over. Now, assymetrical violin plots are generated, 
-+ leading to a more succinct result. 
++ dViolins completely worked over. Now, assymetrical violin plots are generated,
++ leading to a more succinct result.
 + Responses to all issues raised by BioConductor reviewer.
 + Bug fix in dual depeche
 
 Changes in version 0.99.24 (2019-01-24)
-+ Technical, internal tests have been made more efficient. 
-+ Redundant and time consuming examples have been given a dontrun command. 
-+ No changes to user functions. 
++ Technical, internal tests have been made more efficient.
++ Redundant and time consuming examples have been given a dontrun command.
++ No changes to user functions.
 
 Changes in version 0.99.20 (2019-01-23)
 + Selecting the number of used cores made more Windows-friendly.
@@ -118,36 +127,36 @@ Changes in version 0.99.13 (2019-01-18)
 + Package size made considerably smaller.
 
 Changes in version 0.99.9 (2019-01-15)
-+ The figure files connected to the vinjette have been moved out of the package 
-+ to a separate github directory. This will reduce the package size 
++ The figure files connected to the vinjette have been moved out of the package
++ to a separate github directory. This will reduce the package size
 + significantly.
 
 Changes in version 0.99.3 (2019-01-15)
-+ No errors or warnings in BiocCheckGitClone after removal of .Rapp.history 
++ No errors or warnings in BiocCheckGitClone after removal of .Rapp.history
 
 Changes in version 0.99.1 (2019-01-14)
-+ C++ code reorganized, making package considerably smaller after build. 
++ C++ code reorganized, making package considerably smaller after build.
 + Package now passes both CMD check and BiocCheck without errors or warnings.
 
 Changes in version 0.81.4 (2019-01-11)
-+ Multicore feature made functional for dColorPlot, increasing execution speed. 
++ Multicore feature made functional for dColorPlot, increasing execution speed.
 
 Changes in version 0.81.3 (2019-01-11)
 + CMD check, test_that BiocCheck all pass.
 
 Changes in version 0.81.2 (2019-01-11)
-+ BiocCheck() compliance increased: 
++ BiocCheck() compliance increased:
     o seq functions used instead of :
     o vapply is used instead of sapply.
 
 Changes in version 0.81.1 (2019-01-10)
-+ A vignette has been created. 
-+ A visual bug, making the colors reversed in the residual plot function 
-+ compared to the dWilcox and DSplsda functions has been removed. 
++ A vignette has been created.
++ A visual bug, making the colors reversed in the residual plot function
++ compared to the dWilcox and DSplsda functions has been removed.
 + Formatting to satisfy the BioConductor criteria has been added.
 + Tests have been adapted to work after reformatting
-+ No actual changes have been added to the code. 
++ No actual changes have been added to the code.
 
 Changes in version 0.80.3 (2019-01-09)
-+ This is the first time the NEWS file is present. 
-+ For all previous changes, and those are hundreds, see the git push messages. 
++ This is the first time the NEWS file is present.
++ For all previous changes, and those are hundreds, see the git push messages.

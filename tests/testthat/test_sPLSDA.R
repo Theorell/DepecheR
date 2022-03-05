@@ -14,6 +14,7 @@ groupVector <- testData$label[allDataRows]
 clusterVector <- testDataDepeche$clusterVector[allDataRows]
 subsetVector <- sample(1:2000, size = 100)
 
+set.seed(1)
 sPLSDAObject <- dSplsda(
     xYData = xYData, idsVector = idsVector,
     groupVector = groupVector,
@@ -23,6 +24,7 @@ sPLSDAObject <- dSplsda(
 )
 
 # Alternative usage
+set.seed(1)
 sPLSDAObject <- dSplsda(
     xYData = xYData, idsVector = idsVector,
     groupVector = groupVector,
@@ -31,6 +33,7 @@ sPLSDAObject <- dSplsda(
 )
 
 # Alternative usage
+set.seed(1)
 sPLSDAObject <- dSplsda(
     xYData = xYData, idsVector = idsVector,
     groupVector = groupVector,

@@ -48,9 +48,14 @@
 #' @param bandColor The color of the contour bands. Defaults to black.
 #' @param dotSize Simply the size of the dots. The default makes the dots
 #' maller the more observations that are included.
+#' @param continuous Boolean. Is the colorData parameter continuous? If
+#' default, then only numeric vectors with more than 20 values are considered
+#' continuous.This only applies to situations with single vectors. In situations
+#' where a dataframe is added as colorData, all variables are considered
+#' continuous.
 #' @param multiCore If the algorithm should be performed on multiple cores.
 #' This increases the speed if the dataset is medium-large (>100000 rows) and
-#' has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and
+#' has at least 5 columns. Default is TRUE when these above criteria are met and
 #' FALSE otherwise.
 #' @param nCores If multiCore is TRUE, then this sets the number of parallel
 #' processes. The default is currently 87.5 percent with a cap on 10 cores, as
@@ -66,9 +71,9 @@
 #' # Load some data
 #' data(testData)
 #' \dontrun{
-#' # Load or create the dimensions that you want to plot the result over. 
+#' # Load or create the dimensions that you want to plot the result over.
 #' # uwot::umap recommended due to speed, but tSNE or other method would
-#' # work as fine. 
+#' # work as fine.
 #' data(testDataSNE)
 #'
 #' # Run the function for two of the variables
@@ -91,7 +96,8 @@ dColorPlot <- function(colorData, controlData, xYData,
                        colorScale = "rich_colors", plotName = "default",
                        densContour = TRUE, title = FALSE, plotDir = "default",
                        truncate = TRUE, bandColor = "black",
-                       dotSize = 500 / sqrt(nrow(xYData)), 
+                       dotSize = 500 / sqrt(nrow(xYData)),
+                       continuous = "default",
                        multiCore = "default",
                        nCores = "default", createOutput = TRUE) {
     if (is.matrix(colorData)) {
@@ -122,8 +128,25 @@ dColorPlot <- function(colorData, controlData, xYData,
         }
     }
 
+    if (continuous == "default"){
+        if(is.numeric(colorData) && length(unique(colorData)) > 20){
+            continuous <- TRUE
+        } else {
+            continuous <- FALSE
+        }
+    }
+    minScaleVal <- 0
+    maxScaleVal <- 1
     if (missing(controlData)) {
         controlData <- colorData
+    }
+
+    if(continuous){
+        colorData <- as.data.frame(colorData)
+        controlData <- as.data.frame(controlData)
+        colnames(colorData) <- colnames(controlData) <- "x"
+        minScaleVal <- min(controlData[,1])
+        maxScaleVal <- max(controlData[,1])
     }
 
     # Create the density matrix for xYData.
@@ -136,46 +159,32 @@ dColorPlot <- function(colorData, controlData, xYData,
     if (is.vector(colorData) || is.factor(colorData)) {
         wasFactor <- FALSE
         colorDataIsColVec <- FALSE
-        if (is.numeric(colorData) && length(unique(colorData)) > 50) {
-            colorDataRound <- round(dScale(colorData,
-                control = controlData,
-                scale = c(0, 1),
-                robustVarScale = FALSE,
-                center = FALSE,
-                multiplicationFactor = 50,
-                truncate = truncate
-            ))
-        } else {
-            if (is.character(colorData)) {
-                # Here, we make an exception for pre-made color vectors
-                if (nchar(colorData[1]) %in% c(7, 9) &&
-                    substr(colorData[1], 1, 1) == "#") {
-                    colorVector <- colorData
-                    colorDataIsColVec <- TRUE
-                }
-                colorData <- as.factor(colorData)
+        if (is.character(colorData)) {
+            # Here, we make an exception for pre-made color vectors
+            if (nchar(colorData[1]) %in% c(7, 9) &&
+                substr(colorData[1], 1, 1) == "#") {
+                colorVector <- colorData
+                colorDataIsColVec <- TRUE
             }
-            if (is.factor(colorData)) {
-                plotNames <- as.character(unique(colorData))
-                colorData <- as.numeric(colorData)
-                wasFactor <- TRUE
-            }
-            colorDataRound <- colorData
+            colorData <- as.factor(colorData)
         }
-        uniqueNumsRaw <- unique(colorDataRound)
+        #Now, all are factors, and can be treated as such.
+        if (is.factor(colorData)) {
+            plotNames <- as.character(unique(colorData))
+            colorData <- as.numeric(colorData)
+            wasFactor <- TRUE
+        }
+        uniqueNumsRaw <- unique(colorData)
         uniqueNums <- uniqueNumsRaw[order(uniqueNumsRaw)]
-        if (wasFactor) {
-            plotNames <- plotNames[order(uniqueNumsRaw)]
-        } else {
+        if (wasFactor == FALSE) {
             plotNames <- uniqueNums
         }
         if (colorDataIsColVec == FALSE) {
-            colorVector <- dColorVector(colorDataRound,
+            colorVector <- dColorVector(c(colorData),
                 colorOrder = uniqueNums,
                 colorScale = colorScale
             )
         }
-
         dPlotCoFunction(
             colorVariable = colorVector, plotName = plotName,
             xYData = xYData, title = title,
@@ -194,7 +203,7 @@ dColorPlot <- function(colorData, controlData, xYData,
             colorScale = colorScale, colorOrder = c(0:50)
         )
         if (multiCore == "default") {
-            if (nrow(colorData) > 1e+05) {
+            if (nrow(colorData) > 1e+05 && ncol(colorData) > 4) {
                 multiCore <- TRUE
             } else {
                 multiCore <- FALSE
@@ -240,13 +249,13 @@ dColorPlot <- function(colorData, controlData, xYData,
     }
     # Create a suitable legend for the task
     if (createOutput) {
-        if (is.vector(colorData)) {
+        if (is.vector(colorData) || continuous) {
             pdf(file.path(plotDir, paste0(plotName, "_legend.pdf")))
         } else {
             pdf(file.path(plotDir, "Color_legend.pdf"))
         }
 
-        if (is.vector(colorData) && length(uniqueNums < 50)) {
+        if (is.vector(colorData) && length(unique(colorData)) < 50) {
             if (colorDataIsColVec) {
                 colorIdsDataFrame <- data.frame(colorData)
             }
@@ -268,7 +277,7 @@ dColorPlot <- function(colorData, controlData, xYData,
             par(fig = c(0.35, 0.65, 0, 1), xpd = NA)
             z <- matrix(seq_len(49), nrow = 1)
             x <- 1
-            y <- seq(0, 1, len = 49)
+            y <- seq(minScaleVal, maxScaleVal, len = 49)
             image(x, y, z,
                 col = dColorVector(seq.int(1, 50),
                     colorScale = colorScale
@@ -276,8 +285,8 @@ dColorPlot <- function(colorData, controlData, xYData,
                 axes = FALSE, xlab = "", ylab = yname
             )
             axis(2)
-            text(1, 1.1, labels = topText, cex = 1.1)
-            text(1, -0.1, labels = bottomText, cex = 1.1)
+            text(1, maxScaleVal+((maxScaleVal-minScaleVal)*0.1), labels = topText, cex = 1.1)
+            text(1,minScaleVal-((maxScaleVal-minScaleVal)*0.1), labels = bottomText, cex = 1.1)
             box()
         }
         dev.off()

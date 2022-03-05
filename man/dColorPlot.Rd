@@ -16,6 +16,7 @@ dColorPlot(
   truncate = TRUE,
   bandColor = "black",
   dotSize = 500/sqrt(nrow(xYData)),
+  continuous = "default",
   multiCore = "default",
   nCores = "default",
   createOutput = TRUE
@@ -68,9 +69,15 @@ truncation.}
 \item{dotSize}{Simply the size of the dots. The default makes the dots
 maller the more observations that are included.}
 
+\item{continuous}{Boolean. Is the colorData parameter continuous? If
+default, then only numeric vectors with more than 20 values are considered
+continuous.This only applies to situations with single vectors. In situations
+where a dataframe is added as colorData, all variables are considered
+continuous.}
+
 \item{multiCore}{If the algorithm should be performed on multiple cores.
 This increases the speed if the dataset is medium-large (>100000 rows) and
-has at least 5 columns. Default is TRUE when the rows exceed 100000 rows and
+has at least 5 columns. Default is TRUE when these above criteria are met and
 FALSE otherwise.}
 
 \item{nCores}{If multiCore is TRUE, then this sets the number of parallel
@@ -99,9 +106,9 @@ axes or anything alike are added, to simplify usage in publications.
 # Load some data
 data(testData)
 \dontrun{
-# Load or create the dimensions that you want to plot the result over. 
+# Load or create the dimensions that you want to plot the result over.
 # uwot::umap recommended due to speed, but tSNE or other method would
-# work as fine. 
+# work as fine.
 data(testDataSNE)
 
 # Run the function for two of the variables

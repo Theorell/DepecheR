@@ -16,6 +16,7 @@
 #' @keywords internal
 microClust <- function(dataCenter, dataNeigh, dataReturn,
                        method = "median", k = 11, trim = 0) {
+    set.seed(100)
     closest10Pos <- knnx.index(dataNeigh, dataCenter,
         k = k,
         algorithm = "cover_tree"
@@ -39,7 +40,7 @@ microClust <- function(dataCenter, dataNeigh, dataReturn,
                   }, 1
             )
         }
-    } else {
+    } else if (method == "mean"){
         if (is.matrix(dataReturn)) {
             closest10Result <- lapply(
                 seq_len(nrow(closest10Pos)),
@@ -55,5 +56,11 @@ microClust <- function(dataCenter, dataNeigh, dataReturn,
                 1
             )
         }
+    } else if (method == "nUnique"){
+      closest10Result <- vapply(
+        seq_len(nrow(closest10Pos)),
+        function(x) length(unique(dataReturn[closest10Pos[x, ]])),
+        1
+      )
     }
 }
