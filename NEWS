@@ -1,3 +1,6 @@
+Changes in version 1.11.2 (2022-03-11)
++ Searching for unidentified bug in test for dSlsda function.
+
 Changes in version 1.11.1 (2022-03-05)
 + Bug fix in dColorPlot, solving problems with individual continuous vectors
 + microClust, an internal function, has been updated to include the counting of

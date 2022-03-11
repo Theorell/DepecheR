@@ -24,13 +24,13 @@ sPLSDAObject <- dSplsda(
 )
 
 # Alternative usage
-set.seed(1)
-sPLSDAObject <- dSplsda(
-    xYData = xYData, idsVector = idsVector,
-    groupVector = groupVector,
-    clusterVector = clusterVector, paired = TRUE,
-    createOutput = FALSE
-)
+#set.seed(1)
+#sPLSDAObject <- dSplsda(
+#    xYData = xYData, idsVector = idsVector,
+#    groupVector = groupVector,
+#    clusterVector = clusterVector, paired = TRUE,
+#    createOutput = FALSE
+#)
 
 # Alternative usage
 set.seed(1)
