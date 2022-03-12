@@ -176,7 +176,9 @@ dColorPlot <- function(colorData, controlData, xYData,
         }
         uniqueNumsRaw <- unique(colorData)
         uniqueNums <- uniqueNumsRaw[order(uniqueNumsRaw)]
-        if (wasFactor == FALSE) {
+        if (wasFactor) {
+            plotNames <- plotNames[order(uniqueNumsRaw)]
+        } else {
             plotNames <- uniqueNums
         }
         if (colorDataIsColVec == FALSE) {
