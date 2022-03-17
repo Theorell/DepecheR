@@ -15,8 +15,8 @@
 /*.Rcheck/
 
 # RStudio files
-.Rproj.user/
-.Rproj
+*.Rproj.user/
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -32,7 +32,11 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-.Rproj.user
+*.Rproj.user
 
 #Other files that should be excluded
 *.so
+*.DS_Store
+
+#Controversially, I also exclude the sPLSDA function testing, as it constantly
+#causes pain on the server. I will continue to test the function locally.

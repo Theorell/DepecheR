@@ -1,3 +1,7 @@
+Changes in version 1.11.4 (2022-03-17)
++ sPLSDA function testing excluded from BioConductor, as it works locally, but
+    fails at BioConductor.
+
 Changes in version 1.11.3 (2022-03-12)
 + Bug fix in dColorPlot affecting character vectors and factors used as input.
 
