@@ -140,6 +140,13 @@ groupProbPlot <- function(xYData, groupVector, euclidSpaceData,
         kNeighK = kNeighK, kMeansK = kMeansK
     )
 
+    #Now, we make a vital change to the scale: the values never go below
+    #50%, as we are projecting two scale on each other, thus showing that
+    #a value of -49 also means +51 and vice versa. Therefore the values
+    #need to be changed.
+    fullTempResult <- fullResult+(50-(50*fullResult)/100)
+    fullResult <- vapply(fullTempResult, function(x) if(x<50){x-100}else{x}, 100)
+
     # Here the data that will be used for
     # plotting is scaled.
     colnames(xYData) <- c("V1", "V2")

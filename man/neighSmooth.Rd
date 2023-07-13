@@ -10,7 +10,8 @@ neighSmooth(
   neighRows = seq_len(nrow(as.matrix(focusData))),
   ctrlRows,
   kNeighK = max(100, round(nrow(as.matrix(euclidSpaceData))/10000)),
-  kMeansK = max(1, round(nrow(as.matrix(euclidSpaceData))/1000))
+  kMeansK = max(1, round(nrow(as.matrix(euclidSpaceData))/1000)),
+  method = "mean"
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ background signal from the neighRows data before sending the data back.}
 
 \item{kMeansK}{The number of clusters in the initial step of the algorithm.
 A higher number leads to shorter runtime, but potentially lower accuracy.}
+
+\item{method}{The method to use for the smoothing. Three values possible:
+mean (default), median and mode.}
 }
 \value{
 An object of the same dimensions as focusData that has been smoothed.

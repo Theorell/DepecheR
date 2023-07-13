@@ -13,6 +13,7 @@
 #' aggregated information from the k nearest neighbors.
 #' @importFrom FNN knnx.index
 #' @importFrom robustbase colMedians
+#' @importFrom collapse fmode
 #' @keywords internal
 microClust <- function(dataCenter, dataNeigh, dataReturn,
                        method = "median", k = 11, trim = 0) {
@@ -52,15 +53,36 @@ microClust <- function(dataCenter, dataNeigh, dataReturn,
         } else {
             closest10Result <- vapply(
                 seq_len(nrow(closest10Pos)),
-                function(x) mean(dataReturn[closest10Pos[x, ]]),
+                function(x)
+                    mean(dataReturn[closest10Pos[x, ]]),
                 1
             )
         }
     } else if (method == "nUnique"){
       closest10Result <- vapply(
         seq_len(nrow(closest10Pos)),
-        function(x) length(unique(dataReturn[closest10Pos[x, ]])),
+        function(x)
+            length(unique(dataReturn[closest10Pos[x, ]])),
         1
       )
+    } else if (method == "mode"){
+        #Here, we have to deal with some peculearities in the neighSmoooth
+        #code, that
+        #means that the indata always is a matrix. Therefore, we will work
+        #with matrices at this stage.
+        #closest10Result <- vapply(
+        #    seq_len(nrow(closest10Pos)),
+        #    function(x)
+        #        fmode(dataReturn[closest10Pos[x, ]]),
+        #    1
+        #)
+        closest10Result <- lapply(
+            seq_len(nrow(closest10Pos)),
+            function(x) {
+                fmode(dataReturn[closest10Pos[x, ], ]
+                )
+            }
+        )
+        resultDf <- do.call("rbind", closest10Result)
     }
 }

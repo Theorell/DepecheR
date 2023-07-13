@@ -23,6 +23,8 @@
 #' @param kNeighK The number of nearest neighbors.
 #' @param kMeansK The number of clusters in the initial step of the algorithm.
 #' A higher number leads to shorter runtime, but potentially lower accuracy.
+#' @param method The method to use for the smoothing. Three values possible:
+#' mean (default), median and mode.
 #' @return An object of the same dimensions as focusData that has been smoothed.
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
@@ -51,7 +53,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
                         ) / 10000)),
                         kMeansK = max(1, round(nrow(
                             as.matrix(euclidSpaceData)
-                        ) / 1000))) {
+                        ) / 1000)), method = "mean") {
     if (is.vector(focusData)) {
         focusData <- data.frame(focusData, 0)
         focusDataIsVector <- TRUE
@@ -64,7 +66,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
     } else if (is.matrix(euclidSpaceData)) {
         euclidSpaceData <- as.data.frame(euclidSpaceData)
     }
-    # First, the dimensionality is reduced to 10 dimensions for the 
+    # First, the dimensionality is reduced to 10 dimensions for the
     # euclidSpaceData
     if (ncol(euclidSpaceData) > 10) {
         dataRedDim <- fast.prcomp(euclidSpaceData)$x[, seq(1, 10)]
@@ -77,7 +79,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
     kMeansClusters <- kMeansResult$cluster
     print("Done with k-means")
 
-    # Here, the rows connected to the neighbors, the control neighbors or 
+    # Here, the rows connected to the neighbors, the control neighbors or
     # neither are defined
     groupVec <- rep("none", nrow(dataRedDim))
     groupVec[neighRows] <- "neigh"
@@ -124,7 +126,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
         # Now, the datasets are constructed from this cluster range
         locDataRedDimClustList <- dataRedDimClustList[clusterRange]
 
-        # Here, the neighbors and the control neighbors are found in the 11 
+        # Here, the neighbors and the control neighbors are found in the 11
         # closest clusters for each of the focus clusters.
         locDistCenters <- distCenters[clusterRange]
 
@@ -167,7 +169,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
                 dataCenter = as.matrix(locDataRedDimClustList[[i]]),
                 dataNeigh = neighCtrlNeighReturnList[[i]][[1]],
                 dataReturn = neighCtrlNeighReturnList[[i]][[2]],
-                method = "mean", k = kNeighK
+                method = method, k = kNeighK
             )
         if (missing(ctrlRows) == FALSE) {
             resultCtrl <- foreach(
@@ -178,7 +180,7 @@ neighSmooth <- function(focusData, euclidSpaceData,
                     dataCenter = as.matrix(locDataRedDimClustList[[i]]),
                     dataNeigh = neighCtrlNeighReturnList[[i]][[3]],
                     dataReturn = neighCtrlNeighReturnList[[i]][[4]],
-                    method = "mean", k = kNeighK
+                    method = method, k = kNeighK
                 )
 
             neighCtrlDifference <- lapply(seq_along(resultNeigh), function(y) {

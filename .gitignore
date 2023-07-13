@@ -40,3 +40,4 @@ vignettes/*.pdf
 
 #Controversially, I also exclude the sPLSDA function testing, as it constantly
 #causes pain on the server. I will continue to test the function locally.
+.Rproj.user
