@@ -157,9 +157,7 @@ groupProbPlot <- function(xYData, groupVector, euclidSpaceData,
 
     # make a breaks vector to define each bin
     # for the colors
-    brks <- with(residual.df, seq(-100, 100,
-        length.out = 10
-    ))
+    brks <- with(residual.df, c(-100, -90, -80, -70, -60, 0, 60, 70, 80, 90, 100))
 
     # assign each value to a bin
     grps <- with(residual.df, cut(residual.df[, 1],

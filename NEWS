@@ -1,3 +1,6 @@
+Changes in version 1.17.2 (2023-07-14)
++ Correction to scale in groupProbPlot.
+
 Changes in version 1.17.1 (2023-07-13)
 + A mode option is added to the neighSmooth function.
 + The scale of the groupProbPlot output is corrected, to -100, over 50 to 100.
