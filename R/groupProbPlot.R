@@ -157,14 +157,14 @@ groupProbPlot <- function(xYData, groupVector, euclidSpaceData,
 
     # make a breaks vector to define each bin
     # for the colors
-    brks <- with(residual.df, c(-100, -90, -80, -70, -60, 0, 60, 70, 80, 90, 100))
+    brks <- c(-100, -90, -80, -70, -60, 0, 60, 70, 80, 90, 100)
 
     # assign each value to a bin
     grps <- with(residual.df, cut(residual.df[, 1],
         breaks = brks,
         include.lowest = TRUE
     ))
-    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(9)
+    colors <- colorRampPalette(c("#FF0000", "white", "#0000FF"))(10)
     xYData$col <- colors[grps]
 
     dPlotCoFunction(
@@ -181,9 +181,9 @@ groupProbPlot <- function(xYData, groupVector, euclidSpaceData,
     yname <- "Probability for group identity, percent"
     topText <- paste0(groupName1, " more probable")
     bottomText <- paste0(groupName2, " more probable")
-    z <- matrix(seq_len(9), nrow = 1)
+    z <- matrix(seq_len(10), nrow = 1)
     x <- 1
-    y <- seq(-100, 100, len = 9)
+    y <- seq(-100, 100, len = 10)
 
     if (createOutput) {
         pdf(file.path(plotDir, paste0(plotName, "_probability_scale.pdf")))
