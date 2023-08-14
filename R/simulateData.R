@@ -2,10 +2,10 @@
 # centers: A list with two items, each item a vector specifying the center of a
 # data cluster.
 # prop: A scalar determining relative number of data points in the two clusters
-# dataCols: A scalar determining the number of dimensions. Superfluous if 
+# dataCols: A scalar determining the number of dimensions. Superfluous if
 # "centers" is provided.
 # observations: A scalar determining the number of sampled data points.
-generateBimodalData <- function(centers, prop = 0.3, dataCols = 5, 
+generateBimodalData <- function(centers, prop = 0.3, dataCols = 5,
                                 observations = 10000) {
     if (missing(centers)) {
         centers <- rbind(runif(dataCols) + 50, runif(dataCols) - 50)
@@ -67,7 +67,7 @@ generateSparseData <- function(modeN = 5, dataCols = 100,
     ids <- matrix(0, nrow = observations, ncol = 1)
     for (i in seq_len(modeN)) {
         temp <- matrix(
-            rnorm(observations * dataCols, mean = 0, sd = 1),
+            rnorm(obsPerMode * dataCols, mean = 0, sd = 1),
             obsPerMode, dataCols
         )
         samples[seq((1 + obsPerMode * (i - 1)), obsPerMode * (i)), ] <- temp +

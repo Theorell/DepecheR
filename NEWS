@@ -1,3 +1,8 @@
+Changes in version 1.17.4 (2023-08-14)
++ Adding collapse package to the description file.
++ Correction of the generateSparseData function.
++ Set.seed removed from two places and now non-present in the package.
+
 Changes in version 1.17.3 (2023-07-26)
 + Correction to groupProbPlot, as the last version threw out the most significant
     cells.

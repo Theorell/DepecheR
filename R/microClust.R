@@ -17,7 +17,6 @@
 #' @keywords internal
 microClust <- function(dataCenter, dataNeigh, dataReturn,
                        method = "median", k = 11, trim = 0) {
-    set.seed(100)
     closest10Pos <- knnx.index(dataNeigh, dataCenter,
         k = k,
         algorithm = "cover_tree"

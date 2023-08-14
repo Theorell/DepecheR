@@ -71,7 +71,6 @@ nUniqueNeighDons <- function(donorData, euclidSpaceData,
         dataRedDim <- euclidSpaceData
     }
     # Now, the cells are clustered according to this analysis
-    set.seed(100)
     kMeansResult <- kmeans(dataRedDim, kMeansK, iter.max = 100)
     kMeansCenters <- kMeansResult$centers
     kMeansClusters <- kMeansResult$cluster
@@ -93,7 +92,6 @@ nUniqueNeighDons <- function(donorData, euclidSpaceData,
     rowNumList <- split(rowNumbers, kMeansClusters)
     # clusterIds <- split(kMeansClustersData, kMeansClustersData)
 
-    set.seed(100)
     if (nrow(kMeansCenters) > 11) {
         distCenters <- as.list(as.data.frame(
             t(knnx.index(kMeansCenters, kMeansCenters, 11))
