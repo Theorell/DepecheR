@@ -113,9 +113,9 @@ the mixOmics package.
 # Load some data
 data(testData)
 \dontrun{
-# Load or create the dimensions that you want to plot the result over. 
+# Load or create the dimensions that you want to plot the result over.
 # uwot::umap recommended due to speed, but tSNE or other method would
-# work as fine. 
+# work as fine.
 data(testDataSNE)
 
 # Run the clustering function. For more rapid example execution,
@@ -127,29 +127,10 @@ data(testDataDepeche)
 # Run the function. This time without pairing.
 sPLSDAObject <- dSplsda(
     xYData = testDataSNE$Y, idsVector = testData$ids,
-    groupVector = testData$label, 
+    groupVector = testData$label,
     clusterVector = testDataDepeche$clusterVector
 )
 
-# Here, pairing is used. NB!! This artificial example is only present to
-# show how to use the function. In reality, pairing should only be used in
-# situations where true paired data is present! The only reason this works
-# although this is non-paired data is that the number of donors is identical.
-# As it is, the algorithm internally converts the idsVector so that the first
-# individual in group1 is associated with the first individual in group2.
-# This can lead to erratic problems, so make sure that either a valid id
-# vector, with the same id occuring two times for each individual is
-# provided, or that the individuals occur in the exact same order in both
-# groups.
-
-sPLSDAObject <- dSplsda(
-    xYData = testDataSNE$Y, idsVector = testData$ids,
-    groupVector = testData$label, clusterVector =
-        testDataDepeche$clusterVector,
-    paired = TRUE, plotName = "sPLSDAPlot_paired", 
-    groupName1 = "Stimulation 1",
-    groupName2 = "Stimulation 2"
-)
 
 # Here is an example of how the display vector can be used.
 subsetVector <- sample(1:nrow(testData), size = 10000)

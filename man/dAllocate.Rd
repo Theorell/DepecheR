@@ -11,7 +11,7 @@ dAllocate(inDataFrame, depModel)
 centers, for example a richer, but less representative dataset, with all
 datapoints from all donors, instead of only a set number of values from all.}
 
-\item{depModel}{This is the result of the original application of the 
+\item{depModel}{This is the result of the original application of the
 depeche function on the associated, more representative dataset.}
 }
 \value{
@@ -45,9 +45,9 @@ depeche_test <- dAllocate(testDataTest[, 2:15], depeche_train
 )
 
 # And finally plot the two groups to see how great the overlap was:
-clustVecList <- list(list("Ids" =testDataTrain$ids, 
+clustVecList <- list(list("Ids" =testDataTrain$ids,
                           "Clusters" = depeche_train$clusterVector),
-                     list("Ids" =testDataTest$ids, 
+                     list("Ids" =testDataTest$ids,
                           "Clusters" = depeche_test))
 tablePerId <- do.call("rbind", lapply(seq_along(clustVecList), function(x){
                                       locDat <- clustVecList[[x]]
@@ -55,7 +55,7 @@ tablePerId <- do.call("rbind", lapply(seq_along(clustVecList), function(x){
                                       locDat$Ids, locDat$Clusters)),
                                       1, function(y) y/sum(y))
                                       locResLong <- reshape2::melt(locRes)
-                                      colnames(locResLong) <- 
+                                      colnames(locResLong) <-
                                       c("Cluster", "Donor", "Fraction")
                                       locResLong$Group <- x
                                       locResLong
@@ -64,9 +64,9 @@ tablePerId$Cluster <- as.factor(tablePerId$Cluster)
 tablePerId$Group <- as.factor(tablePerId$Group)
 
 library(ggplot2)
-ggplot(data=tablePerId, aes(x=Cluster, y=Fraction, 
+ggplot(data=tablePerId, aes(x=Cluster, y=Fraction,
         fill=Group)) + geom_boxplot() + theme_bw()
-}        
+}
 }
 \seealso{
 \code{\link{depeche}}

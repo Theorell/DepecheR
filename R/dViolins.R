@@ -36,10 +36,13 @@
 #' data(testDataDepeche)
 #'
 #' # Create the plots of the variables that contribute to creating cluster 3
+#'
+#' \dontrun{
 #' dViolins(testDataDepeche$clusterVector,
 #'     inDataFrame = testData,
 #'     plotClusters = 3, plotElements = testDataDepeche$essenceElementList
 #' )
+#' }
 #' @export dViolins
 dViolins <- function(clusterVector, inDataFrame,
                      plotClusters = unique(clusterVector), plotElements = "all",
@@ -59,7 +62,7 @@ dViolins <- function(clusterVector, inDataFrame,
             plotElements <- colnames(inDataFrame)
             if (length(plotElements) > 100) {
                 stop("All features should be plotted, and these are more than ",
-                     "100 in total, which is unfeasible. Please specify ", 
+                     "100 in total, which is unfeasible. Please specify ",
                      "something more reasonable for plotElements and try ",
                      "again.")
             }
@@ -72,7 +75,7 @@ dViolins <- function(clusterVector, inDataFrame,
         plotElements <- localPlotElementList
     }
 
-    # To reduce the size of the objects involved, all features that should 
+    # To reduce the size of the objects involved, all features that should
     # not be plotted at all are excluded.
 
     allPlotElements <- unique(unlist(plotElements))

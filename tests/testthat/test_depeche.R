@@ -1,6 +1,7 @@
 ###################### depeche
 
 context("depeche")
+set.seed(101)
 x <- DepecheR:::generateBimodalData(observations = 100, dataCols = 150)
 out <- depeche(x$samples, maxIter = 8, nCores = 2, createOutput = FALSE)
 test_that("depeche expected output", {
@@ -10,7 +11,7 @@ test_that("depeche expected output", {
 })
 
 # sparsity test
-
+set.seed(10)
 x <- DepecheR:::generateSparseData(observations = 500)
 out <- depeche(x$samples,
     maxIter = 8, createOutput = FALSE, nCores = 2,

@@ -13,11 +13,11 @@ The package is indirectly clearly dependent on Rtsne for generation of
 output. See comment on the github wiki for how to speed Rtsne up.
 }
 \author{
-\strong{Maintainer}: Jakob Theorell \email{jakob.theorell@ki.se}
+\strong{Maintainer}: Jakob Theorell \email{jakob.theorell@ki.se} (\href{https://orcid.org/0000-0001-8752-3151}{ORCID})
 
 Authors:
 \itemize{
-  \item Axel Theorell \email{axel.theorell@bsse.ethz.ch}
+  \item Axel Theorell \email{axel.theorell@gmail.com}
 }
 
 }

@@ -1,7 +1,7 @@
 #' @importFrom moments kurtosis
 #This function is used internally in depeche and dAllocate.
-#For all options, see depeche or dAllocate, to whom this function is a 
-#sub-module. It generates a list containing a scaled and centered dataframe, as 
+#For all options, see depeche or dAllocate, to whom this function is a
+#sub-module. It generates a list containing a scaled and centered dataframe, as
 #well as a list that clarifies if and how log, center and scale were applied.
 depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
     logCenterSd <- list(FALSE, FALSE, 1)
@@ -35,19 +35,19 @@ depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
             inDataFrame <- as.data.frame(inDataMatrixLog)
             logCenterSd[[1]] <- TRUE
         }
-        
+
         kurtosisValue2 <- kurtosis(as.vector(as.matrix(inDataFrame)))
         message(
             "The data was found to be heavily tailed (kurtosis ",
-            kurtosisValue1, "). Therefore, it was log2-transformed, leading to 
+            kurtosisValue1, "). Therefore, it was log2-transformed, leading to
             a new kurtosis value of ", kurtosisValue2, "."
         )
     }
-    
+
     # Centering and overall scaling is
     # performed
-    if (center == "peak" || 
-        (center == "default" && ncol(inDataFrame) <= 100)) {
+    if (length(center) == 1 && (center == "peak" ||
+        (center == "default" && ncol(inDataFrame) <= 100))) {
         inDataFrameScaleList <- dScale(inDataFrame,
                                        scale = FALSE,
                                        center = "peak", returnCenter = TRUE
@@ -59,10 +59,10 @@ depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
                     "peak centering is applied.")
         } else {
             message("Peak centering is applied although the data has ",
-                    "more than 100 columns") 
+                    "more than 100 columns")
         }
-    } else if (center == "mean" || 
-               (center == "default" && ncol(inDataFrame) > 100)) {
+    } else if (length(center) == 1 && (center == "mean" ||
+               (center == "default" && ncol(inDataFrame) > 100))) {
         inDataFrameScaleList <- dScale(inDataFrame,
                                        scale = FALSE,
                                        center = "mean", returnCenter = TRUE
@@ -78,7 +78,7 @@ depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
         }
     } else if (length(center) > 1){
         if(length(center) == length(inDataFrame)){
-            inDataFramePreScaled <- 
+            inDataFramePreScaled <-
                 as.data.frame(do.call(
                     "cbind",lapply(seq_len(ncol(inDataFrame)),
                                    function(x){
@@ -91,12 +91,12 @@ depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
             stop("Mismatch between the number of columns and the length of",
                  " the centering vector")
         }
-        
+
     } else if (center == FALSE) {
         message("No centering performed")
         inDataFramePreScaled <- inDataFrame
     }
-    
+
     # Here, all the data is divided by the
     # standard deviation of the full dataset
     if(is.logical(scale) && scale){
@@ -110,6 +110,6 @@ depecheLogCenterSd <- function(inDataFrame, log2Off, center, scale){
         logCenterSd[[3]] <- scale
         message("Scaling value taken directly from input")
     }
-    
+
     return(list(inDataFrameScaled, logCenterSd))
 }

@@ -49,7 +49,7 @@ pair the first id in the first group with the firs id in hte second group
 and so forth.}
 
 \item{multipleCorrMethod}{Which method that should be used for adjustment
-of multiple comparisons. Defaults to Benjamini-Hochberg, 
+of multiple comparisons. Defaults to Benjamini-Hochberg,
 but all other methods available in \code{\link{p.adjust}} can be used.}
 
 \item{densContour}{If density contours should be created for the plot(s) or
@@ -104,9 +104,9 @@ cytometry or other complex data has been generated.
 # Load some data
 data(testData)
 \dontrun{
-# Load or create the dimensions that you want to plot the result over. 
+# Load or create the dimensions that you want to plot the result over.
 # uwot::umap recommended due to speed, but tSNE or other method would
-# work as fine. 
+# work as fine.
 data(testDataSNE)
 
 # Run the clustering function. For more rapid example execution,
@@ -117,7 +117,7 @@ data(testDataDepeche)
 # Run the function
 dWilcoxResult <- dWilcox(
     xYData = testDataSNE$Y, idsVector = testData$ids,
-    groupVector = testData$label, clusterVector = 
+    groupVector = testData$label, clusterVector =
     testDataDepeche$clusterVector
 )
 

@@ -1,3 +1,8 @@
+Changes in version 1.17.5 (2023-11-09)
++ Set.seed belatedly introduced into test functions to avoid the uncommon but repeated slight numeric errors in the tests.
++ dAllocate bug removed.
++ Small note removal cosmetics without any functional impact.
+
 Changes in version 1.17.4 (2023-08-14)
 + Adding collapse package to the description file.
 + Correction of the generateSparseData function.

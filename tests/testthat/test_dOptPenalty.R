@@ -1,12 +1,12 @@
 ###################### dOptPenalty
 context("dOptPenatly")
-
+set.seed(11)
 x <- DepecheR:::generateBimodalData(observations = 200, dataCols = 10)
 x_scaled <- dScale(x$samples, center = FALSE)
-dOPR <- DepecheR:::dOptPenalty(x_scaled, k = 30, maxIter = 20, 
-                               minARIImprovement = 0.01, sampleSize = 100, 
+dOPR <- DepecheR:::dOptPenalty(x_scaled, k = 30, maxIter = 20,
+                               minARIImprovement = 0.01, sampleSize = 100,
                                penalties = c(0, 2, 4, 8, 16, 32, 128),
-                               createOutput = FALSE, optimARI = 0.95, 
+                               createOutput = FALSE, optimARI = 0.95,
                                nCores = 2, plotDir = ".")
 
 ARI <- dOPR[[2]][, 1]

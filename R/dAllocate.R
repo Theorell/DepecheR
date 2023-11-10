@@ -8,8 +8,8 @@
 #' @param inDataFrame A dataset that should be allocated to a set of cluster
 #' centers, for example a richer, but less representative dataset, with all
 #' datapoints from all donors, instead of only a set number of values from all.
-#' @param depModel This is the result of the original application of the 
-#' depeche function on the associated, more representative dataset. 
+#' @param depModel This is the result of the original application of the
+#' depeche function on the associated, more representative dataset.
 #' @seealso \code{\link{depeche}}
 #' @return A vector with the same length as number of rows in the inDataFrame,
 #' where the cluster identity of each observation is noted.
@@ -36,9 +36,9 @@
 #' )
 #'
 #' # And finally plot the two groups to see how great the overlap was:
-#' clustVecList <- list(list("Ids" =testDataTrain$ids, 
+#' clustVecList <- list(list("Ids" =testDataTrain$ids,
 #'                           "Clusters" = depeche_train$clusterVector),
-#'                      list("Ids" =testDataTest$ids, 
+#'                      list("Ids" =testDataTest$ids,
 #'                           "Clusters" = depeche_test))
 #' tablePerId <- do.call("rbind", lapply(seq_along(clustVecList), function(x){
 #'                                       locDat <- clustVecList[[x]]
@@ -46,18 +46,18 @@
 #'                                       locDat$Ids, locDat$Clusters)),
 #'                                       1, function(y) y/sum(y))
 #'                                       locResLong <- reshape2::melt(locRes)
-#'                                       colnames(locResLong) <- 
+#'                                       colnames(locResLong) <-
 #'                                       c("Cluster", "Donor", "Fraction")
 #'                                       locResLong$Group <- x
 #'                                       locResLong
 #'                                       }))
 #' tablePerId$Cluster <- as.factor(tablePerId$Cluster)
 #' tablePerId$Group <- as.factor(tablePerId$Group)
-#' 
+#'
 #' library(ggplot2)
-#' ggplot(data=tablePerId, aes(x=Cluster, y=Fraction, 
+#' ggplot(data=tablePerId, aes(x=Cluster, y=Fraction,
 #'         fill=Group)) + geom_boxplot() + theme_bw()
-#' }        
+#' }
 #' @export dAllocate
 dAllocate <- function(inDataFrame, depModel) {
     if (is.matrix(inDataFrame)) {
@@ -72,27 +72,27 @@ dAllocate <- function(inDataFrame, depModel) {
         stop("dAllocate does not work well with data that has been internally",
              "log-transformed, due to large effects of small differences in ",
              "the extreme negative tail of the data.",
-             "It is instead recommended to transform the ", 
-             "full dataset before entering depeche, which makes the log-", 
+             "It is instead recommended to transform the ",
+             "full dataset before entering depeche, which makes the log-",
              "transformation internally superflous.")
     }
     #Step one here is to scale and normalize the data in the best possible way.
     #This is preferably done with pre-defined values.
     if(is.list(logCenterSd)){
         inDataFrameScaled <- depecheLogCenterSd(inDataFrame, log2Off = TRUE,
-                                                logCenterSd[[2]], 
+                                                logCenterSd[[2]],
                                                 logCenterSd[[3]])[[1]]
-        clusterCentersScaled <- 
-            as.matrix(depecheLogCenterSd(as.data.frame(clusterCenters), 
+        clusterCentersScaled <-
+            as.matrix(depecheLogCenterSd(as.data.frame(clusterCenters),
                                          log2Off = TRUE,
-                                         logCenterSd[[2]], 
+                                         logCenterSd[[2]],
                                          logCenterSd[[3]])[[1]])
         clusterCentersScaled[which(clusterCenters == 0)] <- 0
     } else {
         inDataFrameScaled <- inDataFrame
         clusterCentersScaled <- clusterCenters
     }
-    
+
     # Here, all variables that do not
     # contribute to defining a single cluster
     # are removed.
@@ -110,7 +110,7 @@ dAllocate <- function(inDataFrame, depModel) {
     # internal use. In the first case, there are no colnumn names, but the
     # properties of the cluster centers are also more raw and thus informative.
     if (length(colnames(clusterCentersScaled)) > 0) {
-        inDataFrameReduced <- 
+        inDataFrameReduced <-
             inDataFrameScaled[, colnames(clusterCentersScaled)]
     } else {
         inDataFrameReduced <-

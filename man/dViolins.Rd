@@ -62,10 +62,13 @@ data(testData)
 data(testDataDepeche)
 
 # Create the plots of the variables that contribute to creating cluster 3
+
+\dontrun{
 dViolins(testDataDepeche$clusterVector,
     inDataFrame = testData,
     plotClusters = 3, plotElements = testDataDepeche$essenceElementList
 )
+}
 }
 \seealso{
 \code{\link{dDensityPlot}}, \code{\link{dColorPlot}},

@@ -4,6 +4,7 @@ context("dataGen")
 centers <- rbind(c(0, 0), c(10, 10))
 n <- 1000
 prop <- 0.1
+set.seed(110011)
 x <- DepecheR:::generateBimodalData(centers, observations = n, prop = prop)
 test_that("generateBimodalData expected output simple centers", {
     expect_equal(nrow(x$samples), n)
@@ -14,6 +15,7 @@ test_that("generateBimodalData expected output simple centers", {
     expect_true(all(colMeans(x$samples) > centers[2, ] * (1 - prop) - 0.1))
 })
 
+set.seed(0101101)
 x <- DepecheR:::generateBimodalData(observations = n)
 test_that("generateBimodalData expected output default centers", {
     expect_equal(nrow(x$samples[x$ids == 1, ]), n * 0.3)
@@ -22,6 +24,7 @@ test_that("generateBimodalData expected output default centers", {
     expect_true(mean(x$samples[x$ids == 1, ]) > 49)
 })
 
+set.seed(10001)
 x <- DepecheR:::generateSparseData(modeN = 3, observations = 30)
 test_that("generateSparseData expected output default centers", {
     binSamples <- abs(x$samples) < 25

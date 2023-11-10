@@ -53,9 +53,9 @@
 #' # Load some data
 #' data(testData)
 #' \dontrun{
-#' # Load or create the dimensions that you want to plot the result over. 
+#' # Load or create the dimensions that you want to plot the result over.
 #' # uwot::umap recommended due to speed, but tSNE or other method would
-#' # work as fine. 
+#' # work as fine.
 #' data(testDataSNE)
 #'
 #' # Plot all data together
@@ -78,7 +78,7 @@
 dDensityPlot <- function(xYData, colorScale = "default",
                          plotName = "All_density", idsVector,
                          densContour = TRUE, title = FALSE, plotDir = "default",
-                         bandColor = "black", 
+                         bandColor = "black",
                          dotSize = 500 / sqrt(nrow(xYData)),
                          createOutput = TRUE) {
     if (plotDir == "default") {

@@ -1,6 +1,7 @@
 ######################
 context("scaling")
 # dScale
+set.seed(19191)
 x <- DepecheR:::generateBimodalData(observations = 100)
 y_df <- DepecheR:::dScale(x[[1]])
 

@@ -31,9 +31,9 @@ acquired on the same run. Scaling, etc, is on the other hand performed
 within the function.}
 
 \item{samplingSubset}{If the dataset is made up of an unequal number of cells
-from multiple individuals, it might be wise to pre-define a subset of the 
+from multiple individuals, it might be wise to pre-define a subset of the
 rows, which includes equal or near-equal numbers of cells from each
-individual, to avoid a few outliers to dominate the analysis. This can be 
+individual, to avoid a few outliers to dominate the analysis. This can be
 done here. Should be a vector of row numbers in the inDataFrame.}
 
 \item{penalties}{This argument decides whether a single penalty will be used
@@ -80,19 +80,19 @@ penalty optimization.}
 the log2 transformation, should be turned off.}
 
 \item{center}{If centering should be performed. Alternatives are 'default',
-'mean', 'peak', FALSE and a vector of numbers with the same length as the 
-number of columns in the inDataFrame. 'peak' results in centering around the 
-highest peak in the data, which is useful in most cytometry situations. 
-'mean' results in  mean centering. 'default' gives different results 
-depending on the data: datasets with 100+ variables are mean centered, 
+'mean', 'peak', FALSE and a vector of numbers with the same length as the
+number of columns in the inDataFrame. 'peak' results in centering around the
+highest peak in the data, which is useful in most cytometry situations.
+'mean' results in  mean centering. 'default' gives different results
+depending on the data: datasets with 100+ variables are mean centered,
 and otherwise, peak centering is used. If a numeric vector is provided, it
-is used to center the values to the numbers. This is preferable to 
+is used to center the values to the numbers. This is preferable to
 pre-centering the data and using the FALSE command, as it will lead to better
 internal visualization procedures, etc. FALSE results in no centering, mainly
 for testing purposes.}
 
-\item{scale}{If scaling should be performed. If TRUE, the dataset will be 
-divided by the combined standard deviation of the whole dataset. If a number 
+\item{scale}{If scaling should be performed. If TRUE, the dataset will be
+divided by the combined standard deviation of the whole dataset. If a number
 is provided, the dataset is divided by this number. This scaling
 procedure makes the default penalties fit most datasets with some precision.}
 
@@ -117,7 +117,7 @@ A nested list:
    indicates that the variable in question was sparsed out for that cluster.
    If a variable did not contribute to the separation of any cluster, it will
    not be present here.}
-   \item{essenceElementList}{A per-cluster list of the items that were 
+   \item{essenceElementList}{A per-cluster list of the items that were
    used to separate that cluster from the rest, i.e. the items that survived
    the penalty.}
    \item{penaltyOptList}{A list of two dataframes:
@@ -128,8 +128,8 @@ A nested list:
              results with all tested penalty values.}
            }
     }
-    \item{logCenterScale}{The values used to center and scale the 
-    data and information on if the data was log transformed. This 
+    \item{logCenterScale}{The values used to center and scale the
+    data and information on if the data was log transformed. This
     information is used internally in dAllocate.}
 }
 }

@@ -22,7 +22,7 @@
 #' pair the first id in the first group with the firs id in hte second group
 #' and so forth.
 #' @param multipleCorrMethod Which method that should be used for adjustment
-#' of multiple comparisons. Defaults to Benjamini-Hochberg, 
+#' of multiple comparisons. Defaults to Benjamini-Hochberg,
 #' but all other methods available in \code{\link{p.adjust}} can be used.
 #' @param densContour If density contours should be created for the plot(s) or
 #' not. Defaults to TRUE. a
@@ -62,9 +62,9 @@
 #' # Load some data
 #' data(testData)
 #' \dontrun{
-#' # Load or create the dimensions that you want to plot the result over. 
+#' # Load or create the dimensions that you want to plot the result over.
 #' # uwot::umap recommended due to speed, but tSNE or other method would
-#' # work as fine. 
+#' # work as fine.
 #' data(testDataSNE)
 #'
 #' # Run the clustering function. For more rapid example execution,
@@ -75,7 +75,7 @@
 #' # Run the function
 #' dWilcoxResult <- dWilcox(
 #'     xYData = testDataSNE$Y, idsVector = testData$ids,
-#'     groupVector = testData$label, clusterVector = 
+#'     groupVector = testData$label, clusterVector =
 #'     testDataDepeche$clusterVector
 #' )
 #'
@@ -289,7 +289,7 @@ dWilcox <- function(xYData, idsVector, groupVector, clusterVector,
     if (min(p_adjusted) < lowestPlottedP) {
         message(
             "NB!, The lowest p-value with this dataset was ",
-            min(p_adjusted), ". Therefore, this p-value will define the color", 
+            min(p_adjusted), ". Therefore, this p-value will define the color",
             " scale instead than the chosen value of ", lowestPlottedP, "."
         )
         lowestPlottedP <- min(p_adjusted)

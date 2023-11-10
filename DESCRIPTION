@@ -1,6 +1,6 @@
 Package: DepecheR
-Version: 1.17.4
-Date: 2023-08-14
+Version: 1.17.5
+Date: 2023-11-09
 Title: Determination of essential phenotypic elements of clusters in 
     high-dimensional entities 
 biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,
@@ -9,8 +9,8 @@ biocViews: Software,CellBasedAssays,Transcription,DifferentialExpression,
     Visualization
 Authors@R: c(
     person('Jakob', 'Theorell', email = "jakob.theorell@ki.se",
-        role = c("aut", "cre")), 
-    person('Axel', 'Theorell', email = "axel.theorell@bsse.ethz.ch", 
+        role = c("aut", "cre"), comment=c(ORCID="0000-0001-8752-3151")), 
+    person('Axel', 'Theorell', email = "axel.theorell@gmail.com", 
         role = c("aut")))
 Description: The purpose of this package is to identify traits in a dataset that
     can separate groups. This is done on two levels. First, clustering is 

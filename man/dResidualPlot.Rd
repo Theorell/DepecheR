@@ -76,9 +76,9 @@ number of individuals does not permit any statistical comparisons.
 # Load some data
 data(testData)
 \dontrun{
-# Load or create the dimensions that you want to plot the result over. 
+# Load or create the dimensions that you want to plot the result over.
 # uwot::umap recommended due to speed, but tSNE or other method would
-# work as fine. 
+# work as fine.
 data(testDataSNE)
 
 # Run the clustering function. For more rapid example execution,
