@@ -58,7 +58,6 @@
 #' ggplot(data=tablePerId, aes(x=Cluster, y=Fraction,
 #'         fill=Group)) + geom_boxplot() + theme_bw()
 #' }
-#' @export dAllocate
 dAllocate <- function(inDataFrame, depModel) {
     if (is.matrix(inDataFrame)) {
         inDataFrame <- as.data.frame(inDataFrame)
@@ -82,12 +81,29 @@ dAllocate <- function(inDataFrame, depModel) {
         inDataFrameScaled <- depecheLogCenterSd(inDataFrame, log2Off = TRUE,
                                                 logCenterSd[[2]],
                                                 logCenterSd[[3]])[[1]]
+        #Annoyingly, we have to add back the empty clusters here for this all
+        #to be straight forward.
+        if(ncol(clusterCenters) < length(logCenterSd[[2]]) &
+           length(logCenterSd[[2]]) == ncol(inDataFrame) &
+           length(which(colnames(clusterCenters) %in%
+                        colnames(inDataFrame))) == ncol(clusterCenters)){
+            extraCols <- matrix(0, nrow = nrow(clusterCenters),
+                                ncol = length(logCenterSd[[2]])-
+                                    ncol(clusterCenters))
+            colnames(extraCols) <- colnames(inDataFrame)[
+                -which(colnames(inDataFrame) %in% colnames(clusterCenters))]
+            clusterCentersFull <- cbind(clusterCenters, extraCols)
+            clusterCentersUsed <- clusterCentersFull[
+                ,match(colnames(inDataFrame), colnames(clusterCentersFull))]
+        } else {
+            stop("Mismatch between the data to be allocated and the model")
+        }
         clusterCentersScaled <-
-            as.matrix(depecheLogCenterSd(as.data.frame(clusterCenters),
+            as.matrix(depecheLogCenterSd(as.data.frame(clusterCentersUsed),
                                          log2Off = TRUE,
                                          logCenterSd[[2]],
                                          logCenterSd[[3]])[[1]])
-        clusterCentersScaled[which(clusterCenters == 0)] <- 0
+        clusterCentersScaled[which(clusterCentersUsed == 0)] <- 0
     } else {
         inDataFrameScaled <- inDataFrame
         clusterCentersScaled <- clusterCenters
@@ -95,7 +111,7 @@ dAllocate <- function(inDataFrame, depModel) {
 
     # Here, all variables that do not
     # contribute to defining a single cluster
-    # are removed.
+    # are removed again.
     clusterCentersReduced <-
         clusterCentersScaled[
             which(rowSums(clusterCentersScaled) != 0),
@@ -107,11 +123,11 @@ dAllocate <- function(inDataFrame, depModel) {
     # the inData here. The special case with only one variable is taken
     # into account.
     # There are two different methods here: one for external and one for
-    # internal use. In the first case, there are no colnumn names, but the
+    # internal use. In the first case, there are no colnunm names, but the
     # properties of the cluster centers are also more raw and thus informative.
-    if (length(colnames(clusterCentersScaled)) > 0) {
+    if (length(colnames(clusterCentersReduced)) > 0) {
         inDataFrameReduced <-
-            inDataFrameScaled[, colnames(clusterCentersScaled)]
+            inDataFrameScaled[, colnames(clusterCentersReduced)]
     } else {
         inDataFrameReduced <-
             inDataFrameScaled[, which(colSums(clusterCentersScaled) != 0)]
