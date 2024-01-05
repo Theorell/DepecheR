@@ -1,3 +1,8 @@
+Changes in version 1.17.7 (2024-01-05)
++ Updates to the neighSmooth function, first to increase the speed of the K-
+  means clustering, and second to allow for external principal component
+  analysis and clustering, which makes bootstrapping easier.
+
 Changes in version 1.17.6 (2023-12-21)
 + The dAllocate standalone function is removed as a
 separate export. If a large dataset should be clustered, use the samplingSubset

@@ -14,18 +14,33 @@
 #' @param focusData The data that should be smoothed. Should be a matrix with
 #' the variables to be smoothed as columns.
 #' @param euclidSpaceData The data cloud in which the nearest neighbors for the
-#' events should be identified. Can be a vector, matrix or dataframe.
+#' events should be identified. Can be a vector, matrix or dataframe. It is
+#' worth noting that if this data has more than 10 dimensions, the first step
+#' of the algorithm will be the creation of a 10-dimensional PCA using
+#' fast.prcomp from gmodels. So in cases where this function is used iteratively,
+#' it might be wiser to run the PCA beforehand.
 #' @param neighRows The rows in the dataset that correspond to the neighbors
 #' of the focusData points. This can be all the focusData points, or a subset,
 #' depending on the setup.
 #' @param ctrlRows Optionally, a set of control rows that are used to remove
 #' background signal from the neighRows data before sending the data back.
 #' @param kNeighK The number of nearest neighbors.
-#' @param kMeansK The number of clusters in the initial step of the algorithm.
+#' #' @param kMeansK The number of clusters in the initial step of the algorithm.
 #' A higher number leads to shorter runtime, but potentially lower accuracy.
-#' @param method The method to use for the smoothing. Three values possible:
+#' This is not used if kMeansCenters is provided
+#' @param kMeansCenters Here, a pre-clustering of the data can be provided, in
+#' which case the clustering will not be performed internally. Wise if for
+#' example a bootstrapping scheme is used to define the neighRows iteratively,
+#' as the k-means step can be quite time consuming. This part is the cluster
+#' centers or centroids.
+#' @param kMeansClusters See above. Here, the clusters, instead of the centroids
+#' are provided if used.
+#' #' @param method The method to use for the smoothing. Three values possible:
 #' mean (default), median and mode.
+#' @param nCores The number of cores used. Defaults to number of cores in the
+#' computer minus 1.
 #' @return An object of the same dimensions as focusData that has been smoothed.
+#' @importFrom ClusterR KMeans_rcpp
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
@@ -53,7 +68,11 @@ neighSmooth <- function(focusData, euclidSpaceData,
                         ) / 10000)),
                         kMeansK = max(1, round(nrow(
                             as.matrix(euclidSpaceData)
-                        ) / 1000)), method = "mean") {
+                        ) / 1000)),
+                        kMeansCenters = NULL,
+                        kMeansClusters = NULL,
+                        method = "mean",
+                        nCores = detectCores() - 1) {
     if (is.vector(focusData)) {
         focusData <- data.frame(focusData, 0)
         focusDataIsVector <- TRUE
@@ -74,10 +93,13 @@ neighSmooth <- function(focusData, euclidSpaceData,
         dataRedDim <- euclidSpaceData
     }
     # Now, the cells are clustered according to this analysis
-    kMeansResult <- kmeans(dataRedDim, kMeansK, iter.max = 100)
-    kMeansCenters <- kMeansResult$centers
-    kMeansClusters <- kMeansResult$cluster
-    print("Done with k-means")
+    if(is.null(kMeansCenters) |
+       is.null(kMeansClusters)){
+        kMeansResult <- KMeans_rcpp(dataRedDim, kMeansK, max_iters = 100)
+        kMeansCenters <- kMeansResult$centroids
+        kMeansClusters <- kMeansResult$clusters
+        print("Done with k-means")
+    }
 
     # Here, the rows connected to the neighbors, the control neighbors or
     # neither are defined
@@ -106,7 +128,6 @@ neighSmooth <- function(focusData, euclidSpaceData,
     }
 
     print("Now the first bit is done, and the iterative part takes off")
-    nCores <- detectCores() - 1
 
     cl <- parallel::makeCluster(nCores, type = "SOCK")
     registerDoSNOW(cl)

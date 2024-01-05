@@ -11,7 +11,10 @@ neighSmooth(
   ctrlRows,
   kNeighK = max(100, round(nrow(as.matrix(euclidSpaceData))/10000)),
   kMeansK = max(1, round(nrow(as.matrix(euclidSpaceData))/1000)),
-  method = "mean"
+  kMeansCenters = NULL,
+  kMeansClusters = NULL,
+  method = "mean",
+  nCores = detectCores() - 1
 )
 }
 \arguments{
@@ -19,7 +22,11 @@ neighSmooth(
 the variables to be smoothed as columns.}
 
 \item{euclidSpaceData}{The data cloud in which the nearest neighbors for the
-events should be identified. Can be a vector, matrix or dataframe.}
+events should be identified. Can be a vector, matrix or dataframe. It is
+worth noting that if this data has more than 10 dimensions, the first step
+of the algorithm will be the creation of a 10-dimensional PCA using
+fast.prcomp from gmodels. So in cases where this function is used iteratively,
+it might be wiser to run the PCA beforehand.}
 
 \item{neighRows}{The rows in the dataset that correspond to the neighbors
 of the focusData points. This can be all the focusData points, or a subset,
@@ -28,13 +35,24 @@ depending on the setup.}
 \item{ctrlRows}{Optionally, a set of control rows that are used to remove
 background signal from the neighRows data before sending the data back.}
 
-\item{kNeighK}{The number of nearest neighbors.}
+\item{kNeighK}{The number of nearest neighbors.
+#' @param kMeansK The number of clusters in the initial step of the algorithm.
+A higher number leads to shorter runtime, but potentially lower accuracy.
+This is not used if kMeansCenters is provided}
 
-\item{kMeansK}{The number of clusters in the initial step of the algorithm.
-A higher number leads to shorter runtime, but potentially lower accuracy.}
+\item{kMeansCenters}{Here, a pre-clustering of the data can be provided, in
+which case the clustering will not be performed internally. Wise if for
+example a bootstrapping scheme is used to define the neighRows iteratively,
+as the k-means step can be quite time consuming. This part is the cluster
+centers or centroids.}
 
-\item{method}{The method to use for the smoothing. Three values possible:
+\item{kMeansClusters}{See above. Here, the clusters, instead of the centroids
+are provided if used.
+#' @param method The method to use for the smoothing. Three values possible:
 mean (default), median and mode.}
+
+\item{nCores}{The number of cores used. Defaults to number of cores in the
+computer minus 1.}
 }
 \value{
 An object of the same dimensions as focusData that has been smoothed.
