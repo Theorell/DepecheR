@@ -35,8 +35,9 @@ depending on the setup.}
 \item{ctrlRows}{Optionally, a set of control rows that are used to remove
 background signal from the neighRows data before sending the data back.}
 
-\item{kNeighK}{The number of nearest neighbors.
-#' @param kMeansK The number of clusters in the initial step of the algorithm.
+\item{kNeighK}{The number of nearest neighbors.}
+
+\item{kMeansK}{The number of clusters in the initial step of the algorithm.
 A higher number leads to shorter runtime, but potentially lower accuracy.
 This is not used if kMeansCenters is provided}
 
@@ -47,8 +48,9 @@ as the k-means step can be quite time consuming. This part is the cluster
 centers or centroids.}
 
 \item{kMeansClusters}{See above. Here, the clusters, instead of the centroids
-are provided if used.
-#' @param method The method to use for the smoothing. Three values possible:
+are provided if used.}
+
+\item{method}{The method to use for the smoothing. Three values possible:
 mean (default), median and mode.}
 
 \item{nCores}{The number of cores used. Defaults to number of cores in the

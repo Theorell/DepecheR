@@ -25,7 +25,7 @@
 #' @param ctrlRows Optionally, a set of control rows that are used to remove
 #' background signal from the neighRows data before sending the data back.
 #' @param kNeighK The number of nearest neighbors.
-#' #' @param kMeansK The number of clusters in the initial step of the algorithm.
+#' @param kMeansK The number of clusters in the initial step of the algorithm.
 #' A higher number leads to shorter runtime, but potentially lower accuracy.
 #' This is not used if kMeansCenters is provided
 #' @param kMeansCenters Here, a pre-clustering of the data can be provided, in
@@ -35,7 +35,7 @@
 #' centers or centroids.
 #' @param kMeansClusters See above. Here, the clusters, instead of the centroids
 #' are provided if used.
-#' #' @param method The method to use for the smoothing. Three values possible:
+#' @param method The method to use for the smoothing. Three values possible:
 #' mean (default), median and mode.
 #' @param nCores The number of cores used. Defaults to number of cores in the
 #' computer minus 1.
